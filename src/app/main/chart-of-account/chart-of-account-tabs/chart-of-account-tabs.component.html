@@ -1,0 +1,28 @@
+<p-tabView (onChange)="onTabChange($event)" [(activeIndex)]="activeIndex">
+  <p-tabPanel header="Level 1">
+    <app-coa-level1></app-coa-level1>
+  </p-tabPanel>
+  <p-tabPanel header="Level 2">
+    <app-coa-level2></app-coa-level2>
+  </p-tabPanel>
+  <p-tabPanel header="Level 3">
+    <app-coa-level3></app-coa-level3>
+  </p-tabPanel>
+  <p-tabPanel header="Link With">
+    <app-link-with></app-link-with>
+  </p-tabPanel>
+  <p-tabPanel header="Account Type">
+    <app-account-type></app-account-type>
+  </p-tabPanel>
+  <p-tabPanel header="Currency">
+    <app-currency></app-currency>
+  </p-tabPanel>
+  <p-tabPanel header="Chart of Account">
+    <app-coa-level4></app-coa-level4>
+  </p-tabPanel>
+</p-tabView>
+
+<div>
+  <p-toast />
+  <p-confirmDialog />
+</div>

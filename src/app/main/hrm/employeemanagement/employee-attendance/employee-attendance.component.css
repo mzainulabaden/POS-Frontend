@@ -1,0 +1,35 @@
+.form-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem; /* Add spacing between elements */
+}
+
+.search-button {
+  height: 2.8rem; /* Adjust the height */
+  line-height: 2.5rem; /* Ensure the icon or text is vertically centered */
+  font-size: 0.9rem; /* Optionally adjust the font size */
+}
+.create-btn {
+  font-size: 16px;
+  padding: 10px 20px;
+  border-radius: 8px;
+}
+
+.absent-dates-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(80px, 1fr)
+  ); /* Creates a responsive grid */
+  gap: 5px; /* Adds space between grid items */
+}
+
+.absent-date {
+  background-color: red;
+  color: white;
+  font-weight: bold;
+  padding: 5px;
+  text-align: center;
+  border-radius: 4px;
+  display: inline-block;
+}

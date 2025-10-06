@@ -1,0 +1,222 @@
+<div class="mainDiv">
+  <p-toolbar styleClass="mb-4 px-4 py-2">
+    <ng-template pTemplate="left">
+      <!-- <h4 class="text-bold text-md">Daily Logs</h4> -->
+    </ng-template>
+    <ng-template pTemplate="right">
+      <div class="gap-4 flex">
+        <div class="p-toolbar-group-left">
+          <span
+            pButton
+            pRipple
+            [rounded]="true"
+            class="create-btn"
+            (click)="show()"
+          >
+            New Log Entry
+          </span>
+        </div>
+      </div>
+    </ng-template>
+  </p-toolbar>
+
+  <div
+    class="card p-4"
+    #mainDiv
+    [style]="{ width: '100%', 'overflow-y': 'auto' }"
+  >
+    <p-table
+      #policyTable
+      styleClass="p-datatable-gridlines"
+      [scrollable]="true"
+      scrollHeight="58vh"
+      [rowHover]="true"
+      [value]="tableData"
+      responsiveLayout="scroll"
+      [paginatorDropdownAppendTo]="'body'"
+      dataKey="id"
+      responsiveLayout="scroll"
+      [style]="{ width: '100%', 'overflow-y': 'auto', height: '20vh' }"
+      [globalFilterFields]="['voucherNumber', 'status']"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="min-width: 180px" pSortableColumn="name">
+            Name<p-sortIcon field="name" />
+          </th>
+          <th style="min-width: 110px" pSortableColumn="description">
+            Description <p-sortIcon field="description" />
+          </th>
+          <th style="min-width: 180px" pSortableColumn="Action">
+            Action<p-sortIcon field="actions" />
+          </th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td class="no-wrap-header" title="{{ item.name }}">
+            {{ item?.name }}
+          </td>
+          <td class="no-wrap-header" title="{{ item.description }}">
+            {{ item?.description }}
+          </td>
+          <td class="icon-group">
+            <span (click)="edit(item.id)" title="Edit item" class="edit-btn">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g clip-path="url(#clip0_530_1269)">
+                  <path
+                    d="M12.7146 4.5625L13.4081 3.86903C13.5213 3.75589 13.6111 3.62156 13.6723 3.47371C13.7336 3.32585 13.7651 3.16738 13.7651 3.00733C13.7651 2.84729 13.7336 2.68882 13.6723 2.54096C13.6111 2.39311 13.5213 2.25878 13.4081 2.14564L12.1197 0.857056C11.8911 0.628617 11.5811 0.500298 11.2579 0.500298C10.9347 0.500298 10.6247 0.628617 10.3961 0.857056L9.70264 1.55054L12.7146 4.5625Z"
+                    fill="#019999"
+                  />
+                  <path
+                    d="M9.12837 2.125L1.29061 9.96278C1.22851 10.0248 1.18821 10.1052 1.17576 10.1921L0.76533 13.0358C0.757082 13.0935 0.761311 13.1522 0.77773 13.2081C0.794149 13.2639 0.822375 13.3156 0.860499 13.3596C0.898622 13.4036 0.945753 13.4389 0.998704 13.4632C1.05165 13.4874 1.10919 13.4999 1.16742 13.5C1.1866 13.5001 1.20575 13.4987 1.22474 13.496L4.07266 13.0898C4.1597 13.0773 4.24036 13.0369 4.30255 12.9747L12.1403 5.13696L9.12837 2.125Z"
+                    fill="#019999"
+                  />
+                </g>
+                <defs>
+                  <clipPath id="clip0_530_1269">
+                    <rect
+                      width="13"
+                      height="13"
+                      fill="white"
+                      transform="translate(0.765137 0.5)"
+                    />
+                  </clipPath>
+                </defs>
+              </svg>
+            </span>
+            <span
+              class="delete-btn mr-2"
+              title="Delete Item"
+              (click)="delete(item.id)"
+            >
+              <svg
+                width="15"
+                height="19"
+                viewBox="0 0 15 19"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M14.1401 2.75H10.7651V2.375C10.7651 1.34113 9.92401 0.5 8.89014 0.5H6.64014C5.60626 0.5 4.76514 1.34113 4.76514 2.375V2.75H1.39014C0.976137 2.75 0.640137 3.086 0.640137 3.5V4.625C0.640137 5.039 0.976137 5.375 1.39014 5.375H14.1401C14.5541 5.375 14.8901 5.039 14.8901 4.625V3.5C14.8901 3.086 14.5541 2.75 14.1401 2.75ZM6.26514 2.375C6.26514 2.16838 6.43351 2 6.64014 2H8.89014C9.09676 2 9.26514 2.16838 9.26514 2.375V2.75H6.26514V2.375Z"
+                  fill="#FF0000"
+                />
+                <path
+                  d="M13.8703 6.37063C13.7282 6.21425 13.5264 6.125 13.3153 6.125H2.2153C2.00418 6.125 1.80242 6.21425 1.6603 6.37063C1.51817 6.527 1.4488 6.73625 1.46867 6.94662L2.39042 16.5796C2.49505 17.6746 3.45842 18.5004 4.63142 18.5004H10.8992C12.0718 18.5004 13.0355 17.6746 13.1402 16.5796L14.0619 6.94662C14.0822 6.73625 14.0124 6.527 13.8703 6.37063ZM6.01255 16.6235C5.99643 16.6242 5.98067 16.625 5.96455 16.625C5.57192 16.625 5.24193 16.3197 5.2168 15.9222L4.7668 8.79725C4.74092 8.384 5.0548 8.02775 5.46805 8.0015C5.88243 7.979 6.23793 8.2895 6.2638 8.70275L6.7138 15.8277C6.73967 16.241 6.4258 16.5972 6.01255 16.6235ZM10.3138 15.9222C10.2887 16.3197 9.95867 16.625 9.56605 16.625C9.5503 16.625 9.53417 16.6246 9.51805 16.6235C9.10442 16.5972 8.79093 16.241 8.8168 15.8277L9.2668 8.70275C9.29305 8.28912 9.64742 7.97825 10.0625 8.0015C10.4762 8.02775 10.7897 8.384 10.7638 8.79725L10.3138 15.9222Z"
+                  fill="#FF0000"
+                />
+              </svg>
+            </span>
+            <span
+              class="delete-btn mr-2"
+              title="View Item"
+              (click)="viewOnly(item.id)"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="green"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="feather feather-eye"
+                width="20"
+                height="20"
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </span>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <p-dialog
+      [maximizable]="true"
+      [closeOnEscape]="false"
+      [header]="
+        viewMode
+          ? 'View Todo List'
+          : editMode
+          ? 'Edit Todo List'
+          : 'Create Todo List'
+      "
+      [modal]="true"
+      [(visible)]="displayModal"
+      [draggable]="false"
+      [style]="{ width: '1200px' }"
+    >
+      <ng-container>
+        <form [formGroup]="todoListForm">
+          <div class="row col-md-12 mt-4 d-flex flex-column">
+            <div id="inputField" class="col-md-3 flex flex-column">
+              <label for="name">Todo List Name</label>
+              <input
+                type="text"
+                pInputText
+                formControlName="name"
+                id="name"
+                [style]="{ width: '100%' }"
+                autocomplete="off"
+                style="position: relative; z-index: 1000"
+              />
+            </div>
+
+            <div id="inputField" class="col-md-12 flex flex-column">
+              <label for="description">Description</label>
+              <textarea
+                type="text"
+                pInputText
+                formControlName="description"
+                id="description"
+                [style]="{ width: '100%', height: '200px' }"
+                autocomplete="off"
+                style="position: relative; z-index: 1000"
+              >
+              </textarea>
+            </div>
+          </div>
+
+          <div class="flex gap-1 justify-content-end mt-4">
+            <p-button
+              (onClick)="displayModal = false"
+              label="Cancel"
+              [outlined]="true"
+              severity="warning"
+            />
+            <p-button
+              [loading]="saving"
+              *ngIf="!editMode && !viewMode"
+              (click)="save()"
+              [disabled]="!todoListForm.valid"
+              label="Save"
+              [outlined]="true"
+              severity="contrast"
+            />
+            <p-button
+              [loading]="saving"
+              *ngIf="editMode && !viewMode"
+              (click)="update()"
+              [disabled]="!todoListForm.valid"
+              label="Update"
+              [outlined]="true"
+              severity="contrast"
+            />
+          </div>
+        </form>
+      </ng-container>
+    </p-dialog>
+    <div>
+      <p-toast />
+      <p-confirmDialog />
+    </div>
+  </div>
+</div>

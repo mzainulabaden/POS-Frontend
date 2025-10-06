@@ -1,0 +1,410 @@
+<p-toolbar class="col-lg-12 col-md-12 col-sm-12">
+  <ng-template pTemplate="left">
+    <h4>Sales Return List</h4>
+  </ng-template>
+  <ng-template pTemplate="right">
+    <div class="gap-4 flex">
+      <span class="block md:mt-0 p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input
+          pInputText
+          type="text"
+          (input)="onGlobalFilter(policyTable, $event)"
+          placeholder="Search..."
+          style="height: 40px; cursor: pointer"
+          (keydown.enter)="onEnter($event)"
+        />
+      </span>
+      <div class="p-toolbar-group-left">
+        <button
+          pButton
+          pRipple
+          [rounded]="true"
+          class="create-btn"
+          (click)="show()"
+        >
+          + Add New Sales Return
+      </button>
+      </div>
+    </div>
+  </ng-template>
+</p-toolbar>
+<div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+  <p-table
+    #policyTable
+    [loading]="loading"
+    [value]="tableData"
+      [sortField]="'issueDate'"
+  [sortOrder]="-1"
+    [rowHover]="true"
+    dataKey="id"
+    [scrollable]="true"
+    [paginatorDropdownAppendTo]="'body'"
+    scrollHeight="58vh"
+    [globalFilterFields]="['customerCOALevel04Name', 'voucherNumber']"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="min-width: 180px">
+          Action 
+        </th>
+        <th style="min-width: 180px" pSortableColumn="Customer">
+          Customer <p-sortIcon field="Customer" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="issueDate">
+          Issue Date <p-sortIcon field="issueDate" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="voucherNumber">
+          PR Number<p-sortIcon field="voucherNumber" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="referenceNumber">
+          Reference No<p-sortIcon field="referenceNumber" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="status">
+          Status <p-sortIcon field="status" />
+        </th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr *ngIf="!loading; else loadingRow">
+        <td class="icon-group">
+          <a
+            *ngIf="item.status == 'PENDING'"
+            class="dropdown-item edit"
+            (click)="edit(item.id)"
+          >
+            <i class="fa-solid fa-pencil"></i>
+          </a>
+          <a
+            *ngIf="item.status == 'PENDING'"
+            class="dropdown-item delete"
+            (click)="delete(item.id)"
+          >
+            <i class="fa-solid fa-trash"></i>
+          </a>
+          <a
+            *ngIf="item.status == 'PENDING'"
+            class="dropdown-item view"
+            (click)="approve(item.id)"
+          >
+            <i class="fa-solid fa-circle-check"></i>
+          </a>
+          <a
+            *ngIf="item.status == 'APPROVED'"
+            class="dropdown-item view"
+            (click)="viewOnly(item.id)"
+          >
+            <i class="fa-solid fa-eye"></i>
+          </a>
+          <a
+            class="dropdown-item delete"
+            (click)="downloadReport(item.id); $event.stopPropagation()"
+          >
+            <i class="fa-regular fa-file-pdf"></i>
+          </a>
+        </td>
+        <td class="no-wrap-header" title="{{ item.customerCOALevel04Name }}">
+          {{ item?.customerCOALevel04Name }}
+        </td>
+        <td class="no-wrap-header" title="{{ item.issueDate }}">
+          {{ item?.issueDate | date }}
+        </td>
+        <td class="no-wrap-header" title="{{ item.voucherNumber }}">
+          {{ item?.voucherNumber }}
+        </td>
+        <td class="no-wrap-header" title="{{ item.referenceNumber }}">
+          {{ item?.referenceNumber }}
+        </td>
+        <td>
+          <div *ngIf="item.status == 'PENDING'" class="deactive-box">
+            PENDING
+          </div>
+          <div *ngIf="item.status == 'APPROVED'" class="active-box">
+            APPROVED
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <!-- Skeleton Row Template -->
+    <ng-template #loadingRow>
+      <tr *ngFor="let i of [1, 2, 3, 4, 5]">
+        <td>
+          <p-skeleton width="30%" height="20px"></p-skeleton>
+          <p-skeleton width="30%" height="20px"></p-skeleton>
+          <p-skeleton width="40%" height="20px"></p-skeleton>
+        </td>
+        <td class="icon-group d-flex gap-2">
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+  <div class="paginator-wrapper d-flex justify-content-end mt-3">
+    <p-paginator
+      [rows]="10"
+      [totalRecords]="count"
+      (onPageChange)="onPageChange($event)"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+      [showCurrentPageReport]="true"
+      [rowsPerPageOptions]="[10, 50, 100, count]"
+      dropdownAppendTo="body"
+      appendTo="body"
+    ></p-paginator>
+  </div>
+</div>
+<p-dialog
+  [maximizable]="true"
+  [closeOnEscape]="false"
+  [header]="
+    viewMode
+      ? 'View Sales Return'
+      : editMode
+      ? 'Edit Sales Return'
+      : 'Create Sales Return'
+  "
+  [modal]="true"
+  [(visible)]="displayModal"
+  [draggable]="false"
+  [style]="{ width: '1200px' }"
+>
+  <ng-container>
+    <form [formGroup]="salesReturnForm" (ngSubmit)="save()">
+      <div class="row col-md-12 mt-3">
+        <div id="inputField" class="col-md-3 flex flex-column">
+          <label class="label-text" for="voucherNumber">Voucher No</label>
+          <input
+            type="text"
+            readonly
+            pInputText
+            formControlName="voucherNumber"
+            id="voucherNumber"
+            [style]="{ width: '100%' }"
+          />
+        </div>
+        
+        <div id="inputField" class="col-md-3 flex flex-column">
+          <label class="label-text" for="issueDate">Date<span class="text-danger">*</span></label>
+          <p-calendar
+            formControlName="issueDate"
+            inputId="date"
+            appendTo="body"
+            [showOnFocus]="true"
+            (onSelect)="onDateChange($event)"
+            [style]="{ width: '100%' }"
+          ></p-calendar>
+          <div *ngIf="isFieldInvalid('issueDate')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+        
+        <div class="col-md-3 flex flex-column">
+          <label class="label-text" for="customerCOALevel04Id"
+            >Customer<span class="text-danger">*</span></label
+          >
+          <p-dropdown
+            [options]="coaLvl4"
+            optionLabel="name"
+            optionValue="id"
+            formControlName="customerCOALevel04Id"
+            id="customerCOALevel04Id"
+            [showClear]="true"
+            [placeholder]="'Select Customer'"
+            [filter]="true"
+            filterBy="name"
+            [style]="{ width: '100%' }"
+          ></p-dropdown>
+          <div *ngIf="isFieldInvalid('customerCOALevel04Id')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+        
+        <div id="inputField" class="col-md-3 flex flex-column">
+          <label class="label-text" for="referenceNumber">Previous Invoice No</label>
+          <input
+            type="text"
+            readonly
+            pInputText
+            formControlName="referenceNumber"
+            id="referenceNumber"
+            autocomplete="off"
+            [style]="{ width: '100%' }"
+          />
+          <div *ngIf="isFieldInvalid('referenceNumber')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+      </div>
+
+      <div class="row col-md-12 mt-3">
+        <div class="col-md-6">
+          <button
+            pButton
+            type="button"
+            (click)="openSI()"
+            class="create-btn"
+            [disabled]="viewMode"
+          >
+            Copy Sale Invoice
+          </button>
+        </div>
+      </div>
+
+      <div class="row-btn-container mt-3">
+        <button
+          type="button"
+          class="add-row-btn"
+          (click)="onAddRow()"
+          [disabled]="viewMode"
+        >
+          Add Row
+        </button>
+        <button
+          type="button"
+          class="remove-row-btn"
+          (click)="onRemoveSelected()"
+          [disabled]="viewMode"
+        >
+          Remove Row
+        </button>
+      </div>
+
+      <ag-grid-angular
+        class="ag-theme-quartz"
+        style="height: 300px"
+        [rowData]="rowData"
+        [columnDefs]="colDefs"
+        [rowSelection]="rowSelection"
+        [components]="frameworkComponents"
+        (cellValueChanged)="onCellValueChanged($event)"
+        (gridReady)="onGridReady($event)"
+        [singleClickEdit]="true"
+      >
+      </ag-grid-angular>
+
+      <div class="row col-md-12 mt-3">
+        <div id="inputField" class="col-md-3 flex flex-column">
+          <label class="label-text" for="totalAmount">Total Amount</label>
+          <input
+            type="number"
+            readonly
+            pInputText
+            formControlName="totalAmount"
+            id="totalAmount"
+            autocomplete="off"
+            [style]="{ width: '100%' }"
+          />
+          <div *ngIf="isFieldInvalid('totalAmount')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+      </div>
+
+      <p-dialog
+        [maximizable]="true"
+        header="Copy Sales Invoice"
+        [modal]="true"
+        [(visible)]="displaySIModal"
+        [draggable]="false"
+      >
+        <span class="block md:mt-0 p-input-icon-left mb-3">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            type="text"
+            (input)="onGlobalFilter(requisitionTable, $event)"
+            placeholder="Search..."
+            style="height: 40px; cursor: pointer"
+          />
+        </span>
+        <div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+          <p-table
+            #requisitionTable
+            [value]="siTableData"
+            [loading]="loading"
+            [rowHover]="true"
+            dataKey="id"
+            [scrollable]="true"
+            [paginatorDropdownAppendTo]="'body'"
+            scrollHeight="58vh"
+            [paginator]="true"
+            [rows]="10"
+            [rowsPerPageOptions]="[10, 25, 50, 100]"
+            [globalFilterFields]="['voucherNumber', 'customerCOALevel04Name']"
+          >
+            <ng-template pTemplate="header">
+              <tr>
+                <th style="min-width: 200px" pSortableColumn="voucherNumber">
+                  Voucher No <p-sortIcon field="voucherNumber" />
+                </th>
+                <th style="min-width: 200px" pSortableColumn="customerCOALevel04Name">
+                  Customer Name <p-sortIcon field="customerCOALevel04Name" />
+                </th>
+                <th style="min-width: 200px" pSortableColumn="issueDate">
+                  Issue Date <p-sortIcon field="issueDate" />
+                </th>
+                <th style="min-width: 200px">Action</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+              <tr>
+                <td>{{ item.voucherNumber }}</td>
+                <td>{{ item.customerCOALevel04Name }}</td>
+                <td>{{ item.issueDate | date : "yyyy-MM-dd" }}</td>
+                <td>
+              <button
+                type="button"
+                (click)="selectPurchaseOrder(item.id)"
+                pButton
+                pRipple
+                class="create-btn"
+              >
+                Select
+              </button>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      </p-dialog>
+
+      <div class="flex gap-2 justify-content-end mt-4">
+        <button
+          pButton
+          type="button"
+          (click)="displayModal = false"
+          class="cancel-btn"
+          label="Cancel"
+        ></button>
+        <button
+          pButton
+          type="button"
+          *ngIf="!editMode && !viewMode"
+          (click)="save()"
+          [disabled]="!salesReturnForm.valid"
+          class="save-btn"
+          [loading]="saving"
+        >
+          Save
+        </button>
+        <button
+          pButton
+          type="button"
+          *ngIf="editMode && !viewMode"
+          (click)="update()"
+          [disabled]="!salesReturnForm.valid"
+          class="save-btn"
+          [loading]="saving"
+        >
+          Update
+        </button>
+      </div>
+    </form>
+  </ng-container>
+</p-dialog>
+
+<div>
+  <p-toast />
+  <p-confirmDialog />
+</div>

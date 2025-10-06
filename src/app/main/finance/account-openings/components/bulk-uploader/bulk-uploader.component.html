@@ -1,0 +1,103 @@
+<p-dialog
+  [header]="'Bulk Upload ' + fileName"
+  [(visible)]="visible"
+  (onHide)="resetBulkUploadDialog()"
+  [modal]="true"
+  [closable]="true"
+>
+  <div class="bulk-upload-labels mb-4">
+    <label class="label-text">Download Excel Template</label>
+    <button
+      pButton
+      pRipple
+      [rounded]="true"
+      (click)="downloadTemplate()"
+      class="create-btn"
+    >
+      Download Template
+    </button>
+  </div>
+
+  <!-- File Input -->
+  <div class="upload-area" (click)="fileInput.click()">
+    <div class="upload-content">
+      <i class="fa fa-cloud-upload upload-icon"></i>
+      <p>Drag & Drop to Upload File (.xlsx)</p>
+      <span>OR</span>
+      <button type="button" class="browse-button">Browse File</button>
+    </div>
+    <input
+      id="fileUpload"
+      type="file"
+      #fileInput
+      (change)="onFileSelect($event)"
+      accept=".xlsx"
+      hidden
+    />
+  </div>
+
+  <!-- Modal Footer -->
+  <ng-template pTemplate="footer">
+    <div class="bulk-upload-btn">
+      <button
+        (click)="openPreview()"
+        pButton
+        pRipple
+        [rounded]="true"
+        class="create-btn"
+      >
+        Preview
+      </button>
+      <button
+        (click)="submitBulkUpload()"
+        pButton
+        pRipple
+        [rounded]="true"
+        class="create-btn"
+      >
+        Upload
+      </button>
+      <button
+        (click)="resetBulkUploadDialog()"
+        pButton
+        pRipple
+        [rounded]="true"
+        class="cancel-btn"
+      >
+        Cancel
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Preview Modal -->
+<p-dialog
+  header="Preview Uploaded Data"
+  [(visible)]="previewModalVisible"
+  [modal]="true"
+  [closable]="true"
+>
+  <div *ngIf="!bulkUploadData.length" class="p-3 text-center">
+    <p class="label-text"><strong>No Data Uploaded</strong></p>
+  </div>
+
+  <p-table
+    *ngIf="bulkUploadData.length"
+    [value]="bulkUploadData"
+    [scrollable]="true"
+    scrollHeight="55vh"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th *ngFor="let header of headerMap | keyvalue">{{ header.key }}</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr>
+        <td *ngFor="let header of headerMap | keyvalue">
+          {{ item[header.value] }}
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-dialog>

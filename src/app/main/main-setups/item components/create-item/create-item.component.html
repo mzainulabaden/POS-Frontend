@@ -1,0 +1,491 @@
+<p-toolbar class="col-lg-12 col-md-12 col-sm-12">
+  <ng-template pTemplate="left">
+    <h3>Item</h3>
+  </ng-template>
+  <ng-template pTemplate="right">
+    <div class="gap-4 flex">
+      <span class="block md:mt-0 p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input
+          pInputText
+          type="text"
+          (input)="onGlobalFilter(policyTable, $event)"
+          placeholder="Search..."
+          style="height: 40px; cursor: pointer"
+          (keydown.enter)="onEnter($event)"
+        />
+      </span>
+      <div class="p-toolbar-group-left d-flex flex-row gap-2">
+        <button
+          pButton
+          pRipple
+          [rounded]="true"
+          class="create-btn"
+          (click)="show()"
+        >
+          Create
+        </button>
+        <!-- Trigger Button -->
+        <button
+          pButton
+          pRipple
+          [rounded]="true"
+          class="create-btn gap-2"
+          (click)="openBulkUpload()"
+        >
+          <i class="pi pi-upload"></i>
+          Bulk Upload
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</p-toolbar>
+
+<div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+  <p-table
+    #policyTable
+    [loading]="loading"
+    [value]="tableData"
+    [rowHover]="true"
+    dataKey="id"
+    [scrollable]="true"
+    [paginatorDropdownAppendTo]="'body'"
+    scrollHeight="58vh"
+    [globalFilterFields]="['name']"
+  >
+    <!-- Table Header -->
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="min-width: 180px" pSortableColumn="Actions">
+          Actions <p-sortIcon field="Actions" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="name">
+          Name <p-sortIcon field="name" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="image">Image</th>
+        <th style="min-width: 180px" pSortableColumn="description">
+          Description <p-sortIcon field="description" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="itemCategoryName">
+          Item Category <p-sortIcon field="itemCategoryName" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="isDiscountable">
+          Is Discountable <p-sortIcon field="isDiscountable" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="reOrderQty">
+          Re Order Qty <p-sortIcon field="reOrderQty" />
+        </th>
+      </tr>
+    </ng-template>
+
+    <!-- Table Body -->
+    <ng-template pTemplate="body" let-item>
+      <tr *ngIf="!loading; else loadingRow">
+        <td class="icon-group">
+          <a class="dropdown-item edit" (click)="show(item.id)">
+            <i class="fa-solid fa-pencil"></i>
+          </a>
+          <a class="dropdown-item delete" (click)="delete(item.id)">
+            <i class="fa-solid fa-trash"></i>
+          </a>
+        </td>
+        <td>{{ item.name }}</td>
+        <td>
+          <img
+            [src]="baseurl + item.imageUrl"
+            alt="image"
+            class="w-2 rounded"
+          />
+        </td>
+        <td>{{ item.description }}</td>
+        <td>{{ item.itemCategoryName }}</td>
+        <td>
+          <div *ngIf="item.isDiscountable" class="active-box">Yes</div>
+          <div *ngIf="!item.isDiscountable" class="deactive-box">No</div>
+        </td>
+        <td>{{ item.reOrderQty }}</td>
+      </tr>
+    </ng-template>
+
+    <!-- Skeleton Loading Rows -->
+    <ng-template #loadingRow>
+      <tr *ngFor="let i of [1, 2, 3, 4, 5]">
+        <td class="icon-group d-flex gap-2">
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+        </td>
+        <td>
+          <p-skeleton width="100%" height="20px"></p-skeleton>
+        </td>
+        <td>
+          <p-skeleton width="90%" height="20px"></p-skeleton>
+        </td>
+        <td>
+          <p-skeleton width="80%" height="20px"></p-skeleton>
+        </td>
+        <td>
+          <p-skeleton width="60px" height="20px"></p-skeleton>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- Paginator -->
+  <p-paginator
+    [rows]="10"
+    [totalRecords]="count"
+    (onPageChange)="onPageChange($event)"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+    [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[10, 50, 100, count]"
+    dropdownAppendTo="body"
+    appendTo="body"
+  >
+  </p-paginator>
+</div>
+
+<!-- Modal -->
+<p-dialog
+  [maximizable]="true"
+  [header]="editMode ? 'Edit Item' : 'Create Item'"
+  [modal]="true"
+  [(visible)]="displayModal"
+  [draggable]="false"
+  [style]="{ width: '80%', 'overflow-y': 'auto' }"
+>
+  <ng-container>
+    <form [formGroup]="itemForm" (ngSubmit)="save()">
+      <div class="row col-md-12">
+        <div id="inputField" class="col-md-6 p-field flex flex-column">
+          <label class="label-text" for="name">Name</label>
+          <input
+            type="text"
+            pInputText
+            formControlName="name"
+            id="name"
+            autocomplete="off"
+          />
+        </div>
+        <div id="inputField" class="col-md-6 flex flex-column">
+          <label class="label-text" for="description">Description</label>
+          <input
+            type="text"
+            pInputText
+            formControlName="description"
+            id="description"
+            autocomplete="off"
+          />
+        </div>
+      </div>
+      <div class="row col-md-12 mt-2">
+        <div class="col-md-6 p-field flex flex-column">
+          <label class="label-text" for="itemCategoryId">Item Category</label>
+          <p-dropdown
+            [options]="itemCategory"
+            optionLabel="name"
+            optionValue="id"
+            formControlName="itemCategoryId"
+            id="itemCategoryId"
+            [placeholder]="'Select Item Category'"
+            [style]="{ width: '100%' }"
+            [filter]="true"
+            filterBy="name"
+          >
+            <!-- Footer Template -->
+            <ng-template pTemplate="footer">
+              <button
+                pButton
+                type="button"
+                class="p-button-text w-full"
+                (click)="openCategoryModal()"
+              >
+                ➕ Add New Category
+              </button>
+            </ng-template>
+          </p-dropdown>
+        </div>
+        <div id="inputField" class="col-md-3 flex flex-column">
+          <label class="label-text" for="reOrderQty">Re Order Qty</label>
+          <input
+            type="number"
+            pInputText
+            formControlName="reOrderQty"
+            id="reOrderQty"
+            autocomplete="off"
+          />
+        </div>
+        <div
+          class="col-md-3 d-flex align-items-center"
+          style="padding-top: 20px"
+        >
+          <p-checkbox
+            formControlName="isDiscountable"
+            inputId="isDiscountable"
+            [binary]="true"
+          ></p-checkbox>
+          <label for="isDiscountable" class="label-text ml-2 mt-2"
+            >isDiscountable</label
+          >
+        </div>
+      </div>
+      <div class="row col-md-12 mt-2">
+        <div
+          *ngIf="itemForm.value.isDiscountable"
+          id="inputField"
+          class="col-md-6 p-field flex flex-column"
+        >
+          <label class="label-text" for="discountAmount">Discount Amount</label>
+          <input
+            type="number"
+            pInputText
+            formControlName="discountAmount"
+            id="discountAmount"
+            autocomplete="off"
+          />
+        </div>
+        <div
+          *ngIf="itemForm.value.isDiscountable"
+          id="inputField"
+          class="col-md-6 p-field flex flex-column"
+        >
+          <label class="label-text" for="discountPercentage"
+            >Discount Percentage</label
+          >
+          <input
+            type="number"
+            pInputText
+            formControlName="discountPercentage"
+            id="discountPercentage"
+            autocomplete="off"
+          />
+        </div>
+      </div>
+
+      <div class="row col-md-12 mt-4">
+        <div id="inputField" class="col-md-3 flex flex-column">
+          <label class="label-text" for="logo">Upload Image</label>
+          <label for="logo" class="custom-file-upload">
+            Choose File <i class="pi pi-upload"></i>
+          </label>
+          <input
+            type="file"
+            id="logo"
+            formControlName=""
+            (change)="onFileSelected($event)"
+            accept="image/*"
+            class="hidden-file-input"
+          />
+          <!-- Spinner Icon -->
+          <ng-container *ngIf="isUploadingImages"
+            ><p-progressSpinner
+              styleClass="small-spinner"
+              strokeWidth="5"
+              [style]="{ width: '20px', height: '20px' }"
+            ></p-progressSpinner>
+          </ng-container>
+          <ng-container>
+            <i
+              *ngIf="isSuccessUpload"
+              class="pi pi-check-circle text-green-500"
+              style="font-size: 1.4rem; animation: pop 0.4s ease"
+            ></i
+          ></ng-container>
+        </div>
+        <div class="preview-btn-margin col-md-3">
+          <button
+            pButton
+            type="button"
+            (click)="imagePreviewModal()"
+            class="create-btn"
+            [disabled]="isUploadingImages"
+          >
+            Preview images
+          </button>
+        </div>
+      </div>
+
+      <br />
+      <div class="row-btn-container">
+        <button class="add-row-btn" type="button" (click)="onAddRow()">
+          Add Row
+        </button>
+        <button
+          class="remove-row-btn"
+          type="button"
+          (click)="onRemoveSelected()"
+        >
+          Remove Row
+        </button>
+      </div>
+      <ag-grid-angular
+        class="ag-theme-quartz"
+        style="height: 300px; padding-right: 7px; padding-left: 8px"
+        [rowData]="rowData"
+        [columnDefs]="colDefs"
+        (cellValueChanged)="onCellValueChanged($event)"
+        [rowSelection]="rowSelection"
+        (gridReady)="onGridReady($event)"
+        [singleClickEdit]="true"
+      >
+      </ag-grid-angular>
+      <div class="modal-btn-container mt-4">
+        <p-button
+          (onClick)="displayModal = false"
+          label="Cancel"
+          [outlined]="true"
+          severity="warning"
+        />
+        <p-button
+          [loading]="saving"
+          *ngIf="!editMode"
+          (click)="save()"
+          [disabled]="!itemForm.valid"
+          label="Save"
+          [outlined]="true"
+          severity="contrast"
+        />
+        <p-button
+          [loading]="saving"
+          *ngIf="editMode"
+          (click)="update()"
+          [disabled]="!itemForm.valid"
+          label="Update"
+          [outlined]="true"
+          severity="contrast"
+        />
+      </div>
+    </form>
+  </ng-container>
+</p-dialog>
+
+<p-dialog
+  header="Bulk Upload Items"
+  [(visible)]="bulkUploadModal"
+  (onHide)="resetBulkUploadDialog()"
+  [modal]="true"
+  [closable]="true"
+>
+  <div class="bulk-upload-labels mb-4">
+    <label class="label-text"> Download Excel Template </label>
+    <button
+      pButton
+      pRipple
+      [rounded]="true"
+      (click)="downloadTemplate()"
+      class="create-btn"
+    >
+      Download Template
+    </button>
+  </div>
+
+  <!-- File Input -->
+  <div class="upload-area" (click)="fileInput.click()">
+    <div class="upload-content">
+      <i class="fa fa-cloud-upload upload-icon"></i>
+      <p>Drag & Drop to Upload File (.xlsx)</p>
+
+      <span>OR</span>
+      <button type="button" class="browse-button">Browse File</button>
+    </div>
+    <input
+      id="fileUpload"
+      type="file"
+      #fileInput
+      (change)="onFileSelect($event)"
+      accept=".xlsx"
+      hidden
+    />
+  </div>
+
+  <!-- Modal Footer -->
+  <ng-template pTemplate="footer">
+    <div class="bulk-upload-btn">
+      <button
+        (click)="openPreview()"
+        pButton
+        pRipple
+        [rounded]="true"
+        class="create-btn"
+      >
+        Preview
+      </button>
+      <button
+        (click)="submitBulkUpload()"
+        pButton
+        pRipple
+        [rounded]="true"
+        class="create-btn"
+      >
+        Upload
+      </button>
+      <button
+        (click)="resetBulkUploadDialog()"
+        pButton
+        pRipple
+        [rounded]="true"
+        class="cancel-btn"
+      >
+        Cancel
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+  <p-dialog
+    header="Preview Uploaded Data"
+    [(visible)]="previewModalVisible"
+    [modal]="true"
+    [closable]="true"
+  >
+    <div *ngIf="!bulkUploadData.length" class="p-3 text-center">
+      <p class="label-text"><strong>No Data Uploaded</strong></p>
+    </div>
+
+    <p-table
+      *ngIf="bulkUploadData.length"
+      [value]="bulkUploadData"
+      [scrollable]="true"
+      scrollHeight="55vh"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Sales COA</th>
+          <th>Purchase COA</th>
+          <th>Unit</th>
+          <th>Unit Price</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>{{ item.name }}</td>
+          <td>{{ item.itemCategoryName }}</td>
+          <td>{{ item.salesCOALevel04Name }}</td>
+          <td>{{ item.purchaseCOALevel04Name }}</td>
+          <td>
+            {{ item.itemDetails?.length ? item.itemDetails[0].unitName : "-" }}
+          </td>
+          <td>
+            {{ item.itemDetails?.length ? item.itemDetails[0].unitPrice : "-" }}
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-dialog>
+</div>
+
+<div>
+  <p-toast />
+  <p-confirmDialog class="cancel-modal" />
+</div>
+
+<app-create-item-category-modal
+  [(visible)]="categoryModalVisible"
+  [title]="'Create Item Category'"
+  [mode]="'create'"
+  [data]="newCategory"
+  (save)="onSaveCategory($event)"
+  (cancel)="displayCategoryModal = false"
+></app-create-item-category-modal>

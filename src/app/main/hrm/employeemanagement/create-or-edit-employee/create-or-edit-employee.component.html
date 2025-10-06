@@ -1,0 +1,438 @@
+<p-toolbar class="col-lg-12 col-md-12 col-sm-12">
+  <ng-template pTemplate="left">
+    <h3>Employee Management</h3>
+  </ng-template>
+  <ng-template pTemplate="right">
+    <div class="gap-4 flex">
+      <span class="block md:mt-0 p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input
+          pInputText
+          type="text"
+          (input)="onGlobalFilter(policyTable, $event)"
+          placeholder="Search..."
+          style="height: 40px; cursor: pointer"
+          (keydown.enter)="onEnter($event)"
+        />
+      </span>
+      <div class="p-toolbar-group-left">
+        <button
+          pButton
+          pRipple
+          [rounded]="true"
+          class="create-btn"
+          (click)="show()"
+        >
+          Create
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</p-toolbar>
+
+<div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+  <p-table
+    #policyTable
+    [loading]="loading"
+    [value]="tableData"
+    [rowHover]="true"
+    dataKey="id"
+    [scrollable]="true"
+    [paginatorDropdownAppendTo]="'body'"
+    scrollHeight="58vh"
+    [globalFilterFields]="['name', 'fatherName', 'cnic']"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="min-width: 180px" pSortableColumn="Actions">
+          Actions <p-sortIcon field="Actions" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="name">
+          Employee Name<p-sortIcon field="name" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="phoneNumber">
+          Contact No<p-sortIcon field="phoneNumber" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="cnic">
+          CNIC <p-sortIcon field="cnic" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="commissionPolicy">
+          Commission Policy <p-sortIcon field="commissionPolicy" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="dateOfBirth">
+          DOB<p-sortIcon field="dateOfBirth" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="joiningDate">
+          Date Of Joining <p-sortIcon field="joiningDate" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="isActive">
+          Is Active<p-sortIcon field="isActive" />
+        </th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr *ngIf="!loading; else loadingRow">
+        <td class="icon-group">
+          <a class="dropdown-item edit" (click)="show(item.id)">
+            <i class="fa-solid fa-pencil"></i>
+          </a>
+          <a class="dropdown-item delete" (click)="delete(item.id)">
+            <i class="fa-solid fa-trash"></i>
+          </a>
+          <a class="dropdown-item view" (click)="policyModelShow(item.id)">
+            <i class="fa-solid fa-clipboard"></i>
+          </a>
+        </td>
+        <td>{{ item?.name }}</td>
+        <td>
+          {{ item?.phoneNumber }}
+        </td>
+        <td>{{ item?.cnic }}</td>
+        <td>
+          {{ item.commissionPolicy }}
+        </td>
+        <td>
+          {{ item?.dateOfBirth | date : "dd/MM/yyyy" }}
+        </td>
+        <td>
+          {{ item?.joiningDate | date : "dd/MM/yyyy" }}
+        </td>
+        <td>
+          <div *ngIf="item.isActive" class="active-box">Yes</div>
+          <div *ngIf="!item.isActive" class="deactive-box">No</div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Skeleton Row Template -->
+    <ng-template #loadingRow>
+      <tr *ngFor="let i of [1, 2, 3, 4, 5]">
+        <td class="icon-group d-flex gap-2">
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+        </td>
+        <td>
+          <p-skeleton width="80%" height="20px"></p-skeleton>
+        </td>
+        <td>
+          <p-skeleton width="80%" height="20px"></p-skeleton>
+        </td>
+        <td>
+          <p-skeleton width="80%" height="20px"></p-skeleton>
+        </td>
+        <td>
+          <p-skeleton width="80%" height="20px"></p-skeleton>
+        </td>
+        <td>
+          <p-skeleton width="80%" height="20px"></p-skeleton>
+        </td>
+        <td>
+          <p-skeleton width="80%" height="20px"></p-skeleton>
+        </td>
+        <td>
+          <p-skeleton width="80%" height="20px"></p-skeleton>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+  <div class="paginator-wrapper d-flex justify-content-end mt-3">
+    <p-paginator
+      [rows]="10"
+      [totalRecords]="count"
+      (onPageChange)="onPageChange($event)"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+      [showCurrentPageReport]="true"
+      [rowsPerPageOptions]="[10, 50, 100, count]"
+      dropdownAppendTo="body"
+      appendTo="body"
+    ></p-paginator>
+  </div>
+</div>
+
+<!-- Modal -->
+<p-dialog
+  [maximizable]="true"
+  [closeOnEscape]="false"
+  [header]="editMode ? 'Edit Employee' : 'Create Employee'"
+  [modal]="true"
+  [(visible)]="displayModal"
+  [draggable]="false"
+  [style]="{ width: '60vw' }"
+>
+  <ng-container>
+    <form [formGroup]="employeeForm" (ngSubmit)="save()">
+      <div class="row col-lg-12 col-md-12 col-sm-12 mt-4">
+        <div id="inputField" class="col-md-6 flex flex-column">
+          <label class="label-text" for="name">Employee Name</label>
+          <input
+            type="text"
+            pInputText
+            formControlName="name"
+            id="name"
+            autocomplete="off"
+          />
+          <div *ngIf="isFieldInvalid('name')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+        <div id="inputField" class="col-md-6 flex flex-column">
+          <label class="label-text" for="fatherName">Father Name</label>
+          <input
+            type="text"
+            pInputText
+            formControlName="fatherName"
+            id="fatherName"
+            autocomplete="off"
+          />
+          <div *ngIf="isFieldInvalid('fatherName')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+      </div>
+      <div class="row col-lg-12 col-md-12 col-sm-12 mt-4">
+        <div id="inputField" class="col-md-6 flex flex-column">
+          <label class="label-text" for="cnic">CNIC</label>
+          <p-inputMask
+            formControlName="cnic"
+            mask="99999-9999999-9"
+            placeholder="99999-9999999-9"
+            id="cnic"
+            autocomplete="off"
+            [style]="{ width: '100%' }"
+          ></p-inputMask>
+          <div *ngIf="isFieldInvalid('cnic')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+
+        <div id="inputField" class="col-md-6 flex flex-column">
+          <label class="label-text" for="phoneNumber">Contact Number</label>
+          <input
+            type="text"
+            pInputText
+            placeholder="03171344542"
+            formControlName="phoneNumber"
+            id="cnic"
+            autocomplete="off"
+          />
+          <div *ngIf="isFieldInvalid('phoneNumber')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+      </div>
+
+      <div class="row col-md-12 mt-4">
+        <div class="col-md-6 flex flex-column">
+          <label class="label-text" for="employeeId">Select Designation</label>
+          <p-dropdown
+            [options]="designations"
+            optionLabel="name"
+            optionValue="id"
+            formControlName="designationId"
+            id="designationId"
+            [placeholder]="'Select Designation'"
+            [style]="{ width: '100%' }"
+            appendTo="body"
+          ></p-dropdown>
+          <div *ngIf="isFieldInvalid('designationId')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+        <div class="col-md-6 flex flex-column">
+          <label class="label-text" for="employeeId"
+            >Select Employee Type:</label
+          >
+          <p-dropdown
+            [options]="employeeType"
+            optionLabel="name"
+            optionValue="id"
+            formControlName="employeeType"
+            id="employeeType"
+            [placeholder]="'Select Employee Type'"
+            [style]="{ width: '100%' }"
+            appendTo="body"
+          ></p-dropdown>
+          <div *ngIf="isFieldInvalid('employeeType')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+      </div>
+      <div class="row col-md-12 mt-4">
+        <div id="inputField" class="col-md-6 flex flex-column">
+          <label class="label-text" for="dailyWageRate">Daily Wage Rate3</label>
+          <input
+            type="text"
+            pInputText
+            formControlName="dailyWageRate"
+            id="dailyWageRate"
+            autocomplete="off"
+          />
+          <div *ngIf="isFieldInvalid('dailyWageRate')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+        <div id="inputField" class="col-md-6 flex flex-column">
+          <label class="label-text" for="monthlySalary">Monthly Salary</label>
+          <input
+            type="text"
+            pInputText
+            formControlName="monthlySalary"
+            id="monthlySalary"
+            autocomplete="off"
+          />
+          <div *ngIf="isFieldInvalid('dailyWageRate')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+      </div>
+      <div class="row col-md-12 mt-4">
+        <div id="inputField" class="col-md-6 flex flex-column">
+          <label class="label-text" for="restDays">Rest Days</label>
+          <p-multiSelect
+            id="restDays"
+            formControlName="restDays"
+            [options]="weekDays"
+            optionLabel="name"
+            optionValue="id"
+            [style]="{ width: '100%', height: '40px' }"
+            appendTo="body"
+          ></p-multiSelect>
+        </div>
+
+        <div id="inputField" class="col-md-3 flex flex-column">
+          <label class="label-text" for="dateOfBirth">DOB</label>
+          <p-calendar
+            formControlName="dateOfBirth"
+            inputId="date"
+            appendTo="body"
+            showIcon="true"
+            [showOnFocus]="true"
+            dateFormat="yy-mm-dd"
+          ></p-calendar>
+          <div *ngIf="isFieldInvalid('dateOfBirth')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+        <div id="inputField" class="col-md-3 flex flex-column">
+          <label class="label-text" for="joiningDate">Joining Date</label>
+          <p-calendar
+            formControlName="joiningDate"
+            inputId="date"
+            showIcon="true"
+            appendTo="body"
+            [showOnFocus]="true"
+            dateFormat="yy-mm-dd"
+          ></p-calendar>
+          <div *ngIf="isFieldInvalid('joiningDate')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+      </div>
+
+      <br />
+      <div class="cursor-pointer">
+        <div class="flex gap-2 align-items-center">
+          <p-checkbox
+            formControlName="isActive"
+            inputId="isActive"
+            [binary]="true"
+          ></p-checkbox>
+          <label class="label-text mb-0" for="isActive">Active</label>
+        </div>
+      </div>
+
+      <div class="modal-btn-container mt-4">
+        <p-button
+          (onClick)="displayModal = false"
+          label="Cancel"
+          [outlined]="true"
+          severity="warning"
+        />
+        <p-button
+          [loading]="saving"
+          *ngIf="!editMode"
+          (click)="save()"
+          [disabled]="!employeeForm.valid"
+          label="Save"
+          [outlined]="true"
+          severity="contrast"
+        />
+        <p-button
+          [loading]="saving"
+          *ngIf="editMode"
+          (click)="update()"
+          [disabled]="!employeeForm.valid"
+          label="Update"
+          [outlined]="true"
+          severity="contrast"
+        />
+      </div>
+    </form>
+  </ng-container>
+</p-dialog>
+
+<p-dialog
+  [maximizable]="true"
+  header="Allocate Policy"
+  [modal]="true"
+  [(visible)]="policyModel"
+  [closable]="true"
+  appendTo="body"
+  [style]="{ width: '500px', height: 'auto' }"
+>
+  <div class="p-fluid">
+    <label for="name">Polices:</label>
+    <p-dropdown
+      [options]="policyOptions"
+      [(ngModel)]="selectedPolicy"
+      [filter]="true"
+      filterBy="label"
+      placeholder="Select Policy"
+      appendTo="body"
+    >
+    </p-dropdown>
+  </div>
+  <br />
+  <div class="p-fluid">
+    <label for="name">Users:</label>
+    <p-dropdown
+      [options]="usersOptions"
+      [(ngModel)]="selectedUser"
+      [filter]="true"
+      filterBy="label"
+      placeholder="Select User"
+      appendTo="body"
+    >
+    </p-dropdown>
+  </div>
+  <ng-template pTemplate="footer">
+    <div class="modal-btn-container mt-4">
+      <button
+        pButton
+        pRipple
+        [loading]="saving"
+        *ngIf="!editMode"
+        (click)="savePolicy()"
+        [rounded]="true"
+        class="save-btn"
+      >
+        Save
+      </button>
+      <button
+        (click)="displayModal = false"
+        pButton
+        pRipple
+        [rounded]="true"
+        class="cancel-btn"
+      >
+        Cancel
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<div>
+  <p-toast />
+  <p-confirmDialog class="cancel-modal" />
+</div>

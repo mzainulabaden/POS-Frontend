@@ -1,0 +1,39 @@
+<p-dialog
+  [maximizable]="true"
+  [header]="title"
+  [modal]="true"
+  [(visible)]="visible"
+  [draggable]="false"
+  (onHide)="onCancel()"
+>
+  <div class="row col-md-12 mt-2">
+    <div id="inputField" class="col-md-12 p-field flex flex-column">
+      <label class="label-text" for="name">Name</label>
+      <input id="name" type="text" pInputText [(ngModel)]="data.name" />
+    </div>
+  </div>
+
+  <div class="modal-btn-container mt-4">
+    <button
+      pButton
+      pRipple
+      *ngIf="!editMode"
+      (click)="onSave()"
+      class="save-btn"
+    >
+      Save
+    </button>
+    <button
+      pButton
+      pRipple
+      *ngIf="editMode"
+      (click)="onUpdate()"
+      class="update-btn"
+    >
+      Update
+    </button>
+    <button (click)="onCancel()" pButton pRipple class="cancel-btn">
+      Cancel
+    </button>
+  </div>
+</p-dialog>

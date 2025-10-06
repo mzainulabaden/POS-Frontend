@@ -1,0 +1,540 @@
+<p-toolbar class="col-lg-12 col-md-12 col-sm-12">
+  <ng-template pTemplate="left">
+    <h3>Purchase Order List</h3>
+  </ng-template>
+  <ng-template pTemplate="right">
+    <div class="gap-4 flex">
+      <span class="block md:mt-0 p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input
+          pInputText
+          type="text"
+          (input)="onGlobalFilter(policyTable, $event)"
+          placeholder="Search..."
+          style="height: 40px; cursor: pointer"
+          (keydown.enter)="onEnter($event)"
+        />
+      </span>
+      <div class="p-toolbar-group-left">
+        <button
+          pButton
+          pRipple
+          [rounded]="true"
+          class="create-btn"
+          (click)="show()"
+        >
+          Create New Purchse Order
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</p-toolbar>
+
+<div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+  <p-table
+    #policyTable
+    [loading]="loading"
+    [value]="tableData"
+    [rowHover]="true"
+    dataKey="id"
+    [scrollable]="true"
+    [paginatorDropdownAppendTo]="'body'"
+    scrollHeight="58vh"
+    [globalFilterFields]="['name', 'voucherNumber', 'supplierCOALevel04Name']"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="isActive">
+          Action<p-sortIcon field="isActive" />
+        </th>
+        <th pSortableColumn="supplierCOALevel04Name">
+          Vendor Name<p-sortIcon field="supplierCOALevel04Name" />
+        </th>
+        <th pSortableColumn="purchaseDate">
+          Purchase Date<p-sortIcon field="purchaseDate" />
+        </th>
+        <th pSortableColumn="voucherNumber">
+          Voucher Number<p-sortIcon field="voucherNumber" />
+          <p-columnFilter type="text" field="voucherNumber" display="menu" />
+        </th>
+        <th pSortableColumn="totalAmount">
+          Total Amount <p-sortIcon field="totalAmount" />
+        </th>
+        <th pSortableColumn="imgStatus">
+          Attachments<p-sortIcon field="imgStatus" />
+        </th>
+        <th pSortableColumn="status">Status <p-sortIcon field="status" /></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr *ngIf="!loading; else loadingRow">
+        <td class="icon-group">
+          <a
+            *ngIf="item.status == 'PENDING'"
+            class="dropdown-item edit"
+            (click)="edit(item.id)"
+          >
+            <i class="fa-solid fa-pencil"></i>
+          </a>
+          <a
+            *ngIf="item.status == 'PENDING'"
+            class="dropdown-item delete"
+            (click)="delete(item.id)"
+          >
+            <i class="fa-solid fa-trash"></i>
+          </a>
+          <a
+            *ngIf="item.status == 'PENDING'"
+            class="dropdown-item view"
+            (click)="approve(item.id)"
+          >
+            <i class="fa-solid fa-circle-check"></i>
+          </a>
+          <a
+            *ngIf="item.status == 'APPROVED'"
+            class="dropdown-item view"
+            (click)="viewOnly(item.id)"
+          >
+            <i class="fa-solid fa-eye"></i>
+          </a>
+        </td>
+        <td>
+          {{ item?.supplierCOALevel04Name }}
+        </td>
+        <td>
+          {{ item?.issueDate | date }}
+        </td>
+        <td>
+          {{ item?.voucherNumber }}
+        </td>
+        <td>
+          {{ item?.total }}
+        </td>
+        <td>
+          <div
+            *ngIf="item.attachedDocuments?.length > 0"
+            class="attachment-active-box"
+          >
+            YES
+          </div>
+          <div
+            *ngIf="!item.attachedDocuments?.length"
+            class="attachment-deactive-box"
+          >
+            NO
+          </div>
+        </td>
+        <td>
+          <div *ngIf="item.status == 'PENDING'" class="deactive-box">
+            PENDING
+          </div>
+          <div *ngIf="item.status == 'APPROVED'" class="active-box">
+            APPROVED
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Skeleton Row Template -->
+    <ng-template #loadingRow>
+      <tr *ngFor="let i of [1, 2, 3, 4, 5]">
+        <td>
+          <p-skeleton width="30%" height="20px"></p-skeleton>
+          <p-skeleton width="30%" height="20px"></p-skeleton>
+          <p-skeleton width="40%" height="20px"></p-skeleton>
+        </td>
+        <td class="icon-group d-flex gap-2">
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+  <div class="paginator-wrapper d-flex justify-content-end mt-3">
+    <p-paginator
+      [rows]="10"
+      [totalRecords]="count"
+      (onPageChange)="onPageChange($event)"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+      [showCurrentPageReport]="true"
+      [rowsPerPageOptions]="[10, 50, 100, count]"
+      dropdownAppendTo="body"
+      appendTo="body"
+    ></p-paginator>
+  </div>
+</div>
+
+<!-- Modal -->
+<p-dialog
+  [maximizable]="true"
+  [closeOnEscape]="false"
+  [header]="
+    viewMode
+      ? 'View Purchase Order'
+      : editMode
+      ? 'Edit Purchase Order'
+      : 'Create Purchase Order'
+  "
+  [modal]="true"
+  [(visible)]="displayModal"
+  [draggable]="false"
+  [style]="{ width: '80%' }"
+>
+  <ng-container>
+    <form [formGroup]="purchaseOrderForm" (ngSubmit)="save()">
+      <div class="row col-lg-12 col-md-12 col-sm-12 d-flex mt-4">
+        <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+          <label class="label-text" for="voucherNumber">Voucher No</label>
+          <input
+            type="text"
+            readonly
+            pInputText
+            formControlName="voucherNumber"
+            id="voucherNumber"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+          <label class="label-text" for="issueDate">Purchase Date</label>
+          <p-calendar
+            formControlName="issueDate"
+            inputId="date"
+            appendTo="body"
+            [showOnFocus]="true"
+            [showIcon]="true"
+            (onSelect)="onDateChange()"
+            [(ngModel)]="selectedDate"
+            [style]="{ width: '100%' }"
+            appendTo="body"
+          ></p-calendar>
+          <div *ngIf="isFieldInvalid('issueDate')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+
+        <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+          <label class="label-text" for="supplierCOALevel04Id"
+            >Vendor <span class="text-danger">*</span></label
+          >
+          <p-dropdown
+            [options]="supplier"
+            optionLabel="name"
+            optionValue="id"
+            [showClear]="true"
+            formControlName="supplierCOALevel04Id"
+            id="supplierCOALevel04Id"
+            autocomplete="off"
+            [placeholder]="'Select Vendor'"
+            [style]="{ width: '100%' }"
+            appendTo="body"
+            [filter]="true"
+            filterBy="name"
+          >
+            <!-- Footer Template -->
+            <ng-template pTemplate="footer">
+              <button pButton type="button" class="p-button-text w-full">
+                ➕ Add New Category
+              </button>
+            </ng-template>
+          </p-dropdown>
+          <div
+            *ngIf="isFieldInvalid('supplierCOALevel04Id')"
+            class="text-danger"
+          >
+            This field is required
+          </div>
+        </div>
+
+        <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+          <label class="label-text" for="paymentModeId"
+            >Payment Terms <span class="text-danger">*</span></label
+          >
+          <p-dropdown
+            [options]="paymentTerms"
+            optionLabel="name"
+            optionValue="id"
+            [showClear]="true"
+            formControlName="paymentModeId"
+            id="paymentModeId"
+            [placeholder]="'Select Payment Mode'"
+            [style]="{ width: '100%' }"
+            [filter]="true"
+            filterBy="name"
+            appendTo="body"
+          ></p-dropdown>
+          <div *ngIf="isFieldInvalid('paymentModeId')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+      </div>
+
+      <div class="row col-md-12 mt-4">
+        <div id="inputField" class="col-md-3 flex flex-column">
+          <label class="label-text" for="logo">Upload Image</label>
+          <label for="logo" class="custom-file-upload">
+            Choose File <i class="pi pi-upload"></i>
+          </label>
+          <input
+            type="file"
+            id="logo"
+            formControlName=""
+            (change)="onFileSelected($event)"
+            accept="image/*"
+            class="hidden-file-input"
+          />
+          <!-- Spinner Icon -->
+          <ng-container *ngIf="isUploadingImages"
+            ><p-progressSpinner
+              styleClass="small-spinner"
+              strokeWidth="5"
+              [style]="{ width: '20px', height: '20px' }"
+            ></p-progressSpinner>
+          </ng-container>
+          <ng-container>
+            <i
+              *ngIf="isSuccessUpload"
+              class="pi pi-check-circle text-green-500"
+              style="font-size: 1.4rem; animation: pop 0.4s ease"
+            ></i
+          ></ng-container>
+        </div>
+        <div class="preview-btn-margin col-md-3">
+          <button
+            pButton
+            type="button"
+            (click)="imagePreviewModal()"
+            class="create-btn"
+            [disabled]="isUploadingImages"
+          >
+            Preview images
+          </button>
+        </div>
+      </div>
+      <br />
+
+      <div class="row-btn-container">
+        <button
+          type="button"
+          class="add-row-btn"
+          (click)="onAddRow()"
+          [disabled]="viewMode"
+        >
+          Add Row
+        </button>
+        <button
+          type="button"
+          class="remove-row-btn"
+          (click)="onRemoveSelected()"
+          [disabled]="viewMode"
+        >
+          Remove Row
+        </button>
+      </div>
+      <ag-grid-angular
+        class="ag-theme-quartz"
+        style="height: 300px"
+        [rowData]="rowData"
+        [columnDefs]="colDefs"
+        [rowSelection]="rowSelection"
+        [components]="frameworkComponents"
+        (cellValueChanged)="onCellValueChanged($event)"
+        (gridReady)="onGridReady($event)"
+        [singleClickEdit]="true"
+      >
+      </ag-grid-angular>
+      <br />
+      <div class="row col-md-12">
+        <div id="inputField" class="col-md-6 flex flex-column">
+          <label class="label-text" for="total">Total Amount</label>
+          <input
+            type="text"
+            readonly
+            pInputText
+            formControlName="total"
+            id="total"
+            autocomplete="off"
+          />
+          <div *ngIf="isFieldInvalid('total')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+        <div id="inputField" class="col-md-6 flex flex-column">
+          <label class="label-text" for="localExpense">Local Expenxe </label>
+          <input
+            type="text"
+            pInputText
+            formControlName="localExpense"
+            id="localExpense"
+            autocomplete="off"
+          />
+          <div *ngIf="isFieldInvalid('localExpense')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+      </div>
+      <div class="row col-md-12 mt-3">
+        <div id="inputField" class="col-md-6 flex flex-column">
+          <label class="label-text" for="builtyExpense">Builty Expence </label>
+          <input
+            type="text"
+            pInputText
+            formControlName="builtyExpense"
+            id="builtyExpense"
+            autocomplete="off"
+          />
+          <div *ngIf="isFieldInvalid('builtyExpense')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+        <div id="inputField" class="col-md-6 flex flex-column">
+          <label class="label-text" for="remarks">Remarks </label>
+          <input
+            type="text"
+            pInputText
+            formControlName="remarks"
+            id="remarks"
+            autocomplete="off"
+          />
+          <div *ngIf="isFieldInvalid('remarks')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+      </div>
+
+      <div class="row col-md-12 mt-3">
+        <div id="inputField" class="col-md-6 flex flex-column">
+          <label class="label-text" for="netTotal">Net Amount</label>
+          <input
+            type="text"
+            readonly
+            pInputText
+            formControlName="netTotal"
+            id="netTotal"
+            autocomplete="off"
+          />
+          <div *ngIf="isFieldInvalid('netTotal')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+      </div>
+      <div class="flex gap-1 justify-content-end mt-4">
+        <p-button
+          (onClick)="displayModal = false"
+          label="Cancel"
+          [outlined]="true"
+          severity="warning"
+        />
+        <p-button
+          [loading]="saving"
+          *ngIf="!editMode && !viewMode"
+          (click)="save()"
+          [disabled]="!purchaseOrderForm.valid"
+          label="Save"
+          [outlined]="true"
+          severity="contrast"
+        />
+        <p-button
+          [loading]="saving"
+          *ngIf="editMode && !viewMode"
+          (click)="update()"
+          [disabled]="!purchaseOrderForm.valid"
+          label="Update"
+          [outlined]="true"
+          severity="contrast"
+        />
+      </div>
+    </form>
+  </ng-container>
+</p-dialog>
+<div>
+  <p-toast />
+  <p-confirmDialog />
+</div>
+
+<p-dialog
+  [(visible)]="previewImageModal"
+  [header]="previewImageHeader"
+  [modal]="true"
+  [style]="{ width: '50vw' }"
+>
+  <!-- ====================== IMAGE LIST TABLE ====================== -->
+  <div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+    <p-table
+      *ngIf="uploadedImages.length; else emptyState"
+      [value]="uploadedImages"
+      [rowHover]="true"
+      dataKey="url"
+      [scrollable]="true"
+      scrollHeight="40vh"
+    >
+      <!-- ─── Header ─────────────────────────────────────────────── -->
+      <ng-template pTemplate="header">
+        <tr>
+          <th>#</th>
+          <th pSortableColumn="name">File Name</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <!-- ─── Body ────────────────────────────────────────────────── -->
+      <ng-template pTemplate="body" let-img let-rowIndex="rowIndex">
+        <tr>
+          <td>{{ rowIndex + 1 }}</td>
+
+          <td>
+            <a
+              href="#"
+              (click)="openInNewTab(img.url); $event.preventDefault()"
+            >
+              {{ img.name }}
+            </a>
+          </td>
+
+          <td class="icon-group">
+            <a class="dropdown-item delete" (click)="removeImage(rowIndex)">
+              <i class="fa-solid fa-trash"></i>
+            </a>
+          </td>
+        </tr>
+      </ng-template>
+
+      <!-- ─── Empty Message ───────────────────────────────────────── -->
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="3" class="text-center label-text py-4">
+            No images uploaded.
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- ─── Empty / No-Images State (before any upload) ──────────── -->
+  <ng-template #emptyState>
+    <div class="p-4 label-text text-center">No images uploaded.</div>
+  </ng-template>
+
+  <!-- ─── Dialog Footer ─────────────────────────────────────────── -->
+  <div class="flex justify-content-end mt-4">
+    <button
+      (click)="resetForm()"
+      pButton
+      pRipple
+      [rounded]="true"
+      class="cancel-btn"
+    >
+      Cancel
+    </button>
+  </div>
+</p-dialog>
+
+<!-- <app-create-vendor-modal
+  [(visible)]="vendorModalVisible"
+  [title]="'Create Vendor'"
+  [mode]="'create'"
+  [data]="newVendor"
+  (save)="onSaveVendor($event)"
+  (cancel)="vendorModalVisible = false"
+></app-create-vendor-modal> -->

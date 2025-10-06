@@ -1,0 +1,22 @@
+<p-tabView (onChange)="onTabChange($event)" [(activeIndex)]="activeIndex">
+  <p-tabPanel header="Supplier">
+    <app-supplier [activeIndex]="activeIndex"></app-supplier>
+  </p-tabPanel>
+  <p-tabPanel header="Client">
+    <app-client [activeIndex]="activeIndex"></app-client>
+  </p-tabPanel>
+  <p-tabPanel header="Broker">
+    <app-broker [activeIndex]="activeIndex"></app-broker>
+  </p-tabPanel>
+  <p-tabPanel header="Bank">
+    <app-bank [activeIndex]="activeIndex"></app-bank>
+  </p-tabPanel>
+  <p-tabPanel header="Tax">
+    <app-tax [activeIndex]="activeIndex"></app-tax>
+  </p-tabPanel>
+</p-tabView>
+
+<div>
+  <p-toast />
+  <p-confirmDialog />
+</div>

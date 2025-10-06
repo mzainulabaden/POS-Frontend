@@ -1,0 +1,12 @@
+<p-tabView 
+  (activeIndexChange)="handleChangeTab($event)"
+  [activeIndex]="activeIndex"
+  class="col-lg-12 col-md-12 col-sm-12"
+>
+  <p-tabPanel class="tab-menu" header="Item Category">
+    <app-item-category></app-item-category>
+  </p-tabPanel>
+  <p-tabPanel class="tab-menu" header="Item">
+    <app-create-item></app-create-item>
+  </p-tabPanel>
+</p-tabView>

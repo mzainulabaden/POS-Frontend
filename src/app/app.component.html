@@ -1,0 +1,107 @@
+<div class="main-header-container">
+  <div class="d-flex align-items-center gap-4">
+    <div
+      class="toggle-icon"
+      [class.toggle-icon-collapsed]="!sidebarExpanded"
+      (click)="clickToggle()"
+    >
+      <svg
+        width="24"
+        height="24"
+        class="toggle-svg"
+        viewBox="0 0 24 23"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <line
+          x1="1.5"
+          y1="1.5"
+          x2="22.5"
+          y2="1.5"
+          stroke-width="3"
+          stroke-linecap="round"
+        />
+        <line
+          x1="1.5"
+          y1="11.5"
+          x2="22.5"
+          y2="11.5"
+          stroke-width="3"
+          stroke-linecap="round"
+        />
+        <line
+          x1="1.5"
+          y1="21.5"
+          x2="22.5"
+          y2="21.5"
+          stroke-width="3"
+          stroke-linecap="round"
+        />
+      </svg>
+    </div>
+    <sidebar-logo [sidebarExpanded]="sidebarExpanded"></sidebar-logo>
+  </div>
+  <div class="user-content">
+    <div class="profile-content">
+      <header-user-menu></header-user-menu>
+    </div>
+  </div>
+</div>
+<div style="display: flex">
+  <sidebar
+    [sidebarExpanded]="sidebarExpanded"
+    [class.expanded]="sidebarExpanded"
+    [ngStyle]="{ width: sidebarExpanded ? '250px' : '100px' }"
+  ></sidebar>
+  <div class="right-content">
+    <!-- <div class="main-header-container">
+      <div
+        class="toggle-icon"
+        [class.toggle-icon-collapsed]="!sidebarExpanded"
+        (click)="clickToggle()"
+      >
+        <svg
+          width="24"
+          height="24"
+          class="toggle-svg"
+          viewBox="0 0 24 23"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <line
+            x1="1.5"
+            y1="1.5"
+            x2="22.5"
+            y2="1.5"
+            stroke-width="3"
+            stroke-linecap="round"
+          />
+          <line
+            x1="1.5"
+            y1="11.5"
+            x2="22.5"
+            y2="11.5"
+            stroke-width="3"
+            stroke-linecap="round"
+          />
+          <line
+            x1="1.5"
+            y1="21.5"
+            x2="22.5"
+            y2="21.5"
+            stroke-width="3"
+            stroke-linecap="round"
+          />
+        </svg>
+      </div>
+      <div class="user-content">
+        <div class="profile-content">
+          <header-user-menu></header-user-menu>
+        </div>
+      </div>
+    </div> -->
+    <div class="content-inside-app">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

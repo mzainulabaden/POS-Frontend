@@ -1,0 +1,188 @@
+<p-toolbar class="col-lg-12 col-md-12 col-sm-12">
+  <ng-template pTemplate="left">
+    <h4>Sales Tracking</h4>
+  </ng-template>
+  <ng-template pTemplate="right">
+    <div class="gap-4 flex">
+      <span class="block md:mt-0 p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input
+          pInputText
+          type="text"
+          (input)="onGlobalFilter(policyTable, $event)"
+          placeholder="Search..."
+          style="height: 40px; cursor: pointer"
+        />
+      </span>
+    </div>
+  </ng-template>
+</p-toolbar>
+
+<div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+  <p-table
+    #policyTable
+    [loading]="loading"
+    [value]="mainTableData"
+    [rowHover]="true"
+    dataKey="id"
+    [scrollable]="true"
+    [paginatorDropdownAppendTo]="'body'"
+    scrollHeight="58vh"
+    [globalFilterFields]="['voucherNumber', 'status']"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="min-width: 180px" pSortableColumn="Customer">
+          Customer <p-sortIcon field="Customer" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="saleOrder">
+          Sale Order <p-sortIcon field="saleOrder" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="saleInvoice">
+          Sale Invoice <p-sortIcon field="saleInvoice" />
+        </th>
+        <th style="min-width: 180px">Action</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr>
+        <td title="{{ item.customerName }}">{{ item?.customerName }}</td>
+        <td title="{{ item.totalSalesOrders }}">
+          {{ item?.totalSalesOrders }}
+        </td>
+        <td title="{{ item.totalSalesInvoices }}">
+          {{ item?.totalSalesInvoices }}
+        </td>
+        <td>
+          <span
+            class="delete-btn mr-2"
+            title="View Item"
+            (click)="viewOnly(item.id)"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="green"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="feather feather-eye"
+              width="20"
+              height="20"
+            >
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </span>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-paginator
+    [rows]="10"
+    [totalRecords]="this.count"
+    (onPageChange)="this.onPageChange($event)"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+    [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[10, 50, 100, this.count]"
+  >
+  </p-paginator>
+</div>
+
+<!-- Customer Sales Details Dialog -->
+<p-dialog
+  header="Customer Sales Details"
+  [(visible)]="displayCustomerDetailsModal"
+  [modal]="true"
+  [style]="{ width: '75vw' }"
+  [contentStyle]="{ height: '70vh', overflow: 'auto' }"
+  (onHide)="onDialogHide()"
+  [draggable]="false"
+>
+  <div class="row col-md-12">
+    <!-- Customer Name Heading -->
+    <div class="col-md-12">
+      <h5 class="mb-3">Customer: {{ customerDetails }}</h5>
+    </div>
+
+    <div class="col-md-12">
+      <span class="block md:mt-0 p-input-icon-left mb-3">
+        <i class="pi pi-search"></i>
+        <input
+          pInputText
+          type="text"
+          (input)="onGlobalFilter(customerDetailsTable, $event)"
+          placeholder="Search..."
+          style="height: 40px; cursor: pointer"
+        />
+      </span>
+      
+      <div class="table-responsive custom-table">
+        <p-table
+          #customerDetailsTable
+          [value]="customerDetailsTableData"
+          [rowHover]="true"
+          [scrollable]="true"
+          scrollHeight="50vh"
+          [paginator]="true"
+          [rows]="10"
+          [rowsPerPageOptions]="[10, 25, 50, 100]"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+          [globalFilterFields]="['orderNumber', 'invoiceNumber', 'salesmanName']"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="min-width: 60px">Sr.</th>
+              <th style="min-width: 150px">Order Number</th>
+              <th style="min-width: 150px">Order Status</th>
+              <th style="min-width: 150px">Invoice Number</th>
+              <th style="min-width: 150px">Invoice Status</th>
+              <th style="min-width: 150px">Salesman</th>
+              <th style="min-width: 150px">Date</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-item let-i="rowIndex">
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td>{{ item.orderNumber }}</td>
+              <td>
+                <span [ngClass]="{
+                  'status-badge': true,
+                  'status-completed': item.orderStatus === 'APPROVED',
+                  'status-pending': item.orderStatus === 'PENDING',
+                  'status-cancelled': item.orderStatus === 'CANCELLED'
+                }">
+                  {{ item.orderStatus }}
+                </span>
+              </td>
+              <td>{{ item.invoiceNumber }}</td>
+              <td>
+                <span [ngClass]="{
+                  'status-badge': true,
+                  'status-completed': item.invoiceStatus === 'APPROVED',
+                  'status-pending': item.invoiceStatus === 'PENDING',
+                  'status-cancelled': item.invoiceStatus === 'CANCELLED'
+                }">
+                  {{ item.invoiceStatus }}
+                </span>
+              </td>
+              <td>{{ item.salesmanName }}</td>
+              <td>{{ item.issueDate | date }}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="7" class="text-center">No sales data found</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </div>
+</p-dialog>
+
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>

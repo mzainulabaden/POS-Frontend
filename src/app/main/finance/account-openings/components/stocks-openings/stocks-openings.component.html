@@ -1,0 +1,30 @@
+<p-toolbar class="col-lg-12 col-md-12 col-sm-12">
+  <ng-template pTemplate="left">
+    <h3>Stock Openings</h3>
+  </ng-template>
+  <ng-template pTemplate="right">
+    <div class="gap-4 flex">
+      <div class="p-toolbar-group-left d-flex flex-row gap-2">
+        <!-- Trigger Button -->
+        <button
+          pButton
+          pRipple
+          [rounded]="true"
+          class="create-btn gap-2"
+          (click)="openBulkUpload()"
+        >
+          <i class="pi pi-upload"></i>
+          Bulk Upload
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</p-toolbar>
+
+<!-- Modal -->
+<app-bulk-uploader
+  [(visible)]="bulkUploadModal"
+  [headerMap]="headerMap"
+  [target]="target"
+  [fileName]="fileName"
+></app-bulk-uploader>

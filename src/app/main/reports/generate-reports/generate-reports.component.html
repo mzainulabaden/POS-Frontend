@@ -1,0 +1,127 @@
+<p-tabView [(activeIndex)]="activeTabIndex" (onChange)="onTabChange($event)">
+  <p-tabPanel *ngFor="let tab of mainTabs; let i = index" [header]="tab">
+    <ng-container *ngIf="activeTabIndex === i">
+      <div>
+        <h3>{{ tab }} Section</h3>
+        <ol>
+          <li
+            *ngFor="let item of getTabItems(i)"
+            (click)="openModal(item)"
+            class="clickable-item"
+          >
+            {{ item.reportName }}
+          </li>
+        </ol>
+      </div>
+    </ng-container>
+  </p-tabPanel>
+</p-tabView>
+
+<p-dialog
+  header="Generate Report"
+  [(visible)]="isModalVisible"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '45%' }"
+  (onHide)="onDialogClose()"
+>
+  <form [formGroup]="storeForm" (ngSubmit)="submitForm()">
+    <div class="form-row flex flex-wrap col-lg-12">
+      <div
+        class="form-group mb-3 flex-column col-lg-4"
+        *ngFor="let filter of selectedReport?.showFilter"
+      >
+        <ng-container [ngSwitch]="filterConfig[filter]?.type">
+          <!-- Dropdown -->
+          <ng-container *ngSwitchCase="'dropdown'">
+            <label [for]="filter">{{ filterConfig[filter].label }}</label>
+            <p-dropdown
+              [options]="filterConfig[filter].options()"
+              [optionLabel]="filterConfig[filter].optionLabel"
+              [optionValue]="filterConfig[filter].optionValue"
+              formControlName="{{ filter }}"
+              [placeholder]="'Select ' + filterConfig[filter].label"
+              [filter]="true"
+              appendTo="body"
+              [style]="{ width: '100%' }"
+            ></p-dropdown>
+          </ng-container>
+
+          <!-- Date -->
+          <ng-container *ngSwitchCase="'date'">
+            <label [for]="filter">{{ filterConfig[filter].label }}</label>
+            <p-calendar
+              formControlName="{{ filter }}"
+              inputId="{{ filter }}"
+              appendTo="body"
+              showIcon="true"
+              [style]="{ width: '100%' }"
+            ></p-calendar>
+          </ng-container>
+
+          <!-- Text Input -->
+          <ng-container *ngSwitchCase="'input'">
+            <label [for]="filter">{{ filterConfig[filter].label }}</label>
+            <input
+              type="text"
+              pInputText
+              formControlName="{{ filter }}"
+              id="{{ filter }}"
+              [placeholder]="filterConfig[filter].label"
+              [style]="{ width: '100%', height: '100%', padding: '10px' }"
+            />
+          </ng-container>
+        </ng-container>
+      </div>
+    </div>
+
+    <div class="form-group mb-3 flex-column col-lg-4">
+      <label for="ReportFormat">Report Format</label>
+      <p-dropdown
+        formControlName="ReportFormat"
+        [options]="reportFormats"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Select Report Format"
+        appendTo="body"
+        [style]="{ width: '100%' }"
+      >
+      </p-dropdown>
+      <div
+        *ngIf="
+          storeForm.get('ReportFormat')?.invalid &&
+          storeForm.get('ReportFormat')?.touched
+        "
+        class="text-danger"
+      >
+        Report Format is required.
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex gap-2 justify-content-end">
+      <p-button
+        (onClick)="onDialogClose()"
+        label="Cancel"
+        [outlined]="true"
+        severity="warning"
+      />
+      <p-button
+        (click)="
+          generateReportUrl(selectedReport.reportName, selectedReport.reportUrl)
+        "
+        [disabled]="!storeForm.valid"
+        label="Generate Report"
+        [outlined]="true"
+        severity="contrast"
+      />
+    </div>
+  </form>
+</p-dialog>
+
+<div>
+  <p-toast />
+  <p-confirmDialog />
+</div>

@@ -1,0 +1,376 @@
+<p-toolbar class="col-lg-12 col-md-12 col-sm-12">
+  <ng-template pTemplate="left">
+    <h3>Employee Attendance</h3>
+  </ng-template>
+  <ng-template pTemplate="right" class="gap-4">
+    <div class="p-toolbar-group-left d-flex flex-row gap-2">
+      <button
+        pButton
+        pRipple
+        [rounded]="true"
+        class="create-btn"
+        (click)="show()"
+      >
+        Create
+      </button>
+      <button
+        pButton
+        pRipple
+        [rounded]="true"
+        class="create-btn"
+        (click)="openFilterModel()"
+      >
+        Attendance Summary
+      </button>
+    </div>
+  </ng-template>
+</p-toolbar>
+
+<div class="card px-2 py-2">
+  <p-toolbar styleClass="attendance-toolbar">
+    <ng-template pTemplate="left">
+      <div class="flex items-center">
+        <h3 class="ml-2">Present Employees</h3>
+      </div>
+    </ng-template>
+    <ng-template pTemplate="right">
+      <div class="form-container">
+        <div id="inputField" class="p-field flex flex-column">
+          <label class="label-text" for="startDate">Start Date</label>
+          <p-calendar
+            [(ngModel)]="pStartDate"
+            showIcon="true"
+            inputId="startDate"
+            appendTo="body"
+          ></p-calendar>
+        </div>
+        <div id="inputField" class="p-field flex flex-column">
+          <label class="label-text" for="endDate">End Date</label>
+          <p-calendar
+            [(ngModel)]="pEndDate"
+            showIcon="true"
+            inputId="endDate"
+            appendTo="body"
+          ></p-calendar>
+        </div>
+        <button class="search-button" (click)="searchPresentEmployee()">
+          <span class="search-text-gap">Search</span
+          ><i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </div>
+    </ng-template>
+  </p-toolbar>
+  <p-toolbar styleClass="attendance-toolbar">
+    <ng-template pTemplate="left">
+      <div class="flex items-center">
+        <h3 class="ml-2">Absent Employees</h3>
+      </div>
+    </ng-template>
+    <ng-template pTemplate="right">
+      <div class="form-container">
+        <div id="inputField" class="p-field flex flex-column">
+          <label class="label-text" for="startDate">Start Date</label>
+          <p-calendar
+            [(ngModel)]="aStartDate"
+            inputId="startDate"
+            appendTo="body"
+            showIcon="true"
+          ></p-calendar>
+        </div>
+        <div id="inputField" class="p-field flex flex-column">
+          <label class="label-text" for="endDate">End Date</label>
+          <p-calendar
+            [(ngModel)]="aEndDate"
+            inputId="endDate"
+            appendTo="body"
+            showIcon="true"
+          ></p-calendar>
+        </div>
+        <button class="search-button" (click)="searchAbsentEmployee()">
+          <span class="search-text-gap">Search</span
+          ><i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </div>
+    </ng-template>
+  </p-toolbar>
+
+  <div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+    <p-table
+      #presentEmployeesTable
+      [loading]="loading"
+      [value]="tableData"
+      [rowHover]="true"
+      dataKey="employeeId"
+      [scrollable]="true"
+      [paginatorDropdownAppendTo]="'body'"
+      scrollHeight="58vh"
+      dataKey="employeeId"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="employeeId" style="min-width: 200px">
+            Employee ID <p-sortIcon field="employeeId" />
+          </th>
+          <th pSortableColumn="name" style="min-width: 200px">
+            Name <p-sortIcon field="name" />
+          </th>
+          <th
+            *ngIf="tableData[0]?.dataType === 'present'"
+            pSortableColumn="checkIn_Time"
+            style="min-width: 200px"
+          >
+            Check-In Time <p-sortIcon field="checkIn_Time" />
+          </th>
+          <th
+            *ngIf="tableData[0]?.dataType === 'present'"
+            pSortableColumn="checkOut_Time"
+            style="min-width: 200px"
+          >
+            Check-Out Time <p-sortIcon field="checkOut_Time" />
+          </th>
+          <th
+            *ngIf="tableData[0]?.dataType === 'present'"
+            pSortableColumn="attendanceDate"
+            style="min-width: 200px"
+          >
+            Attendance Date <p-sortIcon field="attendanceDate" />
+          </th>
+          <th
+            *ngIf="tableData[0]?.dataType === 'absent'"
+            pSortableColumn="absenteesCount"
+            style="min-width: 200px"
+          >
+            Absentees Count <p-sortIcon field="absenteesCount" />
+          </th>
+          <th
+            *ngIf="tableData[0]?.dataType === 'absent'"
+            pSortableColumn="absenteesDates"
+            style="min-width: 300px"
+          >
+            Absentees Dates <p-sortIcon field="absenteesDates" />
+          </th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td style="width: 150px">
+            {{ item.employeeId }}
+          </td>
+          <td style="width: 150px">
+            {{ item.name }}
+          </td>
+          <td *ngIf="item.dataType === 'present'" style="width: 150px">
+            {{ item.checkIn_Time }}
+          </td>
+          <td *ngIf="item.dataType === 'present'" style="width: 150px">
+            {{ item.checkOut_Time }}
+          </td>
+          <td *ngIf="item.dataType === 'present'" style="width: 150px">
+            {{ item.attendanceDate }}
+          </td>
+          <td *ngIf="item.dataType === 'absent'" style="width: 150px">
+            {{ item.absenteesCount }}
+          </td>
+          <td *ngIf="item.dataType === 'absent'" style="width: 300px">
+            <div class="absent-dates-grid">
+              <span
+                *ngFor="let date of item.absenteesDates.split(', ')"
+                class="absent-date"
+              >
+                {{ date }}
+              </span>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- Modal -->
+  <p-dialog
+    [maximizable]="true"
+    [closeOnEscape]="false"
+    [header]="editMode ? 'Edit Attendance' : 'Mark Attendance'"
+    [modal]="true"
+    [(visible)]="displayModal"
+    [draggable]="false"
+    [style]="{ width: 'auto' }"
+  >
+    <ng-container>
+      <form [formGroup]="vehicleForm" (ngSubmit)="save()">
+        <div class="row col-lg-12 col-md-12 col-sm-12 mt-2">
+          <div class="col-md-6 flex flex-column">
+            <label class="label-text" for="employeeIds"
+              >Select Employee(s)</label
+            >
+
+            <p-multiSelect
+              [options]="employees"
+              optionLabel="name"
+              optionValue="id"
+              formControlName="employeeIds"
+              id="employeeIds"
+              [placeholder]="'Select employees'"
+              [filter]="true"
+              [style]="{ width: '100%' }"
+              [showToggleAll]="true"
+              appendTo="body"
+            ></p-multiSelect>
+
+            <div *ngIf="isFieldInvalid('employeeIds')" class="text-danger">
+              This field is required
+            </div>
+          </div>
+
+          <!-- Attendance Date -->
+          <div id="inputField" class="col-md-6 flex flex-column">
+            <label class="label-text" for="attendanceDate"
+              >Attendance Date</label
+            >
+            <p-calendar
+              formControlName="attendanceDate"
+              id="attendanceDate"
+              showIcon="true"
+              appendTo="body"
+              inputId="date"
+              [showOnFocus]="true"
+              [maxDate]="today"
+              [placeholder]="'Select Attendance Date'"
+              dateFormat="yy-mm-dd"
+            ></p-calendar>
+            <div *ngIf="isFieldInvalid('attendanceDate')" class="text-danger">
+              This field is required
+            </div>
+          </div>
+        </div>
+
+        <div class="row col-lg-12 col-md-12 col-sm-12 mt-3">
+          <!-- Check-In Time -->
+          <div id="inputField" class="col-md-6 flex flex-column">
+            <label class="label-text" for="checkIn_Time">Check-In Time:</label>
+            <p-calendar
+              formControlName="checkIn_Time"
+              id="checkIn_Time"
+              showIcon="true"
+              [timeOnly]="true"
+              [hourFormat]="'12'"
+              [placeholder]="'Select Check-In Time'"
+              appendTo="body"
+            ></p-calendar>
+          </div>
+
+          <!-- Check-Out Time -->
+          <div id="inputField" class="col-md-6 flex flex-column">
+            <label class="label-text" for="checkOut_Time"
+              >Check-Out Time:</label
+            >
+            <p-calendar
+              formControlName="checkOut_Time"
+              id="checkOut_Time"
+              showIcon="true"
+              [hourFormat]="'12'"
+              [timeOnly]="true"
+              [inputStyle]="{ height: '38px' }"
+              [style]="{ height: '38px' }"
+              [placeholder]="'Select Check-Out Time'"
+              appendTo="body"
+            ></p-calendar>
+          </div>
+        </div>
+        <br />
+        <div class="modal-btn-container mt-4">
+          <button
+            pButton
+            pRipple
+            [loading]="saving"
+            *ngIf="!editMode"
+            (click)="save()"
+            [disabled]="!vehicleForm.valid"
+            [rounded]="true"
+            class="save-btn"
+          >
+            Save
+          </button>
+          <button
+            pButton
+            pRipple
+            [loading]="saving"
+            *ngIf="editMode"
+            (click)="update()"
+            [disabled]="!vehicleForm.valid"
+            [rounded]="true"
+            class="update-btn"
+          >
+            Update
+          </button>
+          <button
+            (click)="displayModal = false"
+            pButton
+            pRipple
+            [rounded]="true"
+            class="cancel-btn"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </ng-container>
+  </p-dialog>
+
+  <div>
+    <p-toast />
+    <p-confirmDialog />
+  </div>
+</div>
+
+<!-- .....................NEW MODEL ...................... -->
+<p-dialog
+  [maximizable]="true"
+  [closeOnEscape]="false"
+  [header]="'Filters For Report'"
+  [modal]="true"
+  [(visible)]="displayFilterModal"
+  [draggable]="false"
+  [style]="{ width: 'auto' }"
+>
+  <ng-container>
+    <div class="row col-lg-12 col-md-12 col-sm-12 align-items-end">
+      <!-- Start Date -->
+      <div class="col-md-6 p-field flex flex-column">
+        <label class="label-text" for="startDate">Start Date</label>
+        <p-calendar
+          [(ngModel)]="fStartDate"
+          showIcon="true"
+          inputId="startDate"
+          appendTo="body"
+        ></p-calendar>
+      </div>
+
+      <!-- End Date -->
+      <div class="col-md-6 p-field flex flex-column">
+        <label class="label-text" for="endDate">End Date</label>
+        <p-calendar
+          [(ngModel)]="fEndDate"
+          showIcon="true"
+          inputId="endDate"
+          appendTo="body"
+        ></p-calendar>
+      </div>
+    </div>
+    <!-- Download Button -->
+    <div class="modal-btn-container mt-4">
+      <button
+        pButton
+        pRipple
+        [loading]="saving"
+        (click)="downloadReports()"
+        [rounded]="true"
+        pButton
+        pRipple
+        class="save-btn"
+      >
+        Download
+      </button>
+    </div>
+  </ng-container>
+</p-dialog>

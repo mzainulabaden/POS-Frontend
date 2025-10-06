@@ -1,0 +1,85 @@
+<div class="">
+  <div class="row g-3">
+    <div class="col-12 col-md-2" *ngIf="sidebarService.isSidebarOpen">
+      <aside
+        id="logo-sidebar"
+        class="z-3 vh-100"
+        [class.translate-x-0]="isOpen"
+        [class.-translate-x-100]="!isOpen"
+        aria-label="Sidebar"
+        style="transition: transform 0.3s ease-in-out"
+      >
+        <div class="h-100 p-3">
+          <nav class="d-flex flex-column gap-3">
+            <div class="mb-2">
+              <input
+                type="text"
+                pInputText
+                placeholder="Search Categories..."
+                [(ngModel)]="searchTerm"
+                class="w-100"
+              />
+            </div>
+
+            <!-- Loop through menu items -->
+            <div
+              *ngFor="let item of filteredMenuItems()"
+              class="d-flex flex-column"
+            >
+              <div
+                class="menu-item d-flex align-items-center justify-content-center cursor-pointer px-2 py-2 rounded"
+                (click)="selectMenuItem(item)"
+                [ngClass]="{
+                  'text-primary fw-bold bg-light': item.selected,
+                  'text-dark': !item.selected
+                }"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <i
+                    class="bi bi-circle"
+                    [ngClass]="{
+                      'text-primary': item.selected,
+                      'text-muted': !item.selected
+                    }"
+                  ></i>
+                  <span class="items">{{ item.name }}</span>
+                </div>
+              </div>
+            </div>
+          </nav>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Product Card -->
+    <div
+      class="col vh-100 overflow-y-auto"
+      [ngClass]="sidebarService.isSidebarOpen ? 'col-10' : 'col-12'"
+    >
+      <div class="row g-3 justify-content-evenly">
+        <div
+          class="col-10 col-md-5 col-lg-3"
+          *ngFor="let product of filteredProducts"
+        >
+          <div
+            class="card shadow-sm border-0 rounded-3 h-100"
+            (click)="addToCart(product)"
+          >
+            <img
+              [src]="baseurl + product.imageUrl"
+              class="card-img-top rounded-top p-3"
+              alt="{{ product.name }}"
+              style="height: 180px; object-fit: contain"
+            />
+            <div class="card-body text-center d-flex flex-column">
+              <h6 class="card-title mb-2 text-truncate">{{ product.name }}</h6>
+              <p class="fw-bold text-primary fs-5 mb-0">
+                PKR {{ product.unitPrice }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

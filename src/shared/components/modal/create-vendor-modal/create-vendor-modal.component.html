@@ -1,0 +1,201 @@
+<!-- <p-dialog
+  [maximizable]="true"
+  [header]="editMode ? 'Edit Supplier' : 'Create Supplier'"
+  [modal]="true"
+  [style]="{ width: '50%' }"
+  [(visible)]="visible"
+  [draggable]="false"
+>
+  <form #supplierForm="ngForm">
+    <div class="row col-md-12 mt-2">
+      <div id="inputField" class="col-md-6 p-field flex flex-column">
+        <label class="label-text" for="name">Name</label>
+        <input
+          appAllowOnlyAlphabets
+          id="name"
+          type="text"
+          pInputText
+          [(ngModel)]="data.name"
+          name="name"
+        />
+      </div>
+      <div id="inputField" class="col-md-6 p-field flex flex-column">
+        <label class="label-text" for="shortName">Serial Number</label>
+        <input
+          appAllowOnlyAlphabets
+          id="shortName"
+          type="text"
+          pInputText
+          [(ngModel)]="data.serialNumber"
+          name="serialNumber"
+        />
+      </div>
+    </div>
+    <div id="inputField" class="col-md-4 p-field flex flex-column">
+      <label class="label-text" for="stopEntryBefore">Stop Entry Before</label>
+      <p-calendar
+        [(ngModel)]="data.stopEntryBefore"
+        name="stopEntryBefore"
+        id="stopEntryBefore"
+        appendTo="body"
+        inputId="date"
+        [showOnFocus]="true"
+        [placeholder]="'Select Date'"
+        dateFormat="yy-mm-dd"
+        [style]="{ width: '100%' }"
+        appendTo="body"
+        showIcon="true"
+      ></p-calendar>
+    </div>
+    <div class="col-md-4 p-field flex flex-column">
+      <label class="label-text" for="coaLevel03Id">Level Three Id</label>
+      <p-dropdown
+        [options]="coaLevelThree"
+        optionLabel="name"
+        optionValue="id"
+        [(ngModel)]="data.coaLevel03Id"
+        (onChange)="onLevelOneChange($event.value)"
+        id="coaLevel03Id"
+        name="coaLevel03Id"
+        [placeholder]="'Select Level one'"
+        [style]="{ width: '100%' }"
+        appendTo="body"
+      ></p-dropdown>
+    </div>
+    <div class="col-md-4 p-field flex flex-column">
+      <label class="label-text" for="currencyId">Currency</label>
+      <p-dropdown
+        [options]="currency"
+        optionLabel="name"
+        optionValue="id"
+        [(ngModel)]="data.currencyId"
+        id="currencyId"
+        name="currencyId"
+        [placeholder]="'Select Currency'"
+        [style]="{ width: '100%' }"
+        appendTo="body"
+      ></p-dropdown>
+    </div>
+
+    <div class="row col-md-12 mt-2">
+      <div id="inputField" class="col-md-6 p-field flex flex-column">
+        <label class="label-text" for="cnic">Cnic</label>
+        <input
+          id="cnic"
+          placeholder="99999-9999999-9"
+          type="text"
+          pInputText
+          [(ngModel)]="data.cnic"
+          name="cnic"
+        />
+      </div>
+      <div id="inputField" class="col-md-6 p-field flex flex-column">
+        <label class="label-text" for="emailAddress">Email Address</label>
+        <input
+          appAllowOnlyAlphabets
+          id="emailAddress"
+          placeholder="abc@gmail.com"
+          type="text"
+          pInputText
+          [(ngModel)]="data.emailAddress"
+          name="emailAddress"
+        />
+      </div>
+    </div>
+
+    <div class="row col-md-12 mt-2">
+      <div id="inputField" class="col-md-6 p-field flex flex-column">
+        <label class="label-text" for="contactNumber">
+          Contact Number <span class="text-danger">*</span>
+        </label>
+        <input
+          id="contactNumber"
+          type="text"
+          placeholder="03103627627"
+          pInputText
+          [(ngModel)]="data.contactNumber"
+          name="contactNumber"
+          #contactNumber="ngModel"
+          required
+        />
+        <div
+          *ngIf="contactNumber.invalid && contactNumber.touched"
+          class="text-danger"
+        >
+          Contact Number is required
+        </div>
+      </div>
+
+      <div id="inputField" class="col-md-6 p-field flex flex-column">
+        <label class="label-text" for="physicalAddress">
+          Physical Address <span class="text-danger">*</span>
+        </label>
+        <input
+          id="physicalAddress"
+          type="text"
+          placeholder="Address"
+          pInputText
+          [(ngModel)]="data.physicalAddress"
+          name="physicalAddress"
+          #physicalAddress="ngModel"
+          required
+        />
+        <div
+          *ngIf="physicalAddress.invalid && physicalAddress.touched"
+          class="text-danger"
+        >
+          Physical Address is required
+        </div>
+      </div>
+    </div>
+
+    <div class="row col-md-12 mt-2">
+      <div id="inputField" class="col-md-6 p-field flex flex-column">
+        <label class="label-text" for="salesTaxNumber">Sales Tax Number</label>
+        <input
+          id="salesTaxNumber"
+          type="text"
+          placeholder="Sales Tax Number"
+          pInputText
+          [(ngModel)]="data.salesTaxNumber"
+          name="salesTaxNumber"
+        />
+      </div>
+      <div id="inputField" class="col-md-6 p-field flex flex-column">
+        <label class="label-text" for="nationalTaxNumber"
+          >National Tax Number</label
+        >
+        <input
+          id="nationalTaxNumber"
+          type="text"
+          placeholder="National Tax Number"
+          pInputText
+          [(ngModel)]="data.nationalTaxNumber"
+          name="nationalTaxNumber"
+        />
+      </div>
+    </div>
+
+    <div class="modal-btn-container mt-4">
+      <button
+        pButton
+        pRipple
+        (click)="onSave()"
+        class="save-btn"
+        [disabled]="supplierForm.invalid"
+      >
+        Save
+      </button>
+
+      <button
+        (click)="onCancel()"
+        pButton
+        pRipple
+        [rounded]="true"
+        class="cancel-btn"
+      >
+        Cancel
+      </button>
+    </div>
+  </form>
+</p-dialog> -->

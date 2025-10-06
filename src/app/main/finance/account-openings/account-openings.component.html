@@ -1,0 +1,18 @@
+<p-tabView
+  (activeIndexChange)="handleChangeTab($event)"
+  [activeIndex]="activeIndex"
+  class="col-lg-12 col-md-12 col-sm-12"
+>
+  <p-tabPanel class="tab-menu" header="Bank Openings">
+    <app-bank-openings></app-bank-openings>
+  </p-tabPanel>
+  <p-tabPanel class="tab-menu" header="Stocks Opening">
+    <app-stocks-openings></app-stocks-openings>
+  </p-tabPanel>
+  <p-tabPanel class="tab-menu" header="Supplier Openings">
+    <app-supplier-openings></app-supplier-openings>
+  </p-tabPanel>
+  <p-tabPanel class="tab-menu" header="Clients Opening">
+    <app-clients-openings></app-clients-openings>
+  </p-tabPanel>
+</p-tabView>

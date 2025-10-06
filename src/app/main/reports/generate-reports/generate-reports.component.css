@@ -1,0 +1,19 @@
+li {
+  cursor: pointer;
+  padding: 8px;
+  transition: background-color 0.3s ease;
+  border-radius: 4px;
+}
+
+li:hover {
+  background-color: #e0e0e0;
+}
+
+li:active {
+  background-color: #c0c0c0;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}

@@ -1,0 +1,258 @@
+<div class="mainDiv">
+  <p-toolbar class="col-lg-12 col-md-12 col-sm-12">
+    <ng-template pTemplate="left">
+      <h4>Profit Loss Note</h4>
+    </ng-template>
+    <ng-template pTemplate="right">
+      <div class="gap-4 flex">
+        <span class="block md:mt-0 p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            type="text"
+            (input)="onGlobalFilter(policyTable, $event)"
+            placeholder="Search..."
+            style="height: 40px; cursor: pointer"
+            (keydown.enter)="onEnter($event)"
+          />
+        </span>
+        <div class="p-toolbar-group-left">
+          <button
+            pButton
+            pRipple
+            [rounded]="true"
+            class="create-btn"
+            (click)="show()"
+          >
+            + New Profit Loss Note
+          </button>
+        </div>
+      </div>
+    </ng-template>
+  </p-toolbar>
+
+  <div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+    <p-table
+      [loading]="loading"
+      #policyTable
+      [value]="tableData"
+      [rowHover]="true"
+      dataKey="id"
+      [scrollable]="true"
+      [paginatorDropdownAppendTo]="'body'"
+      scrollHeight="58vh"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="min-width: 100px" pSortableColumn="id">
+            ID <p-sortIcon field="id" />
+          </th>
+          <th style="min-width: 150px" pSortableColumn="noteNumber">
+            Note Number <p-sortIcon field="noteNumber" />
+          </th>
+          <th style="min-width: 200px" pSortableColumn="name">
+            Name <p-sortIcon field="name" />
+          </th>
+          <th style="min-width: 150px" pSortableColumn="accountType">
+            Account Type <p-sortIcon field="accountType" />
+          </th>
+          <th style="min-width: 120px">Action</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>{{ item.id }}</td>
+          <td>{{ item.noteNumber }}</td>
+          <td>{{ item.name }}</td>
+          <td>{{ getAccountTypeName(item.accountType) }}</td>
+
+          <td class="icon-group">
+            <a class="dropdown-item edit" (click)="show(item.id)">
+              <i class="fa-solid fa-pencil"></i>
+            </a>
+            <a class="dropdown-item delete" (click)="delete(item.id)">
+              <i class="fa-solid fa-trash"></i>
+            </a>
+          </td>
+        </tr>
+      </ng-template>
+
+      <!-- Skeleton Loader -->
+      <ng-template #loadingRow>
+        <tr *ngFor="let i of [1, 2, 3, 4, 5]">
+          <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
+          <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
+          <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
+          <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
+          <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <!-- Paginator -->
+    <div class="paginator-wrapper d-flex justify-content-end mt-3">
+      <p-paginator
+        [rows]="10"
+        [totalRecords]="count"
+        (onPageChange)="onPageChange($event)"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+        [showCurrentPageReport]="true"
+        [rowsPerPageOptions]="[10, 50, 100, count]"
+        dropdownAppendTo="body"
+        appendTo="body"
+      ></p-paginator>
+
+      <p-dialog
+        [maximizable]="true"
+        [closeOnEscape]="false"
+        [header]="
+          viewMode
+            ? 'View Profit Loss'
+            : editMode
+            ? 'Edit Profit Loss'
+            : 'Create Profit Loss'
+        "
+        [modal]="true"
+        [(visible)]="displayModal"
+        [draggable]="false"
+        [style]="{ width: '80%' }"
+      >
+        <ng-container>
+          <form [formGroup]="profitLossNoteForm">
+            <div class="row col-lg-12 col-md-12 col-sm-12 d-flex mt-4">
+              <!-- Note Number -->
+              <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+                <label class="label-text" for="noteNumber"
+                  >Note Number <span class="text-danger">*</span></label
+                >
+                <input
+                  type="text"
+                  pInputText
+                  formControlName="noteNumber"
+                  id="noteNumber"
+                  autocomplete="off"
+                  [style]="{ width: '100%' }"
+                />
+                <div *ngIf="isFieldInvalid('noteNumber')" class="text-danger">
+                  This field is required
+                </div>
+              </div>
+
+              <!-- Account Type -->
+              <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+                <label class="label-text" for="accountType"
+                  >Account Type <span class="text-danger">*</span></label
+                >
+                <p-dropdown
+                  id="accountType"
+                  formControlName="accountType"
+                  [options]="accountTypeOptions"
+                  optionLabel="name"
+                  optionValue="value"
+                  placeholder="Select Account Type"
+                  [style]="{ width: '100%' }"
+                >
+                </p-dropdown>
+                <div *ngIf="isFieldInvalid('accountType')" class="text-danger">
+                  This field is required
+                </div>
+              </div>
+
+              <!-- Name -->
+              <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+                <label class="label-text" for="name"
+                  >Name <span class="text-danger">*</span></label
+                >
+                <input
+                  id="name"
+                  type="text"
+                  pInputText
+                  formControlName="name"
+                  [style]="{ width: '100%' }"
+                />
+                <div *ngIf="isFieldInvalid('name')" class="text-danger">
+                  This field is required
+                </div>
+              </div>
+            </div>
+
+            <!-- ProfitLoseNoteDetails (Grid / Dynamic Rows) -->
+            <div class="row-btn-container mt-4">
+              <button
+                type="button"
+                class="add-row-btn"
+                (click)="onAddRow()"
+                [disabled]="viewMode"
+              >
+                Add Row
+              </button>
+              <button
+                type="button"
+                class="remove-row-btn"
+                (click)="onRemoveSelected()"
+                [disabled]="viewMode"
+              >
+                Remove Row
+              </button>
+            </div>
+
+            <ag-grid-angular
+              class="ag-theme-quartz"
+              style="height: 300px"
+              [rowData]="rowData"
+              [columnDefs]="colDefs"
+              [rowSelection]="rowSelection"
+              (cellValueChanged)="onCellValueChanged($event)"
+              [components]="frameworkComponents"
+              (gridReady)="onGridReady($event)"
+              [singleClickEdit]="true"
+            >
+            </ag-grid-angular>
+
+            <!-- Action Buttons -->
+            <div class="modal-btn-container mt-4">
+              <button
+                pButton
+                pRipple
+                [loading]="saving"
+                *ngIf="!editMode && !viewMode"
+                (click)="save()"
+                [disabled]="!profitLossNoteForm.valid"
+                [rounded]="true"
+                class="save-btn"
+              >
+                Save
+              </button>
+              <button
+                pButton
+                pRipple
+                [loading]="saving"
+                *ngIf="editMode && !viewMode"
+                (click)="update()"
+                [disabled]="!profitLossNoteForm.valid"
+                [rounded]="true"
+                class="update-btn"
+              >
+                Update
+              </button>
+              <button
+                (click)="displayModal = false"
+                pButton
+                pRipple
+                [rounded]="true"
+                class="cancel-btn"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </ng-container>
+      </p-dialog>
+      <div>
+        <p-toast />
+        <p-confirmDialog />
+      </div>
+    </div>
+  </div>
+</div>

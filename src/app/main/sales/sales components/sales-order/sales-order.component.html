@@ -1,0 +1,362 @@
+<p-toolbar class="col-lg-12 col-md-12 col-sm-12">
+  <ng-template pTemplate="left">
+    <h4>Sales Order List</h4>
+  </ng-template>
+  <ng-template pTemplate="right">
+    <div class="gap-4 flex">
+      <span class="block md:mt-0 p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input
+          pInputText
+          type="text"
+          (input)="onGlobalFilter(policyTable, $event)"
+          placeholder="Search..."
+          style="height: 40px; cursor: pointer"
+          (keydown.enter)="onEnter($event)"
+        />
+      </span>
+      <div class="p-toolbar-group-left">
+        <button
+          pButton
+          pRipple
+          [rounded]="true"
+          class="create-btn"
+          (click)="show()"
+        >
+          + Add New Sales
+      </button>
+      </div>
+    </div>
+  </ng-template>
+</p-toolbar>
+
+<div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+  <p-table
+    #policyTable
+    [loading]="loading"
+    [value]="tableData"
+    [rowHover]="true"
+    dataKey="id"
+    [scrollable]="true"
+    [paginatorDropdownAppendTo]="'body'"
+    scrollHeight="58vh"
+    [globalFilterFields]="['name', 'voucherNumber', 'supplierCOALevel04Name']"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="min-width: 180px" pSortableColumn="isActive">
+          Action<p-sortIcon field="isActive" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="vendor">
+          Customer Name<p-sortIcon field="vendor" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="purchaseDate">
+          Sale Date<p-sortIcon field="purchaseDate" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="referenceNumber">
+          Voucher No<p-sortIcon field="referenceNumber" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="status">
+          Status <p-sortIcon field="status" />
+        </th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr *ngIf="!loading; else loadingRow">
+        <td class="icon-group">
+         <a
+            *ngIf="item.status == 'PENDING'"
+            class="dropdown-item edit"
+            (click)="edit(item.id)"
+          >
+            <i class="fa-solid fa-pencil"></i>
+          </a>
+          <a
+            *ngIf="item.status == 'PENDING'"
+            class="dropdown-item delete"
+            (click)="delete(item.id)"
+          >
+            <i class="fa-solid fa-trash"></i>
+          </a>
+          <a
+            *ngIf="item.status == 'PENDING'"
+            class="dropdown-item view"
+            (click)="approve(item.id)"
+          >
+            <i class="fa-solid fa-circle-check"></i>
+          </a>
+          <a
+            *ngIf="item.status == 'APPROVED'"
+            class="dropdown-item view"
+            (click)="viewOnly(item.id)"
+          >
+            <i class="fa-solid fa-eye"></i>
+          </a>
+        </td>
+        <td class="no-wrap-header" title="{{ item.customerCOALevel04Name }}">
+          {{ item?.customerCOALevel04Name }}
+        </td>
+        <td class="no-wrap-header" title="{{ item.issueDate }}">
+          {{ item?.issueDate | date }}
+        </td>
+        <td class="no-wrap-header" title="{{ item.referenceNumber }}">
+          {{ item?.referenceNumber }}
+        </td>
+        <td>
+          <div *ngIf="item.status == 'PENDING'" class="deactive-box">
+            PENDING
+          </div>
+          <div *ngIf="item.status == 'APPROVED'" class="active-box">
+            APPROVED
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Skeleton Row Template -->
+    <ng-template #loadingRow>
+      <tr *ngFor="let i of [1, 2, 3, 4, 5]">
+        <td>
+          <p-skeleton width="30%" height="20px"></p-skeleton>
+          <p-skeleton width="30%" height="20px"></p-skeleton>
+          <p-skeleton width="40%" height="20px"></p-skeleton>
+        </td>
+        <td class="icon-group d-flex gap-2">
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+  <p-paginator
+    [rows]="10"
+    [totalRecords]="this.count"
+    (onPageChange)="this.onPageChange($event)"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+    [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[10, 50, 100, this.count]"
+  >
+  </p-paginator>
+</div>
+
+<!-- Modal -->
+<p-dialog
+  [maximizable]="true"
+  [closeOnEscape]="false"
+  [header]="
+    viewMode
+      ? 'View Sales Order'
+      : editMode
+      ? 'Edit Sales Order'
+      : 'Create Sales Order'
+  "
+  [modal]="true"
+  [(visible)]="displayModal"
+  [draggable]="false"
+  [style]="{ width: '80%' }"
+>
+  <ng-container>
+    <form [formGroup]="salesOrderForm" (ngSubmit)="save()">
+      <div class="row col-lg-12 col-md-12 col-sm-12 d-flex mt-4">
+        <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+          <label class="label-text" for="referenceNumber">Voucher No</label>
+          <input
+            type="text"
+            readonly
+            pInputText
+            formControlName="referenceNumber"
+            id="referenceNumber"
+            autocomplete="off"
+            [style]="{ width: '100%' }"
+          />
+          <div *ngIf="isFieldInvalid('referenceNumber')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+
+        <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+          <label class="label-text" for="issueDate">Sales Date <span class="text-danger">*</span></label>
+          <p-calendar
+            formControlName="issueDate"
+            inputId="date"
+            appendTo="body"
+            [showOnFocus]="true"
+            [showIcon]="true"
+            (ngModelChange)="onDateChange($event)"
+            dateFormat="yy-mm-dd"
+            [style]="{ width: '100%' }"
+          ></p-calendar>
+          <div *ngIf="isFieldInvalid('issueDate')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+
+        <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+          <label class="label-text" for="customerCOALevel04Id">Customer <span class="text-danger">*</span></label>
+          <p-dropdown
+            [options]="client"
+            optionLabel="name"
+            optionValue="id"
+            [showClear]="true"
+            formControlName="customerCOALevel04Id"
+            id="customerCOALevel04Id"
+            [placeholder]="'Select Customer'"
+            [filter]="true"
+            filterBy="name"
+            [style]="{ width: '100%' }"
+            appendTo="body"
+          ></p-dropdown>
+          <div *ngIf="isFieldInvalid('customerCOALevel04Id')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+
+        <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+          <label class="label-text" for="paymentModeId">Payment Terms <span class="text-danger">*</span></label>
+          <p-dropdown
+            [options]="paymentTerms"
+            optionLabel="name"
+            optionValue="id"
+            [showClear]="true"
+            formControlName="paymentModeId"
+            id="paymentModeId"
+            [placeholder]="'Select Payment Mode'"
+            [filter]="true"
+            filterBy="name"
+            [style]="{ width: '100%' }"
+            appendTo="body"
+          ></p-dropdown>
+          <div *ngIf="isFieldInvalid('paymentModeId')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+      </div>
+
+      <div class="row col-lg-12 col-md-12 col-sm-12 d-flex mt-4">
+        <div class="d-flex flex-column col-lg-4 col-md-4 col-sm-4">
+          <label class="label-text" for="employeeName">Created By <span class="text-danger">*</span></label>
+          <input
+            type="text"
+            pInputText
+            readonly
+            formControlName="employeeName"
+            id="employeeName"
+            [style]="{ width: '100%' }"
+          />
+        </div>
+
+        <div class="d-flex flex-column col-lg-4 col-md-4 col-sm-4">
+          <label class="label-text" for="commissionAmount">Commission Amount</label>
+          <input
+            type="number"
+            pInputText
+            readonly
+            formControlName="commissionAmount"
+            id="commissionAmount"
+            autocomplete="off"
+            [style]="{ width: '100%' }"
+            [attr.disabled]="true"
+          />
+        </div>
+      </div>
+
+      <div class="row-btn-container mt-4">
+        <button
+          type="button"
+          class="add-row-btn"
+          (click)="onAddRow()"
+          [disabled]="viewMode"
+        >
+          Add Row
+        </button>
+        <button
+          type="button"
+          class="remove-row-btn"
+          (click)="onRemoveSelected()"
+          [disabled]="viewMode"
+        >
+          Remove Row
+        </button>
+      </div>
+
+      <ag-grid-angular
+        class="ag-theme-quartz"
+        style="height: 300px"
+        [rowData]="rowData"
+        [columnDefs]="colDefs"
+        [rowSelection]="rowSelection"
+        (cellValueChanged)="onCellValueChanged($event)"
+        [components]="frameworkComponents"
+        (gridReady)="onGridReady($event)"
+        [singleClickEdit]="true"
+      >
+      </ag-grid-angular>
+
+      <div class="row col-lg-12 col-md-12 col-sm-12 d-flex mt-4">
+        <div class="d-flex flex-column col-lg-6 col-md-6 col-sm-6">
+          <label class="label-text" for="totalAmount">Total Amount</label>
+          <input
+            type="text"
+            readonly
+            pInputText
+            formControlName="totalAmount"
+            id="totalAmount"
+            autocomplete="off"
+            [style]="{ width: '100%' }"
+          />
+          <div *ngIf="isFieldInvalid('totalAmount')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+
+        <div class="d-flex flex-column col-lg-6 col-md-6 col-sm-6">
+          <label class="label-text" for="remarks">Remarks</label>
+          <input
+            type="text"
+            pInputText
+            formControlName="remarks"
+            id="remarks"
+            autocomplete="off"
+            [style]="{ width: '100%' }"
+          />
+          <div *ngIf="isFieldInvalid('remarks')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-1 justify-content-end mt-4">
+        <p-button
+          (onClick)="displayModal = false"
+          label="Cancel"
+          [outlined]="true"
+          severity="warning"
+        />
+        <p-button
+          [loading]="saving"
+          *ngIf="!editMode && !viewMode"
+          (click)="save()"
+          [disabled]="!salesOrderForm.valid"
+          label="Save"
+          [outlined]="true"
+          severity="contrast"
+        />
+        <p-button
+          [loading]="saving"
+          *ngIf="editMode && !viewMode"
+          (click)="update()"
+          [disabled]="!salesOrderForm.valid"
+          label="Update"
+          [outlined]="true"
+          severity="contrast"
+        />
+      </div>
+    </form>
+  </ng-container>
+</p-dialog>
+
+<div>
+  <p-toast />
+  <p-confirmDialog />
+</div>

@@ -1,0 +1,239 @@
+<p-toolbar class="col-lg-12 col-md-12 col-sm-12">
+  <ng-template pTemplate="left">
+    <h3>Gazetted Holiday</h3>
+  </ng-template>
+  <ng-template pTemplate="right">
+    <div class="gap-4 flex">
+      <span class="block md:mt-0 p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input
+          pInputText
+          type="text"
+          (input)="onGlobalFilter(policyTable, $event)"
+          placeholder="Search..."
+          style="height: 40px; cursor: pointer"
+          (keydown.enter)="onEnter($event)"
+        />
+      </span>
+      <div class="p-toolbar-group-left">
+        <button
+          pButton
+          pRipple
+          [rounded]="true"
+          class="create-btn"
+          (click)="show()"
+        >
+          Create
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</p-toolbar>
+
+<div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+  <p-table
+    #policyTable
+    [loading]="loading"
+    [value]="tableData"
+    [rowHover]="true"
+    dataKey="id"
+    [scrollable]="true"
+    [paginatorDropdownAppendTo]="'body'"
+    scrollHeight="58vh"
+    [globalFilterFields]="['name', 'description']"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="min-width: 200px" pSortableColumn="Actions">
+          Actions <p-sortIcon field="Actions" />
+        </th>
+        <th style="min-width: 200px" pSortableColumn="eventStartDate">
+          Event Start Date<p-sortIcon field="eventStartDate" />
+        </th>
+        <th style="min-width: 200px" pSortableColumn="eventEndDate">
+          Event End Date<p-sortIcon field="eventEndDate" />
+        </th>
+        <th style="min-width: 200px" pSortableColumn="description">
+          Description <p-sortIcon field="description" />
+        </th>
+        <th style="min-width: 200px" pSortableColumn="name">
+          Name <p-sortIcon field="name" />
+        </th>
+        <th style="min-width: 200px" pSortableColumn="isRecurring">
+          Recurring <p-sortIcon field="isRecurring" />
+        </th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr *ngIf="!loading; else loadingRow">
+        <td class="icon-group">
+          <a class="dropdown-item edit" (click)="show(item.id)">
+            <i class="fa-solid fa-pencil"></i>
+          </a>
+          <a class="dropdown-item delete" (click)="delete(item.id)">
+            <i class="fa-solid fa-trash"></i>
+          </a>
+        </td>
+        <td>{{ item.eventStartDate | date }}</td>
+        <td>{{ item.eventEndDate | date }}</td>
+        <td>{{ item.description }}</td>
+        <td>{{ item.name }}</td>
+        <td>
+          <span *ngIf="item.isRecurring" class="active-box">Yes</span>
+          <span *ngIf="!item.isRecurring" class="deactive-box">No</span>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Skeleton Row Template -->
+    <ng-template #loadingRow>
+      <tr *ngFor="let i of [1, 2, 3, 4, 5]">
+        <td class="icon-group d-flex gap-2">
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+        </td>
+        <td>
+          <p-skeleton width="40%" height="20px"></p-skeleton>
+          <p-skeleton width="40%" height="20px"></p-skeleton>
+          <p-skeleton width="40%" height="20px"></p-skeleton>
+          <p-skeleton width="40%" height="20px"></p-skeleton>
+          <p-skeleton width="40%" height="20px"></p-skeleton>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+  <div class="paginator-wrapper d-flex justify-content-end mt-3">
+    <p-paginator
+      [rows]="10"
+      [totalRecords]="count"
+      (onPageChange)="onPageChange($event)"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+      [showCurrentPageReport]="true"
+      [rowsPerPageOptions]="[10, 50, 100, count]"
+      dropdownAppendTo="body"
+      appendTo="body"
+    ></p-paginator>
+  </div>
+</div>
+
+<!-- Modal -->
+<p-dialog
+  [maximizable]="true"
+  [closeOnEscape]="false"
+  [header]="editMode ? 'Edit Gazetted Holiday' : 'Create Gazetted Holiday'"
+  [modal]="true"
+  [(visible)]="displayModal"
+  [draggable]="false"
+>
+  <ng-container>
+    <form [formGroup]="vehicleForm" (ngSubmit)="save()">
+      <div class="row col-lg-12 col-md-12 col-sm-12 mt-4">
+        <div id="inputField" class="col-md-4 flex flex-column">
+          <label class="label-text" for="name">Name</label>
+          <input
+            type="text"
+            pInputText
+            formControlName="name"
+            id="name"
+            autocomplete="off"
+          />
+          <div *ngIf="isFieldInvalid('name')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+        <div id="inputField" class="col-md-4 flex flex-column">
+          <label class="label-text" for="eventStartDate"
+            >Event Start Date</label
+          >
+          <p-calendar
+            formControlName="eventStartDate"
+            inputId="date"
+            appendTo="body"
+            [showOnFocus]="true"
+            dateFormat="yy-mm-dd"
+          ></p-calendar>
+          <div *ngIf="isFieldInvalid('eventStartDate')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+        <div id="inputField" class="col-md-4 flex flex-column">
+          <label class="label-text" for="eventEndDate">Event End Date</label>
+          <p-calendar
+            formControlName="eventEndDate"
+            inputId="date"
+            appendTo="body"
+            [showOnFocus]="true"
+            dateFormat="yy-mm-dd"
+          ></p-calendar>
+          <div *ngIf="isFieldInvalid('eventEndDate')" class="text-danger">
+            This field is required
+          </div>
+        </div>
+      </div>
+      <div class="row col-md-12 mt-2">
+        <div id="inputField" class="col-md-4 flex flex-column">
+          <label class="label-text" for="description">Description</label>
+          <input
+            type="text"
+            pInputText
+            formControlName="description"
+            id="address"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="col-md-4 flex gap-2 align-items-center mt-5">
+          <div class="flex align-items-center mb-2">
+            <p-checkbox
+              formControlName="isRecurring"
+              inputId="isRecurring"
+              [binary]="true"
+            ></p-checkbox>
+            <label for="isRecurring" class="label-text mb-1 ml-1"
+              >Recurring?</label
+            >
+          </div>
+        </div>
+      </div>
+      <div class="modal-btn-container mt-4">
+        <button
+          pButton
+          pRipple
+          [loading]="saving"
+          *ngIf="!editMode"
+          [disabled]="!vehicleForm.valid"
+          (click)="save()"
+          [rounded]="true"
+          class="save-btn"
+        >
+          Save
+        </button>
+        <button
+          pButton
+          pRipple
+          [loading]="saving"
+          *ngIf="editMode"
+          (click)="update()"
+          [disabled]="!vehicleForm.valid"
+          [rounded]="true"
+          class="update-btn"
+        >
+          Update
+        </button>
+        <button
+          (click)="displayModal = false"
+          pButton
+          pRipple
+          [rounded]="true"
+          class="cancel-btn"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  </ng-container>
+</p-dialog>
+<div>
+  <p-toast />
+  <p-confirmDialog class="cancel-modal" />
+</div>

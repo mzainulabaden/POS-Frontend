@@ -1,0 +1,228 @@
+<form
+  [formGroup]="purchaseForm"
+  *ngIf="purchaseForm"
+  class="d-flex flex-column h-100 bg-white border-start shadow-sm p-3"
+>
+  <!-- Header -->
+  <div class="row g-2 mb-3 flex-wrap">
+    <!-- Customer -->
+    <div class="col-12 col-xl-4 d-flex flex-column">
+      <label class="label-text" for="customer">Customer</label>
+      <p-dropdown
+        [options]="customer"
+        optionLabel="name"
+        optionValue="id"
+        [showClear]="true"
+        formControlName="customerCOALevel04Id"
+        id="customer"
+        [placeholder]="'Select Customer Mode'"
+        [style]="{ width: '100%' }"
+        [filter]="true"
+        filterBy="name"
+        appendTo="body"
+      ></p-dropdown>
+    </div>
+
+    <!-- Payment Terms -->
+    <div class="col-12 col-xl-4 d-flex flex-column">
+      <label class="label-text" for="paymentModeId">Payment Terms</label>
+      <p-dropdown
+        [options]="paymentTerms"
+        optionLabel="name"
+        optionValue="id"
+        [showClear]="true"
+        formControlName="paymentModeId"
+        id="paymentModeId"
+        [placeholder]="'Select Payment Mode'"
+        [style]="{ width: '100%' }"
+        [filter]="true"
+        filterBy="name"
+        appendTo="body"
+      ></p-dropdown>
+    </div>
+
+    <!-- Warehouse -->
+    <div class="col-12 col-xl-4 d-flex flex-column">
+      <label class="label-text" for="warehouse">Warehouse</label>
+      <p-dropdown
+        [options]="wareHouse"
+        optionLabel="name"
+        optionValue="id"
+        [showClear]="true"
+        formControlName="selectedWarehouseId"
+        id="warehouse"
+        [placeholder]="'Select Warehouse'"
+        [style]="{ width: '100%' }"
+        [filter]="true"
+        filterBy="name"
+        appendTo="body"
+      ></p-dropdown>
+    </div>
+  </div>
+
+  <!-- <p-accordion [multiple]="true">
+      <p-accordionTab
+        *ngFor="let item of cartItems; let i = index"
+        [header]="itemHeader(item)"
+        [headerStyle]="{ color: 'black' }"
+      >
+        <div class="row g-2">
+          <div class="col-6">
+            <label class="form-label small mb-1">Quantity</label>
+            <input
+              type="number"
+              class="form-control form-control-sm"
+              [(ngModel)]="item.qty"
+            />
+          </div>
+          <div class="col-6">
+            <label class="form-label small mb-1">Discount (%)</label>
+            <input
+              type="number"
+              class="form-control form-control-sm"
+              [(ngModel)]="item.discount"
+            />
+          </div>
+        </div>
+      </p-accordionTab>
+    </p-accordion> -->
+
+  <div class="flex-grow-1 overflow-auto pe-1">
+    <div *ngIf="cartItems.length; else noItems">
+      <div formArrayName="salesInvoiceDetails">
+        <div
+          *ngFor="let item of salesInvoiceDetails.controls; let i = index"
+          [formGroupName]="i"
+          class="card border-0 shadow-sm mb-2 rounded-3"
+        >
+          <div
+            class="card-body py-2 d-flex align-items-center justify-content-between"
+          >
+            <!-- Item name -->
+            <div class="flex-grow-1">{{ item.get("itemName")?.value }}</div>
+
+            <!-- Quantity + Discount -->
+            <div class="d-flex align-items-center gap-3">
+              <div class="d-flex flex-column" style="width: 90px">
+                <label class="form-label small mb-1">Qty</label>
+                <input
+                  type="number"
+                  class="form-control form-control-sm"
+                  formControlName="invoiceQty"
+                  min="1"
+                />
+              </div>
+
+              <!-- <div class="d-flex flex-column" style="width: 90px">
+                <label class="form-label small mb-1">Discount</label>
+                <input
+                  type="number"
+                  class="form-control form-control-sm"
+                  formControlName="discount"
+                  min="0"
+                />
+              </div> -->
+
+              <button class="btn btn-sm btn-danger" (click)="removeFromList(i)">
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noItems>
+      <div class="text-muted text-center mt-5">No items in cart</div>
+    </ng-template>
+  </div>
+
+  <!-- Bottom Section -->
+  <div class="mt-auto border-top pt-3">
+    <div class="d-flex justify-content-between mb-1">
+      <span>Subtotal</span>
+      <span>{{ subtotal | currency : "PKR" : "symbol" }}</span>
+    </div>
+    <!-- <div class="d-flex justify-content-between mb-1">
+      <span>Tax</span>
+      <span>{{ tax | currency : "PKR" : "symbol" }}</span>
+    </div> -->
+    <div class="d-flex justify-content-between fw-bold fs-5 mt-2">
+      <span>Payable Amount</span>
+      <span>{{ payableAmount | currency : "PKR" : "symbol" }}</span>
+    </div>
+
+    <!-- Buttons -->
+    <div class="d-flex mt-3">
+      <button class="btn btn-outline-primary flex-fill me-2">Hold Order</button>
+      <button class="btn btn-primary flex-fill" (click)="displayModal = true">
+        Proceed
+      </button>
+    </div>
+  </div>
+</form>
+
+<p-toast />
+<p-dialog
+  header="Payment Details"
+  [maximizable]="true"
+  [modal]="true"
+  [(visible)]="displayModal"
+  [draggable]="false"
+  (onHide)="resetPaymentModal()"
+>
+  <div class="row col-md-12 mt-2">
+    <!-- Payable Amount -->
+    <div class="col-md-4 p-field flex flex-column">
+      <label for="payable">Payable Amount</label>
+      <input
+        id="payable"
+        type="text"
+        pInputText
+        [value]="payableAmount"
+        readonly
+      />
+    </div>
+  </div>
+
+  <div class="row col-md-12 mt-2">
+    <!-- Received -->
+    <div class="col-md-4 p-field flex flex-column">
+      <label for="received">Received</label>
+      <input
+        id="received"
+        type="number"
+        pInputText
+        [(ngModel)]="receivedAmount"
+        (input)="calculatePending()"
+      />
+    </div>
+
+    <!-- Pending -->
+    <div class="col-md-4 p-field flex flex-column">
+      <label for="pending">Pending</label>
+      <input
+        id="pending"
+        type="text"
+        pInputText
+        [value]="RemainingAmount"
+        readonly
+      />
+    </div>
+  </div>
+
+  <div class="flex gap-1 justify-content-end mt-4">
+    <p-button
+      label="Cancel"
+      (click)="displayModal = false"
+      [outlined]="true"
+      severity="warning"
+    ></p-button>
+    <p-button
+      label="Save"
+      (click)="save()"
+      [outlined]="true"
+      severity="contrast"
+    ></p-button>
+  </div>
+</p-dialog>

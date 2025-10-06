@@ -1,0 +1,318 @@
+<div class="mainDiv">
+  <p-toolbar class="col-lg-12 col-md-12 col-sm-12">
+    <ng-template pTemplate="left">
+      <h4>General Note</h4>
+    </ng-template>
+    <ng-template pTemplate="right">
+      <div class="gap-4 flex">
+        <span class="block md:mt-0 p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            type="text"
+            (input)="onGlobalFilter(policyTable, $event)"
+            placeholder="Search..."
+            style="height: 40px; cursor: pointer"
+            (keydown.enter)="onEnter($event)"
+          />
+        </span>
+        <div class="p-toolbar-group-left">
+          <button
+            pButton
+            pRipple
+            [rounded]="true"
+            class="create-btn"
+            (click)="show()"
+          >
+            + New General Note
+          </button>
+        </div>
+      </div>
+    </ng-template>
+  </p-toolbar>
+
+  <div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+    <p-table
+      [loading]="loading"
+      #policyTable
+      [value]="tableData"
+      [rowHover]="true"
+      dataKey="id"
+      [scrollable]="true"
+      [paginatorDropdownAppendTo]="'body'"
+      scrollHeight="58vh"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="min-width: 180px" pSortableColumn="voucherNumber">
+            Voucher No<p-sortIcon field="voucherNumber" />
+          </th>
+          <th style="min-width: 180px" pSortableColumn="issueDate">
+            Issue Date <p-sortIcon field="issueDate" />
+          </th>
+          <th style="min-width: 110px" pSortableColumn="status">
+            Status <p-sortIcon field="status" />
+          </th>
+          <th style="min-width: 180px" pSortableColumn="Action">
+            Action<p-sortIcon field="actions" />
+          </th>
+          <!-- <th style="min-width: 180px" pSortableColumn="actions">
+            Action<p-sortIcon field="actions" />
+          </th> -->
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr *ngIf="!loading; else loadingRow">
+          <td class="no-wrap-header" title="{{ item.voucherNumber }}">
+            {{ item?.voucherNumber }}
+          </td>
+          <td class="no-wrap-header" title="{{ item.issueDate }}">
+            {{ item?.issueDate | date }}
+          </td>
+          <td>
+            <div *ngIf="item.status == 'PENDING'" class="deactive-box">
+              PENDING
+            </div>
+            <div *ngIf="item.status == 'APPROVED'" class="active-box">
+              APPROVED
+            </div>
+          </td>
+          <td class="icon-group">
+            <a class="dropdown-item edit" (click)="show(item.id)">
+              <i class="fa-solid fa-pencil"></i>
+            </a>
+            <a class="dropdown-item delete" (click)="delete(item.id)">
+              <i class="fa-solid fa-trash"></i>
+            </a>
+          </td>
+        </tr>
+      </ng-template>
+
+      <!-- Skeleton Row Template -->
+      <ng-template #loadingRow>
+        <tr *ngFor="let i of [1, 2, 3, 4, 5]">
+          <td>
+            <p-skeleton width="80%" height="20px"></p-skeleton>
+          </td>
+          <td class="icon-group d-flex gap-2">
+            <p-skeleton shape="circle" size="2rem"></p-skeleton>
+            <p-skeleton shape="circle" size="2rem"></p-skeleton>
+            <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+    <!-- Paginator -->
+    <div class="paginator-wrapper d-flex justify-content-end mt-3">
+      <p-paginator
+        [rows]="10"
+        [totalRecords]="count"
+        (onPageChange)="onPageChange($event)"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+        [showCurrentPageReport]="true"
+        [rowsPerPageOptions]="[10, 50, 100, count]"
+        dropdownAppendTo="body"
+        appendTo="body"
+      ></p-paginator>
+
+      <p-dialog
+        [maximizable]="true"
+        [closeOnEscape]="false"
+        [header]="
+          viewMode
+            ? 'View Journal Voucher'
+            : editMode
+            ? 'Edit Journal Voucher'
+            : 'Create Journal Voucher'
+        "
+        [modal]="true"
+        [(visible)]="displayModal"
+        [draggable]="false"
+        [style]="{ width: '80%' }"
+      >
+        <ng-container>
+          <form [formGroup]="GeneralNoteForm">
+            <div class="row col-lg-12 col-md-12 col-sm-12 d-flex mt-4">
+              <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+                <label class="label-text" for="voucherNumber">Voucher No</label>
+                <input
+                  type="text"
+                  readonly
+                  pInputText
+                  formControlName="voucherNumber"
+                  id="voucherNumber"
+                  autocomplete="off"
+                  [style]="{ width: '100%' }"
+                />
+              </div>
+
+              <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+                <label class="label-text" for="issueDate"
+                  >Date <span class="text-danger">*</span></label
+                >
+                <p-calendar
+                  formControlName="issueDate"
+                  inputId="date"
+                  appendTo="body"
+                  [showOnFocus]="true"
+                  [showIcon]="true"
+                  (onSelect)="onDateChange($event)"
+                  [style]="{ width: '100%' }"
+                ></p-calendar>
+                <div *ngIf="isFieldInvalid('issueDate')" class="text-danger">
+                  This field is required
+                </div>
+              </div>
+
+              <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+                <label class="label-text" for="generalNoteType">Type</label>
+                <p-dropdown
+                  id="generalNoteType"
+                  formControlName="generalNoteType"
+                  [options]="generalNoteTypeOptions"
+                  optionLabel="name"
+                  optionValue="value"
+                  placeholder="Select Type"
+                  [style]="{ width: '100%' }"
+                >
+                </p-dropdown>
+              </div>
+
+              <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+                <label class="label-text" for="title">Note Title</label>
+                <input
+                  id="title"
+                  type="text"
+                  pInputText
+                  formControlName="title"
+                  [style]="{ width: '100%' }"
+                />
+              </div>
+
+              <div class="row col-lg-12 col-md-12 col-sm-12 d-flex mt-4">
+              <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+                <label class="label-text" for="noteIndex">Note Index</label>
+                <input
+                  id="noteIndex"
+                  type="text"
+                  pInputText
+                  formControlName="noteIndex"
+                  [style]="{ width: '100%' }"
+                />
+              </div>
+                <div class="col-md-3 d-flex align-items-center gap-2">
+                  <p-checkbox
+                    inputId="isCheque"
+                    formControlName="isCreditNature"
+                    [binary]="true"
+                    class="me-2"
+                  ></p-checkbox>
+                  <label for="isCheque" class="mb-0 ms-2 label-text"
+                    >Is Credit Nature</label
+                  >
+                </div>
+                <div class="col-md-3 d-flex align-items-center gap-2">
+                  <p-checkbox
+                    inputId="isCheque"
+                    formControlName="isActive"
+                    [binary]="true"
+                    class="me-2"
+                  ></p-checkbox>
+                  <label for="isCheque" class="mb-0 ms-2 label-text"
+                    >Is Active</label
+                  >
+                </div>
+              </div>
+              </div>
+
+            <div class="row-btn-container mt-4">
+              <button
+                type="button"
+                class="add-row-btn"
+                (click)="onAddRow()"
+                [disabled]="viewMode"
+              >
+                Add Row
+              </button>
+              <button
+                type="button"
+                class="remove-row-btn"
+                (click)="onRemoveSelected()"
+                [disabled]="viewMode"
+              >
+                Remove Row
+              </button>
+            </div>
+
+            <ag-grid-angular
+              class="ag-theme-quartz"
+              style="height: 300px"
+              [rowData]="rowData"
+              [columnDefs]="colDefs"
+              [rowSelection]="rowSelection"
+              (cellValueChanged)="onCellValueChanged($event)"
+              [components]="frameworkComponents"
+              (gridReady)="onGridReady($event)"
+              [singleClickEdit]="true"
+            >
+            </ag-grid-angular>
+
+            <div class="row col-lg-12 col-md-12 col-sm-12 d-flex mt-4">
+              <div class="d-flex flex-column col-lg-6 col-md-6 col-sm-6">
+                <label class="label-text" for="remarks">Remarks</label>
+                <input
+                  type="text"
+                  pInputText
+                  formControlName="remarks"
+                  id="remarks"
+                  autocomplete="off"
+                  [style]="{ width: '100%' }"
+                />
+              </div>
+            </div>
+
+            <div class="modal-btn-container mt-4">
+              <button
+                pButton
+                pRipple
+                [loading]="saving"
+                *ngIf="!editMode && !viewMode"
+                (click)="save()"
+                [disabled]="!GeneralNoteForm.valid"
+                [rounded]="true"
+                class="save-btn"
+              >
+                Save
+              </button>
+              <button
+                pButton
+                pRipple
+                [loading]="saving"
+                *ngIf="editMode && !viewMode"
+                (click)="update()"
+                [disabled]="!GeneralNoteForm.valid"
+                [rounded]="true"
+                class="update-btn"
+              >
+                Update
+              </button>
+              <button
+                (click)="displayModal = false"
+                pButton
+                pRipple
+                [rounded]="true"
+                class="cancel-btn"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </ng-container>
+      </p-dialog>
+      <div>
+        <p-toast />
+        <p-confirmDialog />
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,72 @@
+<nav>
+  <ul
+    class="nav nav-pills nav-sidebar flex-column gap-2"
+    data-widget="treeview"
+    role="menu"
+    data-accordion="false"
+  >
+    <ng-container *ngFor="let item of menuItems">
+      <ng-container
+        *ngTemplateOutlet="sidebarInner; context: { item: item }"
+      ></ng-container>
+    </ng-container>
+  </ul>
+</nav>
+
+<ng-template #sidebarInner let-item="item">
+  <li
+    *ngIf="isMenuItemVisible(item)"
+    class="nav-item"
+    [class.menu-open]="!item.isCollapsed"
+    [class.has-treeview]="item.children"
+    [class.active]="item.isActive"
+  >
+    <a
+      class="nav-link active"
+      [class.sub-nav-link]="sidebarExpanded"
+      [class.sub-nav-link-collapsed]="!sidebarExpanded"
+      [routerLink]="item.route || null"
+      [href]="!item.route && item.children ? 'javascript:;' : null"
+      [routerLinkActive]="'active'"
+      [routerLinkActiveOptions]="{ exact: true }"
+      [class.active]="item.isActive"
+      [attr.aria-expanded]="!item.isCollapsed"
+      (click)="
+        item.children ? toggleCollapse(item) : onMenuItemClick(item.route)
+      "
+      [ngClass]="{
+        'dashboard-highlight': item.label === 'Dashboard',
+        'nav-child-link': !!item.parentId
+      }"
+    >
+      <div class="d-flex items-center justify-content-between">
+        <div>
+          <i class="nav-icon {{ item.icon }}" title="{{ item.label }}"></i>
+          <p *ngIf="sidebarExpanded" [title]="item.label" class="nav-item-name">
+            {{ item.label }}
+          </p>
+        </div>
+        <!-- <i
+          *ngIf="item.children"
+          class="fas"
+          [class.fa-angle-up]="!item.isCollapsed"
+          [class.fa-angle-down]="item.isCollapsed"
+        ></i> -->
+      </div>
+    </a>
+
+    <!-- Only add indentation <ul> if children exist -->
+    <ul
+      *ngIf="item.children"
+      class="nav nav-treeview"
+      [collapse]="item.isCollapsed"
+      [isAnimated]="true"
+    >
+      <ng-container *ngFor="let childItem of item.children">
+        <ng-container
+          *ngTemplateOutlet="sidebarInner; context: { item: childItem }"
+        ></ng-container>
+      </ng-container>
+    </ul>
+  </li>
+</ng-template>

@@ -1,0 +1,269 @@
+<div class="mainDiv">
+  <p-toolbar class="col-lg-12 col-md-12 col-sm-12">
+    <ng-template pTemplate="left">
+      <h4>Day Book</h4>
+    </ng-template>
+    <ng-template pTemplate="right">
+      <div class="gap-4 flex">
+        <span class="block md:mt-0 p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            type="text"
+            (input)="onGlobalFilter(policyTable, $event)"
+            placeholder="Search..."
+            style="height: 40px; cursor: pointer"
+            (keydown.enter)="onEnter($event)"
+          />
+        </span>
+        <div class="p-toolbar-group-left">
+          <button
+            pButton
+            pRipple
+            [rounded]="true"
+            class="create-btn"
+            (click)="show()"
+          >
+            + New Day Book
+          </button>
+        </div>
+      </div>
+    </ng-template>
+  </p-toolbar>
+
+  <div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+    <p-table
+      #policyTable
+      [loading]="loading"
+      [value]="tableData"
+      [rowHover]="true"
+      dataKey="id"
+      [scrollable]="true"
+      [paginatorDropdownAppendTo]="'body'"
+      scrollHeight="58vh"
+      [globalFilterFields]="['name', 'issueDate', 'status']"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="min-width: 180px" pSortableColumn="name">
+            Name<p-sortIcon field="name" />
+          </th>
+          <th style="min-width: 180px" pSortableColumn="issueDate">
+            Issue Date<p-sortIcon field="issueDate" />
+          </th>
+          <th style="min-width: 110px" pSortableColumn="total">
+            Total<p-sortIcon field="total" />
+          </th>
+          <th style="min-width: 180px">Action</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr *ngIf="!loading; else loadingRow">
+          <td class="no-wrap-header" title="{{ item.name }}">
+            {{ item?.name }}
+          </td>
+          <td class="no-wrap-header" title="{{ item.issueDate }}">
+            {{ item?.issueDate | date }}
+          </td>
+          <td class="no-wrap-header" title="{{ item.total }}">
+            {{ item?.total }}
+          </td>
+          <td class="icon-group">
+            <a class="dropdown-item edit" (click)="edit(item.id)">
+              <i class="fa-solid fa-pencil"></i>
+            </a>
+            <a class="dropdown-item delete" (click)="delete(item.id)">
+              <i class="fa-solid fa-trash"></i>
+            </a>
+            <a class="dropdown-item view" (click)="viewOnly(item.id)">
+              <i class="fa-solid fa-eye"></i>
+            </a>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #loadingRow>
+        <tr *ngFor="let i of [1, 2, 3, 4, 5]">
+          <td>
+            <p-skeleton width="30%" height="20px"></p-skeleton>
+          </td>
+          <td>
+            <p-skeleton width="30%" height="20px"></p-skeleton>
+          </td>
+          <td>
+            <p-skeleton width="30%" height="20px"></p-skeleton>
+          </td>
+          <td>
+            <p-skeleton width="30%" height="20px"></p-skeleton>
+          </td>
+          <td class="icon-group d-flex gap-2">
+            <p-skeleton shape="circle" size="2rem"></p-skeleton>
+            <p-skeleton shape="circle" size="2rem"></p-skeleton>
+            <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+    <p-paginator
+      [rows]="10"
+      [totalRecords]="count"
+      (onPageChange)="onPageChange($event)"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+      [showCurrentPageReport]="true"
+      [rowsPerPageOptions]="[10, 50, 100, count]"
+    >
+    </p-paginator>
+
+    <p-dialog
+      [maximizable]="true"
+      [closeOnEscape]="false"
+      [header]="
+        viewMode
+          ? 'View Day Book'
+          : editMode
+          ? 'Edit Day Book'
+          : 'Create Day Book'
+      "
+      [modal]="true"
+      [(visible)]="displayModal"
+      [draggable]="false"
+      [style]="{ width: '80%' }"
+    >
+      <ng-container>
+        <form [formGroup]="dayBookForm">
+          <div class="row col-lg-12 col-md-12 col-sm-12 d-flex mt-4">
+            <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+              <label class="label-text" for="name"
+                >Name <span class="text-danger">*</span></label
+              >
+              <input
+                type="text"
+                pInputText
+                formControlName="name"
+                id="name"
+                autocomplete="off"
+                [style]="{ width: '100%' }"
+                [readonly]="viewMode"
+              />
+              <div *ngIf="isFieldInvalid('name')" class="text-danger">
+                This field is required
+              </div>
+            </div>
+
+            <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+              <label class="label-text" for="issueDate"
+                >Date <span class="text-danger">*</span></label
+              >
+              <p-calendar
+                formControlName="issueDate"
+                inputId="date"
+                appendTo="body"
+                [showOnFocus]="true"
+                [showIcon]="true"
+                (onSelect)="onDateChange($event)"
+                [style]="{ width: '100%' }"
+                [readonlyInput]="viewMode"
+              ></p-calendar>
+              <div *ngIf="isFieldInvalid('issueDate')" class="text-danger">
+                This field is required
+              </div>
+            </div>
+          </div>
+
+          <div class="row-btn-container mt-4">
+            <button
+              type="button"
+              class="add-row-btn"
+              (click)="onAddRow()"
+              [disabled]="viewMode"
+              pButton
+              pRipple
+            >
+              Add Row
+            </button>
+            <button
+              type="button"
+              class="remove-row-btn"
+              (click)="onRemoveSelected()"
+              [disabled]="viewMode"
+              pButton
+              pRipple
+            >
+              Remove Row
+            </button>
+          </div>
+
+          <div class="ag-grid-container">
+            <ag-grid-angular
+              class="ag-theme-quartz"
+              style="height: 300px"
+              [rowData]="rowData"
+              [columnDefs]="colDefs"
+              [rowSelection]="rowSelection"
+              [components]="frameworkComponents"
+              (gridReady)="onGridReady($event)"
+              [singleClickEdit]="true"
+            >
+            </ag-grid-angular>
+          </div>
+
+          <div class="row col-lg-12 col-md-12 col-sm-12 d-flex mt-4">
+            <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+              <label class="label-text" for="total">Total</label>
+              <input
+                type="text"
+                pInputText
+                formControlName="total"
+                id="total"
+                autocomplete="off"
+                [style]="{ width: '100%' }"
+                readonly
+              />
+            </div>
+          </div>
+
+          <div class="modal-btn-container mt-4">
+            <button
+              pButton
+              pRipple
+              [loading]="saving"
+              *ngIf="!editMode && !viewMode"
+              (click)="save()"
+              [disabled]="!dayBookForm.valid"
+              [rounded]="true"
+              class="save-btn"
+            >
+              Save
+            </button>
+            <button
+              pButton
+              pRipple
+              [loading]="saving"
+              *ngIf="editMode && !viewMode"
+              (click)="update()"
+              [disabled]="!dayBookForm.valid"
+              [rounded]="true"
+              class="update-btn"
+            >
+              Update
+            </button>
+            <button
+              (click)="displayModal = false"
+              pButton
+              pRipple
+              [rounded]="true"
+              class="cancel-btn"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </ng-container>
+    </p-dialog>
+
+    <div>
+      <p-toast />
+      <p-confirmDialog />
+    </div>
+  </div>
+</div>

@@ -1,0 +1,276 @@
+<p-toolbar class="col-lg-12 col-md-12 col-sm-12">
+  <ng-template pTemplate="left">
+    <h3>Bank</h3>
+  </ng-template>
+  <ng-template pTemplate="right">
+    <div class="gap-4 flex">
+      <span class="block md:mt-0 p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input
+          pInputText
+          type="text"
+          (input)="onGlobalFilter(policyTable, $event)"
+          placeholder="Search..."
+          style="height: 40px; cursor: pointer"
+          (keydown.enter)="onEnter($event)"
+        />
+      </span>
+      <div class="p-toolbar-group-left">
+        <button
+          pButton
+          pRipple
+          [rounded]="true"
+          class="create-btn"
+          (click)="show()"
+        >
+          Create
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</p-toolbar>
+
+<!-- Table -->
+<div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+  <p-table
+    #policyTable
+    [loading]="loading"
+    [value]="tableData"
+    [rowHover]="true"
+    dataKey="id"
+    [scrollable]="true"
+    [paginatorDropdownAppendTo]="'body'"
+    scrollHeight="58vh"
+    [globalFilterFields]="['name']"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="min-width: 200px" pSortableColumn="name">
+          Name <p-sortIcon field="name" />
+        </th>
+        <th style="min-width: 200px" pSortableColumn="Actions">
+          Actions <p-sortIcon field="Actions" />
+        </th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr *ngIf="!loading; else loadingRow">
+        <td>{{ item.name }}</td>
+        <td class="icon-group">
+          <a class="dropdown-item edit" (click)="show(item.id)">
+            <i class="fa-solid fa-pencil"></i>
+          </a>
+          <a class="dropdown-item delete" (click)="delete(item.id)">
+            <i class="fa-solid fa-trash"></i>
+          </a>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Skeleton Row Template -->
+    <ng-template #loadingRow>
+      <tr *ngFor="let i of [1, 2, 3, 4, 5]">
+        <td>
+          <p-skeleton width="80%" height="20px"></p-skeleton>
+        </td>
+        <td class="icon-group d-flex gap-2">
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+  <!-- Paginator -->
+  <div class="paginator-wrapper d-flex justify-content-end mt-3">
+    <p-paginator
+      [rows]="10"
+      [totalRecords]="count"
+      (onPageChange)="onPageChange($event)"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+      [showCurrentPageReport]="true"
+      [rowsPerPageOptions]="[10, 50, 100, count]"
+      dropdownAppendTo="body"
+      appendTo="body"
+    ></p-paginator>
+  </div>
+</div>
+
+<!-- Modal -->
+<p-dialog
+  [maximizable]="true"
+  [header]="editMode ? 'Edit Bank' : 'Create Bank'"
+  [modal]="true"
+  [style]="{ width: '50%' }"
+  [(visible)]="displayModal"
+  [draggable]="false"
+>
+  <div class="row col-md-12 mt-2">
+    <div id="inputField" class="col-md-6 p-field flex flex-column">
+      <label class="label-text" for="name">Name</label>
+      <input
+        appAllowOnlyAlphabets
+        id="name"
+        type="text"
+        pInputText
+        [(ngModel)]="materialType.name"
+      />
+    </div>
+    <div id="inputField" class="col-md-6 p-field flex flex-column">
+      <label class="label-text" for="shortName">Serial Number</label>
+      <input
+        appAllowOnlyAlphabets
+        id="shortName"
+        type="text"
+        pInputText
+        [(ngModel)]="materialType.serialNumber"
+      />
+    </div>
+  </div>
+
+  <!-- <div class="row col-md-12 mt-2">
+    <div id="inputField" class="col-md-4 p-field flex flex-column">
+      <label for="stopEntryBefore">Stop Entry Before</label>
+      <p-calendar
+        [(ngModel)]="materialType.stopEntryBefore"
+        id="stopEntryBefore"
+        appendTo="body"
+        inputId="date"
+        [showOnFocus]="true"
+        [placeholder]="'Select Date'"
+        dateFormat="yy-mm-dd"
+        showIcon="true"
+        [style]="{ width: '100%' }"
+        appendTo="body"
+      ></p-calendar>
+    </div>
+    <div class="col-md-4 p-field flex flex-column">
+      <label class="label-text" for="name">Level Three Id</label>
+      <p-dropdown
+        [options]="coaLevelThree"
+        optionLabel="name"
+        optionValue="id"
+        [(ngModel)]="materialType.coaLevel03Id"
+        (onChange)="onLevelOneChange($event.value)"
+        id="accountTypeId"
+        [placeholder]="'Select Level one'"
+        [style]="{ width: '100%' }"
+        appendTo="body"
+      ></p-dropdown>
+    </div>
+    <div class="col-md-4 p-field flex flex-column">
+      <label class="label-text" for="name">Currency</label>
+      <p-dropdown
+        [options]="currency"
+        optionLabel="name"
+        optionValue="id"
+        [(ngModel)]="materialType.currencyId"
+        id="currencyId"
+        [placeholder]="'Select Currency'"
+        [style]="{ width: '100%' }"
+        appendTo="body"
+      ></p-dropdown>
+    </div>
+  </div> -->
+  <div class="row col-md-12 mt-2">
+    <div id="inputField" class="col-md-6 p-field flex flex-column">
+      <label class="label-text" for="cnic">Cnic</label>
+      <input
+        id="cnic"
+        placeholder="99999-9999999-9"
+        type="text"
+        pInputText
+        [(ngModel)]="materialType.cnic"
+      />
+    </div>
+    <div id="inputField" class="col-md-6 p-field flex flex-column">
+      <label class="label-text" for="emailAddress">Email Address</label>
+      <input
+        appAllowOnlyAlphabets
+        id="emailAddress"
+        placeholder="abc@gmail.com"
+        type="text"
+        pInputText
+        [(ngModel)]="materialType.emailAddress"
+      />
+    </div>
+  </div>
+  <div class="row col-md-12 mt-2">
+    <div id="inputField" class="col-md-6 p-field flex flex-column">
+      <label class="label-text" for="contactNumber">Contact Number</label>
+      <input
+        id="contactNumber"
+        type="text"
+        placeholder="03103627627"
+        pInputText
+        [(ngModel)]="materialType.contactNumber"
+      />
+    </div>
+    <div id="inputField" class="col-md-6 p-field flex flex-column">
+      <label class="label-text" for="physicalAddress">Physical Address</label>
+      <input
+        id="physicalAddress"
+        type="text"
+        placeholder="Address"
+        pInputText
+        [(ngModel)]="materialType.physicalAddress"
+      />
+    </div>
+  </div>
+  <div class="row col-md-12 mt-2">
+    <div id="inputField" class="col-md-6 p-field flex flex-column">
+      <label class="label-text" for="salesTaxNumber">Sales Tax Number</label>
+      <input
+        id="salesTaxNumber"
+        type="text"
+        placeholder="Sales Tax Number"
+        pInputText
+        [(ngModel)]="materialType.salesTaxNumber"
+      />
+    </div>
+    <div id="inputField" class="col-md-6 p-field flex flex-column">
+      <label class="label-text" for="nationalTaxNumber"
+        >National Tax Number</label
+      >
+      <input
+        id="nationalTaxNumber"
+        type="text"
+        placeholder="National Tax Number"
+        pInputText
+        [(ngModel)]="materialType.nationalTaxNumber"
+      />
+    </div>
+  </div>
+  <div class="modal-btn-container mt-4">
+    <button
+      pButton
+      pRipple
+      [loading]="saving"
+      *ngIf="!editMode"
+      (click)="save()"
+      class="save-btn"
+    >
+      Save
+    </button>
+    <button
+      pButton
+      pRipple
+      [loading]="saving"
+      *ngIf="editMode"
+      (click)="update()"
+      [rounded]="true"
+      class="update-btn"
+    >
+      Update
+    </button>
+    <button
+      (click)="displayModal = false"
+      pButton
+      pRipple
+      [rounded]="true"
+      class="cancel-btn"
+    >
+      Cancel
+    </button>
+  </div>
+</p-dialog>

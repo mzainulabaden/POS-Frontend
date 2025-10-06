@@ -1,0 +1,29 @@
+.input-container {
+  position: relative; /* Ensures absolute positioning is relative to this container */
+  width: 100%;
+}
+
+.suggestions {
+  position: absolute;
+  top: 100%; /* Places suggestions right below the input */
+  left: 0;
+  width: 100%;
+  background: white;
+  border: 1px solid #ccc;
+  max-height: 150px;
+  overflow-y: auto;
+  list-style: none;
+  padding: 0;
+  margin: 2px 0 0; /* Slight spacing */
+  z-index: 1000; /* Ensures suggestions appear above other elements */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Adds shadow for visibility */
+}
+
+.suggestions li {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.suggestions li:hover {
+  background: #f0f0f0;
+}

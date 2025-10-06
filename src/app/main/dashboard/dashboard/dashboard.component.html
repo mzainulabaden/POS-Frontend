@@ -1,0 +1,227 @@
+<p-toolbar styleClass="mb-4 px-4 py-2">
+  <ng-template pTemplate="left">
+    <h4>Dashboard</h4>
+  </ng-template>
+  <ng-template pTemplate="right">
+    <button
+      class="bg-white hover:bg-blue-700 hover:text-white text-black px-4 py-2 rounded-lg border border-blue-600 font-medium shadow-none transition-all duration-200 flex items-center gap-2"
+      (click)="goto('/pos')"
+    >
+      <i class="fas fa-shopping-bag text-sm flex align-items-center"></i>
+      <span>AverPOS</span>
+    </button>
+  </ng-template>
+</p-toolbar>
+
+<div
+  class="col-lg-12 mb-5"
+  style="max-height: 80vh; overflow-y: auto; overflow-x: hidden"
+>
+  <p-accordion>
+    <p-accordionTab header="Daily Logs" [headerStyle]="{ color: 'black' }">
+      <p class="m-0">
+        <app-todo-list></app-todo-list>
+      </p>
+    </p-accordionTab>
+  </p-accordion>
+
+  <!-- Business Partner Overview -->
+  <div id="business-partner-overview" class="mb-5">
+    <h3 class="font-bold text-start mb-4 mt-4">Business Partner Overview</h3>
+
+    <!-- Top KPI Cards -->
+    <div class="row g-3 px-3 mt-4">
+      <div class="col-xl-3 col-lg-4 col-md-6" *ngFor="let card of kpiCards">
+        <p-card class="h-50">
+          <div class="d-flex align-items-center gap-2">
+            <span
+              class="d-flex justify-content-center align-items-center rounded-circle"
+              [ngStyle]="{
+                width: '50px',
+                height: '50px',
+                background: card.bg,
+                color: card.color
+              }"
+            >
+              <i [ngClass]="card.icon"></i>
+            </span>
+
+            <div>
+              <h5 class="text-bold mb-0">${{ card.total }}</h5>
+              <small class="text-muted">{{ card.label }}</small>
+            </div>
+          </div>
+        </p-card>
+      </div>
+    </div>
+
+    <!-- Tile Cards -->
+    <div class="row g-3 mt-4 px-3">
+      <div class="col-xl-3 col-md-6" *ngFor="let data of tileCards">
+        <p-card [style]="{ background: data.bg, color: '#fff' }">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4 class="mb-0">{{ data.total }}</h4>
+              <small>{{ data.label }}</small>
+            </div>
+            <span style="width: 40px; height: 25px"
+              ><i [class]="data.icon" style="font-size: 2rem"></i
+            ></span>
+          </div>
+        </p-card>
+      </div>
+    </div>
+
+    <div class="flex mb-4 col-lg-12">
+      <p-card class="col-lg-12">
+        <p-chart
+          type="bar"
+          [data]="dataBusinessPartners"
+          [options]="optionsBusinessPartners"
+          class="h-[30rem]"
+        ></p-chart>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- HRM Dashboard -->
+  <form [formGroup]="dashboardForm">
+    <div class="mb-5">
+      <h3 class="font-bold text-start mb-4 col-lg-12">
+        Sales and Purchases Overview
+      </h3>
+      <div class="row g-3 mt-2 px-3">
+        <div class="col-xl-3 col-md-6" *ngFor="let t of salesPurchaseTiles">
+          <p-card [style]="{ background: t.bg, color: '#fff' }">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h4 class="mb-0">{{ t.total }}</h4>
+                <small>{{ t.label }}</small>
+              </div>
+              <span style="width: 40px; height: 25px"
+                ><i [class]="t.icon" style="font-size: 2rem"></i
+              ></span>
+            </div>
+          </p-card>
+        </div>
+      </div>
+
+      <div class="row g-3 mt-2 px-3">
+        <div
+          class="col-xl-3 col-md-6"
+          *ngFor="let t of salesPurchaseAmountTiles"
+        >
+          <p-card [style]="{ background: t.bg, color: '#fff' }">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h4 class="mb-0">{{ t.total }}</h4>
+                <small>{{ t.label }}</small>
+              </div>
+              <span style="width: 40px; height: 25px"
+                ><i [class]="t.icon" style="font-size: 2rem"></i
+              ></span>
+            </div>
+          </p-card>
+        </div>
+      </div>
+      <div class="d-flex col-lg-12 col-md-12 col-sm-12">
+        <div class="d-flex col-lg-6">
+          <p-card
+            header="Orders and Invoices"
+            class="text-center col-lg-12 col-md-12 col-sm-12"
+          >
+            <div class="d-flex gap-4 justify-content-center align-items-center">
+              <div>
+                <p class="font-bold text-center">Start Date</p>
+                <p-calendar
+                  formControlName="startDate"
+                  [showIcon]="true"
+                  dateFormat="yy-mm-dd"
+                  [style]="{ height: '33px', width: '250px' }"
+                  appendTo="body"
+                ></p-calendar>
+              </div>
+              <div>
+                <p class="font-bold text-center">End Date</p>
+                <p-calendar
+                  formControlName="endDate"
+                  [showIcon]="true"
+                  dateFormat="yy-mm-dd"
+                  [style]="{ height: '33px', width: '250px' }"
+                  appendTo="body"
+                ></p-calendar>
+              </div>
+            </div>
+
+            <p-chart
+              type="polarArea"
+              [data]="dataSalesPurchaseStats"
+              [options]="optionsSalesPurchaseStats"
+              class="h-[30rem]"
+            ></p-chart>
+          </p-card>
+        </div>
+        <div class="flex mb-4 col-lg-6">
+          <p-card class="col-lg-12">
+            <p-chart
+              type="bar"
+              [data]="dataAmount"
+              [options]="optionsAmount"
+              class="h-[30rem]"
+            ></p-chart>
+          </p-card>
+        </div>
+      </div>
+
+      <h3 class="font-bold text-start mb-4">Employee Attendance Overview</h3>
+
+      <div class="row g-3 mt-2 px-3">
+        <div class="col-xl-3 col-md-6" *ngFor="let t of attendanceTiles">
+          <p-card [style]="{ background: t.bg, color: '#fff' }">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h4 class="mb-0">
+                  <ng-container *ngIf="t.key !== 'date'; else dateTpl">
+                    {{ t.value }}
+                  </ng-container>
+                  <ng-template #dateTpl>
+                    {{ t.value | date : "MMMM d, y" }}
+                  </ng-template>
+                </h4>
+                <small>{{ t.label }}</small>
+              </div>
+              <span style="width: 40px; height: 25px"
+                ><i [class]="t.icon" style="font-size: 2rem"></i
+              ></span>
+            </div>
+          </p-card>
+        </div>
+      </div>
+
+      <div class="d-flex col-lg-12 col-md-12 col-sm-12">
+        <div class="d-flex col-lg-12">
+          <p-card
+            header="Attendance"
+            class="text-center col-lg-12 col-md-12 col-sm-12"
+          >
+            <div class="d-flex flex-column align-items-center mb-2">
+              <p-calendar
+                formControlName="date"
+                [showIcon]="true"
+                dateFormat="yy-mm-dd"
+                [style]="{ height: '33px', width: '400px' }"
+                appendTo="body"
+              ></p-calendar>
+            </div>
+
+            <p-chart
+              type="doughnut"
+              [data]="dataEmployee"
+              [options]="optionsEmployee"
+            ></p-chart>
+          </p-card>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

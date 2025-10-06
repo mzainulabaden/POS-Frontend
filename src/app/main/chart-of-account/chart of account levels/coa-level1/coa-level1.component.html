@@ -1,0 +1,298 @@
+<p-toolbar class="col-lg-12 col-md-12 col-sm-12">
+  <ng-template pTemplate="left">
+    <h3>Level One</h3>
+  </ng-template>
+  <ng-template pTemplate="right">
+    <div class="gap-4 flex">
+      <span class="block md:mt-0 p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input
+          pInputText
+          type="text"
+          (input)="onGlobalFilter(policyTable, $event)"
+          placeholder="Search..."
+          style="height: 40px; cursor: pointer"
+          (keydown.enter)="onEnter($event)"
+        />
+      </span>
+      <div class="p-toolbar-group-left d-flex flex-row gap-2">
+        <button
+          pButton
+          pRipple
+          [rounded]="true"
+          class="create-btn"
+          (click)="show()"
+        >
+          Create
+        </button>
+        <button
+          pButton
+          pRipple
+          [rounded]="true"
+          class="create-btn gap-2"
+          (click)="openBulkUpload()"
+        >
+          <i class="pi pi-upload"></i>
+          Bulk Upload
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</p-toolbar>
+
+<!-- Table -->
+<div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+  <p-table
+    #policyTable
+    [loading]="loading"
+    [value]="tableData"
+    [rowHover]="true"
+    dataKey="id"
+    [scrollable]="true"
+    [paginatorDropdownAppendTo]="'body'"
+    scrollHeight="58vh"
+    [globalFilterFields]="['name']"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="min-width: 200px" pSortableColumn="name">
+          Name <p-sortIcon field="name" />
+        </th>
+                <th style="min-width: 200px" pSortableColumn="serialNumber">
+         Serial Number<p-sortIcon field="serialNumber" />
+        </th>
+        <th style="min-width: 200px" pSortableColumn="Actions">
+          Actions <p-sortIcon field="Actions" />
+        </th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr *ngIf="!loading; else loadingRow">
+        <td>{{ item.name }}</td>
+        <td>{{ item.serialNumber }}</td>
+        <td class="icon-group">
+          <a class="dropdown-item edit" (click)="show(item.id)">
+            <i class="fa-solid fa-pencil"></i>
+          </a>
+          <a class="dropdown-item delete" (click)="delete(item.id)">
+            <i class="fa-solid fa-trash"></i>
+          </a>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Skeleton Row Template -->
+    <ng-template #loadingRow>
+      <tr *ngFor="let i of [1, 2, 3, 4, 5]">
+        <td>
+          <p-skeleton width="80%" height="20px"></p-skeleton>
+        </td>
+        <td class="icon-group d-flex gap-2">
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+  <div class="paginator-wrapper d-flex justify-content-end mt-3">
+    <p-paginator
+      [rows]="10"
+      [totalRecords]="count"
+      (onPageChange)="onPageChange($event)"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+      [showCurrentPageReport]="true"
+      [rowsPerPageOptions]="[10, 50, 100, count]"
+      dropdownAppendTo="body"
+      appendTo="body"
+    ></p-paginator>
+  </div>
+</div>
+
+<!-- Modal -->
+<p-dialog
+  [maximizable]="true"
+  [header]="editMode ? 'Edit Level One' : 'Create Level One'"
+  [modal]="true"
+  [(visible)]="displayModal"
+  [style]="{ width: '50%' }"
+  [draggable]="false"
+>
+  <div class="row col-md-12 mt-2">
+    <div id="inputField" class="col-md-6 p-field flex flex-column">
+      <label class="label-text" for="name">Name</label>
+      <input
+        appAllowOnlyAlphabets
+        id="name"
+        type="text"
+        pInputText
+        [(ngModel)]="materialType.name"
+      />
+    </div>
+    <div id="inputField" class="col-md-6 p-field flex flex-column">
+      <label class="label-text" for="shortName">Serial Number</label>
+      <input
+        appAllowOnlyAlphabets
+        id="shortName"
+        type="text"
+        pInputText
+        [(ngModel)]="materialType.serialNumber"
+      />
+    </div>
+  </div>
+  <div class="row col-md-12 mt-2">
+    <div class="col-md-6 p-field flex flex-column">
+      <label class="label-text" for="name">Account Type</label>
+      <p-dropdown
+        [options]="accountType"
+        optionLabel="name"
+        optionValue="id"
+        [(ngModel)]="materialType.accountTypeId"
+        id="accountTypeId"
+        [placeholder]="'Select an Account Type'"
+        [style]="{ width: '100%' }"
+        appendTo="body"
+      ></p-dropdown>
+    </div>
+  </div>
+  <div class="modal-btn-container mt-4">
+    <button
+      pButton
+      pRipple
+      [loading]="saving"
+      *ngIf="!editMode"
+      (click)="save()"
+      class="save-btn"
+    >
+      Save
+    </button>
+    <button
+      pButton
+      pRipple
+      [loading]="saving"
+      *ngIf="editMode"
+      (click)="update()"
+      [rounded]="true"
+      class="update-btn"
+    >
+      Update
+    </button>
+    <button
+      (click)="displayModal = false"
+      pButton
+      pRipple
+      [rounded]="true"
+      class="cancel-btn"
+    >
+      Cancel
+    </button>
+  </div>
+</p-dialog>
+
+<p-dialog
+  header="Bulk Upload COA Level 1"
+  [(visible)]="bulkUploadModal"
+  (onHide)="resetBulkUploadDialog()"
+  [modal]="true"
+  [closable]="true"
+>
+  <!-- Template Download Button -->
+  <div class="bulk-upload-labels mb-4">
+    <label class="label-text"> Download Excel Template </label>
+    <button
+      pButton
+      pRipple
+      [rounded]="true"
+      (click)="downloadTemplate()"
+      class="create-btn"
+    >
+      Download Template
+    </button>
+  </div>
+
+  <!-- File Input -->
+  <div class="upload-area" (click)="fileInput.click()">
+    <div class="upload-content">
+      <i class="fa fa-cloud-upload upload-icon"></i>
+      <p>Drag & Drop to Upload File (.xlsx)</p>
+
+      <span>OR</span>
+      <button type="button" class="browse-button">Browse File</button>
+    </div>
+    <input
+      id="fileUpload"
+      type="file"
+      #fileInput
+      (change)="onFileSelect($event)"
+      accept=".xlsx"
+      hidden
+    />
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="bulk-upload-btn">
+      <button
+        (click)="openPreview()"
+        pButton
+        pRipple
+        [rounded]="true"
+        class="create-btn"
+      >
+        Preview
+      </button>
+      <button
+        (click)="submitBulkUpload()"
+        pButton
+        pRipple
+        [rounded]="true"
+        class="create-btn"
+      >
+        Upload
+      </button>
+      <button
+        (click)="resetBulkUploadDialog()"
+        pButton
+        pRipple
+        [rounded]="true"
+        class="cancel-btn"
+      >
+        Cancel
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+  <p-dialog
+    header="Preview Uploaded Data"
+    [(visible)]="previewModalVisible"
+    [modal]="true"
+    [closable]="true"
+  >
+    <div *ngIf="!bulkUploadData.length" class="p-3 text-center">
+      <p class="label-text"><strong>No Data Uploaded</strong></p>
+    </div>
+
+    <p-table
+      *ngIf="bulkUploadData.length"
+      [value]="bulkUploadData"
+      [scrollable]="true"
+      scrollHeight="200px"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Name</th>
+          <th>Serial Number</th>
+          <th>Account Type Name</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>{{ item.name }}</td>
+          <td>{{ item.serialNumber }}</td>
+          <td>{{ item.accountTypeName }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-dialog>
+</div>

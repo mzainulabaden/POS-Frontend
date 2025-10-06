@@ -1,0 +1,13 @@
+<p-dropdown
+  #dropdownRef
+  appendTo="body"
+  [options]="options"
+  optionLabel="name"
+  optionValue="id"
+  [filter]="true"
+  filterPlaceholder="Search..."
+  placeholder="Select"
+  [(ngModel)]="value"
+  (onChange)="onChange()"
+  [style]="{ width: '100%' }"
+/>

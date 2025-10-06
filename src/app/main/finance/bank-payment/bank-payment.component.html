@@ -1,0 +1,505 @@
+<p-toolbar class="col-lg-12 col-md-12 col-sm-12">
+  <ng-template pTemplate="left">
+    <h4>Bank Payment</h4>
+  </ng-template>
+  <ng-template pTemplate="right">
+    <div class="gap-4 flex">
+      <span class="block md:mt-0 p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input
+          pInputText
+          type="text"
+          (input)="onGlobalFilter(policyTable, $event)"
+          placeholder="Search..."
+          style="height: 40px; cursor: pointer"
+          (keydown.enter)="onEnter($event)"
+        />
+      </span>
+      <div class="p-toolbar-group-left">
+        <button
+          pButton
+          pRipple
+          [rounded]="true"
+          class="create-btn"
+          (click)="show()"
+        >
+          + Add New Bank Payments
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</p-toolbar>
+
+<div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+  <p-table
+    [loading]="loading"
+    #policyTable
+    [value]="tableData"
+    [rowHover]="true"
+    dataKey="id"
+    [scrollable]="true"
+    [paginatorDropdownAppendTo]="'body'"
+    scrollHeight="58vh"
+    [globalFilterFields]="['coaLvl4Name', 'bankCOALevel04Name']"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="min-width: 180px" pSortableColumn="isActive">
+          Action<p-sortIcon field="isActive" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="coaLvl4Name">
+          Party Name <p-sortIcon field="coaLvl4Name" />
+        </th>
+        <th style="min-width: 160px" pSortableColumn="totalAmount">
+          Bank <p-sortIcon field="totalAmount" />
+        </th>
+        <th style="min-width: 150px" pSortableColumn="Date">
+          Date<p-sortIcon field="Date" />
+        </th>
+        <th style="min-width: 180px" pSortableColumn="referenceDate">
+          Cheque Date <p-sortIcon field="referenceDate" />
+        </th>
+        <th style="min-width: 200px" pSortableColumn="voucherNumber">
+          Voucher Number<p-sortIcon field="voucherNumber" />
+          <p-columnFilter type="text" field="voucherNumber" display="menu" />
+        </th>
+
+        <!-- <th style="min-width: 180px" pSortableColumn="totalAmount">
+          Total Amount <p-sortIcon field="totalAmount" />
+        </th> -->
+        <th style="min-width: 180px" pSortableColumn="referenceNumber">
+          Reference No <p-sortIcon field="referenceNumber" />
+        </th>
+        <th style="min-width: 110px" pSortableColumn="status">
+          Status <p-sortIcon field="status" />
+        </th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr *ngIf="!loading; else loadingRow">
+        <td class="icon-group">
+          <a
+            *ngIf="item.status == 'PENDING'"
+            class="dropdown-item edit"
+            (click)="edit(item.id)"
+          >
+            <i class="fa-solid fa-pencil"></i>
+          </a>
+          <a
+            *ngIf="item.status == 'PENDING'"
+            class="dropdown-item delete"
+            (click)="delete(item.id)"
+          >
+            <i class="fa-solid fa-trash"></i>
+          </a>
+          <a
+            *ngIf="item.status == 'PENDING'"
+            class="dropdown-item view"
+            (click)="approve(item.id)"
+          >
+            <i class="fa-solid fa-circle-check"></i>
+          </a>
+          <a
+            *ngIf="item.status == 'APPROVED'"
+            class="dropdown-item view"
+            (click)="viewOnly(item.id)"
+          >
+            <i class="fa-solid fa-eye"></i>
+          </a>
+        </td>
+        <td
+          class="no-wrap-header"
+          title="{{ item?.generalPaymentDetails[0]?.coaLevel04Name }}"
+        >
+          {{ item?.generalPaymentDetails[0]?.coaLevel04Name }}
+        </td>
+        <td class="no-wrap-header" title="{{ item.bankCOALevel04Name }}">
+          {{ item?.bankCOALevel04Name }}
+        </td>
+        <td class="no-wrap-header" title="{{ item.issueDate }}">
+          {{ item?.issueDate | date }}
+        </td>
+        <td class="no-wrap-header" title="{{ item.referenceDate }}">
+          {{ item?.referenceDate }}
+        </td>
+        <td class="no-wrap-header" title="{{ item.voucherNumber }}">
+          {{ item?.voucherNumber }}
+        </td>
+
+        <td class="no-wrap-header" title="{{ item.referenceNumber }}">
+          {{ item?.referenceNumber }}
+        </td>
+        <td>
+          <div *ngIf="item.status == 'PENDING'" class="deactive-box">
+            PENDING
+          </div>
+          <div *ngIf="item.status == 'APPROVED'" class="active-box">
+            APPROVED
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Skeleton Row Template -->
+    <ng-template #loadingRow>
+      <tr *ngFor="let i of [1, 2, 3, 4, 5]">
+        <td>
+          <p-skeleton width="80%" height="20px"></p-skeleton>
+        </td>
+        <td class="icon-group d-flex gap-2">
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+  <!-- Paginator -->
+  <div class="paginator-wrapper d-flex justify-content-end mt-3">
+    <p-paginator
+      [rows]="10"
+      [totalRecords]="count"
+      (onPageChange)="onPageChange($event)"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+      [showCurrentPageReport]="true"
+      [rowsPerPageOptions]="[10, 50, 100, count]"
+      dropdownAppendTo="body"
+      appendTo="body"
+    ></p-paginator>
+  </div>
+
+  <p-dialog
+    [maximizable]="true"
+    [closeOnEscape]="false"
+    [header]="'Create Bank Payment'"
+    [modal]="true"
+    [(visible)]="displayModal"
+    [draggable]="false"
+    [style]="{ width: '80%' }"
+  >
+    <ng-container>
+      <form [formGroup]="bankPaymentForm">
+        <div class="row col-lg-12 col-md-12 col-sm-12 d-flex mt-4">
+          <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+            <label class="label-text" for="voucherNumber">Voucher No</label>
+            <input
+              type="text"
+              readonly
+              pInputText
+              formControlName="voucherNumber"
+              id="voucherNumber"
+              autocomplete="off"
+              [style]="{ width: '100%' }"
+            />
+          </div>
+
+          <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+            <label class="label-text" for="issueDate"
+              >Date <span class="text-danger">*</span></label
+            >
+            <p-calendar
+              formControlName="issueDate"
+              inputId="date"
+              appendTo="body"
+              [showOnFocus]="true"
+              [showIcon]="true"
+              (onSelect)="onDateChange()"
+              [(ngModel)]="selectedDate"
+              [style]="{ width: '100%' }"
+            ></p-calendar>
+            <div *ngIf="isFieldInvalid('issueDate')" class="text-danger">
+              This field is required
+            </div>
+          </div>
+
+          <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+            <label class="label-text" for="maturityDate">Maturity Date</label>
+            <p-calendar
+              formControlName="maturityDate"
+              inputId="date"
+              appendTo="body"
+              [showOnFocus]="true"
+              [showIcon]="true"
+              [style]="{ width: '100%' }"
+            ></p-calendar>
+          </div>
+
+          <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+            <label class="label-text" for="bankCOALevel04Id"
+              >Bank <span class="text-danger">*</span></label
+            >
+            <p-dropdown
+              [options]="allBanks"
+              optionLabel="name"
+              optionValue="id"
+              [showClear]="true"
+              formControlName="bankCOALevel04Id"
+              id="bankCOALevel04Id"
+              [placeholder]="'Select Bank'"
+              [style]="{ width: '100%' }"
+              [filter]="true"
+              filterBy="name"
+              appendTo="body"
+            ></p-dropdown>
+            <div *ngIf="isFieldInvalid('bankCOALevel04Id')" class="text-danger">
+              This field is required
+            </div>
+          </div>
+        </div>
+
+        <div class="row col-lg-12 col-md-12 col-sm-12 d-flex mt-4">
+          <div class="col-md-3 d-flex align-items-center gap-2">
+            <p-checkbox
+              inputId="isCheque"
+              formControlName="isCheque"
+              [binary]="true"
+              class="me-2"
+            ></p-checkbox>
+            <label for="isCheque" class="mb-0 ms-2 label-text">Is Cheque</label>
+          </div>
+
+          @if (bankPaymentForm.get('isCheque')?.value) {
+          <div class="col-md-3 d-flex align-items-center gap-2">
+            <p-checkbox
+              inputId="isCrossedCheque"
+              formControlName="isCrossedCheque"
+              [binary]="true"
+              class="me-2"
+            ></p-checkbox>
+            <label for="isCrossedCheque" class="mb-0 ms-2 label-text"
+              >Is Crossed Cheque</label
+            >
+          </div>
+
+          <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+            <label class="label-text" for="chequeTitle">Cheque Title</label>
+            <input
+              type="text"
+              pInputText
+              formControlName="chequeTitle"
+              id="chequeTitle"
+              autocomplete="off"
+              [style]="{ width: '100%' }"
+            />
+          </div>
+
+          <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+            <label class="label-text" for="chequeNumber">Cheque Number</label>
+            <input
+              type="text"
+              pInputText
+              formControlName="chequeNumber"
+              id="chequeNumber"
+              autocomplete="off"
+              [style]="{ width: '100%' }"
+            />
+          </div>
+
+          <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+            <label class="label-text" for="referenceDate">Check Date</label>
+            <p-calendar
+              formControlName="referenceDate"
+              inputId="date"
+              appendTo="body"
+              [showOnFocus]="true"
+              [showIcon]="true"
+              (onSelect)="onDateChange()"
+              [(ngModel)]="selectedRefDate"
+              [style]="{ width: '100%' }"
+            ></p-calendar>
+          </div>
+          }
+        </div>
+
+        <div class="row col-lg-12 col-md-12 col-sm-12 d-flex mt-4">
+          <div class="d-flex flex-column col-lg-3 col-md-3 col-sm-3">
+            <label class="label-text" for="referenceNumber">Reference No</label>
+            <input
+              type="text"
+              pInputText
+              formControlName="referenceNumber"
+              id="referenceNumber"
+              autocomplete="off"
+              [style]="{ width: '100%' }"
+            />
+          </div>
+        </div>
+
+        <div class="row-btn-container mt-4 justify-content-between">
+          <div class="d-flex gap-2">
+            <!-- <button type="button" class="add-row-btn" (click)="onAddRow()">
+              Add Row
+            </button> -->
+            <button
+              type="button"
+              class="remove-row-btn"
+              (click)="onRemoveSelected()"
+            >
+              Remove Row
+            </button>
+          </div>
+          <button
+            pButton
+            type="button"
+            (click)="openAdjustModal()"
+            class="create-btn"
+            [disabled]="viewMode"
+          >
+            Adjust
+          </button>
+        </div>
+
+        <ag-grid-angular
+          class="ag-theme-quartz"
+          style="height: 300px"
+          [rowData]="rowData"
+          [columnDefs]="colDefs"
+          [rowSelection]="rowSelection"
+          (cellValueChanged)="onCellValueChanged($event)"
+          [components]="frameworkComponents"
+          (gridReady)="onGridReady($event)"
+          [singleClickEdit]="true"
+        >
+        </ag-grid-angular>
+
+        <br />
+        <div class="row col-md-12">
+          <div id="inputField" class="col-md-6 flex flex-column">
+            <label class="label-text" for="totalAmount">Total Amount</label>
+            <input
+              type="text"
+              readonly
+              pInputText
+              formControlName="totalAmount"
+              id="totalAmount"
+              autocomplete="off"
+            />
+            <div *ngIf="isFieldInvalid('totalAmount')" class="text-danger">
+              This field is required
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-btn-container mt-4">
+          <button
+            pButton
+            pRipple
+            [loading]="saving"
+            *ngIf="!editMode && !viewMode"
+            (click)="save()"
+            [disabled]="!bankPaymentForm.valid"
+            [rounded]="true"
+            class="save-btn"
+          >
+            Save
+          </button>
+          <button
+            pButton
+            pRipple
+            [loading]="saving"
+            *ngIf="editMode && !viewMode"
+            (click)="update()"
+            [disabled]="!bankPaymentForm.valid"
+            [rounded]="true"
+            class="update-btn"
+          >
+            Update
+          </button>
+          <button
+            (click)="displayModal = false"
+            pButton
+            pRipple
+            [rounded]="true"
+            class="cancel-btn"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </ng-container>
+  </p-dialog>
+  <div>
+    <p-toast />
+    <p-confirmDialog />
+  </div>
+</div>
+
+<p-dialog
+  [maximizable]="true"
+  header="Copy Purchase Order"
+  [modal]="true"
+  [(visible)]="displayAdjustModal"
+  [draggable]="false"
+>
+  <span class="block md:mt-0 p-input-icon-left mb-3">
+    <i class="pi pi-search"></i>
+    <input
+      pInputText
+      type="text"
+      (input)="onGlobalFilter(requisitionTable, $event)"
+      placeholder="Search..."
+      style="height: 40px; cursor: pointer"
+    />
+  </span>
+  <div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+    <p-table
+      [value]="adjustTableData"
+      #requisitionTable
+      [loading]="loading"
+      [rowHover]="true"
+      dataKey="id"
+      [scrollable]="true"
+      [paginatorDropdownAppendTo]="'body'"
+      scrollHeight="58vh"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 25, 50, 100]"
+      [globalFilterFields]="['voucherNumber', 'supplierName']"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="min-width: 100px" pSortableColumn="voucherNumber">
+            PI No <p-sortIcon field="voucherNumber" />
+          </th>
+          <th style="min-width: 100px" pSortableColumn="supplier">
+            Supplier Name <p-sortIcon field="supplier" />
+          </th>
+          <th style="min-width: 100px" pSortableColumn="grandTotal">
+            Grand Total <p-sortIcon field="grandTotal" />
+          </th>
+          <th style="min-width: 100px" pSortableColumn="advanceAmount">
+            Advance Amount <p-sortIcon field="advanceAmount" />
+          </th>
+          <th style="min-width: 100px" pSortableColumn="paidAmount">
+            Paid Amount <p-sortIcon field="paidAmount" />
+          </th>
+          <th style="min-width: 100px" pSortableColumn="pendingAmount">
+            Pending Amount <p-sortIcon field="pendingAmount" />
+          </th>
+          <th>Action/></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>{{ item.voucherNumber }}</td>
+          <td>{{ item.supplierName }}</td>
+          <td>{{ item.grandTotal }}</td>
+          <td>{{ item.advanceAmount }}</td>
+          <td>{{ item.paidAmount }}</td>
+          <td>{{ item.pendingAmount }}</td>
+
+          <td>
+            <button
+              (click)="selectPayment(item.id)"
+              pButton
+              pRipple
+              class="create-btn"
+            >
+              Select
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</p-dialog>

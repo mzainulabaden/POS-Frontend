@@ -1,0 +1,283 @@
+<div class="mainDiv">
+<p-toolbar class="col-lg-12 col-md-12 col-sm-12">
+    <ng-template pTemplate="left">
+      <h4>Sale Commission Policy</h4>
+    </ng-template>
+    <ng-template pTemplate="right">
+      <div class="gap-4 flex">
+        <span class="block md:mt-0 p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            type="text"
+            (input)="onGlobalFilter(policyTable, $event)"
+            placeholder="Search..."
+            style="height: 40px; cursor: pointer"
+            (keydown.enter)="onEnter($event)"
+          />
+        </span>
+        <div class="p-toolbar-group-left">
+        <button
+            pButton
+            pRipple
+            [rounded]="true"
+          class="create-btn"
+            (click)="show()"
+          >
+            + Add New Policy
+        </button>
+        </div>
+      </div>
+    </ng-template>
+  </p-toolbar>
+
+<div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+    <p-table
+    #policyTable
+    [loading]="loading"
+    [value]="tableData"
+    [rowHover]="true"
+    dataKey="id"
+    [scrollable]="true"
+    [paginatorDropdownAppendTo]="'body'"
+    scrollHeight="58vh"
+      [globalFilterFields]="['name']"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="min-width: 180px" pSortableColumn="name">
+            Policy Name<p-sortIcon field="name" />
+          </th>
+          <th style="min-width: 180px" pSortableColumn="policyType">
+            Policy Type<p-sortIcon field="policyType" />
+          </th>
+          <th style="min-width: 180px" pSortableColumn="commisionAmount">
+            Commission Amount<p-sortIcon field="commisionAmount" />
+          </th>
+          <th style="min-width: 200px" pSortableColumn="commissionPercentage">
+            Commission Percentage <p-sortIcon field="commissionPercentage" />
+          </th>
+          <th style="min-width: 180px" pSortableColumn="actions">
+            Action<p-sortIcon field="actions" />
+          </th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+      <tr *ngIf="!loading; else loadingRow">
+          <td class="no-wrap-header" title="{{ item.name }}">
+            {{ item?.name }}
+          </td>
+          <td
+            class="no-wrap-header"
+            [title]="getPolicyTypeName(item.policyType)"
+          >
+            {{ getPolicyTypeName(item.policyType) }}
+          </td>
+          <td class="no-wrap-header" title="{{ item.commisionAmount }}">
+            {{ item?.commisionAmount }}
+          </td>
+          <td class="no-wrap-header" title="{{ item.commisionPercentage }}">
+            {{ item?.commisionPercentage }}
+          </td>
+          <td class="icon-group">
+          <a class="dropdown-item edit" (click)="show(item.id)">
+            <i class="fa-solid fa-pencil"></i>
+          </a>
+          <a class="dropdown-item delete" (click)="delete(item.id)">
+            <i class="fa-solid fa-trash"></i>
+          </a>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Skeleton Row Template -->
+    <ng-template #loadingRow>
+      <tr *ngFor="let i of [this.count]">
+        <td>
+          <p-skeleton width="80%" height="20px"></p-skeleton>
+        </td>
+        <td>
+          <p-skeleton width="90%" height="20px"></p-skeleton>
+        </td>
+        <td class="icon-group d-flex gap-2">
+          <p-skeleton shape="circle" size="1.5rem"></p-skeleton>
+          <p-skeleton shape="circle" size="1.5rem"></p-skeleton>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  <div class="paginator-wrapper d-flex justify-content-end mt-3">
+    <p-paginator
+      [rows]="10"
+      [totalRecords]="count"
+      (onPageChange)="onPageChange($event)"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+      [showCurrentPageReport]="true"
+      [rowsPerPageOptions]="[10, 50, 100, count]"
+      dropdownAppendTo="body"
+      appendTo="body"
+    ></p-paginator>
+  </div>
+
+<p-dialog
+  [maximizable]="true"
+  [closeOnEscape]="false"
+  [header]="
+    viewMode
+      ? 'View Commission Rate Policy'
+      : editMode
+      ? 'Edit Commission Rate Policy'
+      : 'Create Commission Rate Policy'
+  "
+  [modal]="true"
+  [(visible)]="displayModal"
+  [draggable]="false"
+  [style]="{ width: '1200px', height: '450px' }"
+>
+  <ng-container>
+    <form [formGroup]="SalesInvoiceForm">
+      <div class="row col-md-12 mt-3">
+        <div id="inputField" class="col-md-3 flex flex-column">
+          <label class="label-text" for="name">Name</label>
+          <input
+            type="text"
+            pInputText
+            formControlName="name"
+            id="name"
+            [style]="{ width: '100%' }"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="col-md-3 flex flex-column">
+          <label class="label-text" for="policyType"
+            >Policy Type <span class="text-danger">*</span></label
+          >
+          <p-dropdown
+            [options]="policyTypes"
+            optionLabel="name"
+            optionValue="id"
+            [showClear]="true"
+            formControlName="policyType"
+            [style]="{ width: '100%' }"
+            id="policyType"
+            [placeholder]="'Select Policy Type'"
+            [filter]="true"
+            filterBy="name"
+          ></p-dropdown>
+          <div
+            *ngIf="
+              SalesInvoiceForm.controls['policyType'].invalid &&
+              SalesInvoiceForm.controls['policyType'].touched
+            "
+            class="text-danger"
+          >
+            This field is required
+          </div>
+        </div>
+
+        <div
+          id="inputField"
+          class="col-md-3 flex flex-column"
+          *ngIf="showAmount"
+        >
+          <label class="label-text" for="commisionAmount">Commission Amount</label>
+          <input
+            type="text"
+            pInputText
+            formControlName="commisionAmount"
+            id="commisionAmount"
+            [style]="{ width: '100%' }"
+            autocomplete="off"
+          />
+        </div>
+
+        <div
+          id="inputField"
+          class="col-md-3 flex flex-column"
+          *ngIf="showPercentage"
+        >
+          <label class="label-text" for="commisionPercentage">Commission Percentage</label>
+          <input
+            type="text"
+            pInputText
+            formControlName="commisionPercentage"
+            id="commisionPercentage"
+            [style]="{ width: '100%' }"
+            autocomplete="off"
+          />
+        </div>
+      </div>
+
+      <div class="row-btn-container mt-3" *ngIf="showGrid">
+        <button
+          type="button"
+          class="add-row-btn"
+          (click)="onAddRow()"
+          [disabled]="viewMode"
+        >
+          Add Row
+        </button>
+        <button
+          type="button"
+          class="remove-row-btn"
+          (click)="onRemoveSelected()"
+          [disabled]="viewMode"
+        >
+          Remove Row
+        </button>
+      </div>
+
+      <ag-grid-angular
+        #slabGrid
+        *ngIf="showGrid"
+        class="ag-theme-quartz"
+        style="width: 100%; height: 300px"
+        [rowData]="rowData"
+        [columnDefs]="colDefs"
+        [rowSelection]="rowSelection"
+        (gridReady)="onGridReady($event)"
+        (cellValueChanged)="onCellValueChanged($event)"
+      >
+      </ag-grid-angular>
+
+      <div class="flex gap-2 justify-content-end mt-4">
+        <button
+          pButton
+          type="button"
+          (click)="displayModal = false"
+          class="cancel-btn"
+          label="Cancel"
+        ></button>
+        <button
+          pButton
+          type="button"
+          *ngIf="!editMode && !viewMode"
+          (click)="save()"
+          [disabled]="!SalesInvoiceForm.valid"
+          class="save-btn"
+          [loading]="saving"
+        >
+          Save
+        </button>
+        <button
+          pButton
+          type="button"
+          *ngIf="editMode && !viewMode"
+          (click)="update()"
+          [disabled]="!SalesInvoiceForm.valid"
+          class="save-btn"
+          [loading]="saving"
+        >
+          Update
+        </button>
+      </div>
+    </form>
+  </ng-container>
+</p-dialog>
+    <div>
+      <p-toast />
+      <p-confirmDialog />
+    </div>
+  </div>
+</div>
