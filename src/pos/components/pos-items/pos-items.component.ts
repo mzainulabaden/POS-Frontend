@@ -42,6 +42,19 @@ export class PosItemsComponent {
         );
       }
     });
+
+	// Subscribe to barcode scans and add matching item to cart
+	this.sidebarService.barcodeScan$.subscribe((code) => {
+		if (!code) return;
+		// Find in current product list by barcode
+		const matched = this.products.find((p: any) => {
+			const itemCode = (p.barcode || p.Barcode || "").toString().trim();
+			return itemCode && itemCode.toLowerCase() === code.toLowerCase();
+		});
+		if (matched) {
+			this.addToCart(matched);
+		}
+	});
   }
 
   fetchItems(id: any) {

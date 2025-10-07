@@ -10,7 +10,7 @@
         <i class="fa-solid fa-bars"></i>
       </button>
 
-      <div style="width: 40%">
+      <div style="width: 40%" class="d-flex gap-2">
         <input
           type="text"
           pInputText
@@ -18,6 +18,16 @@
           [(ngModel)]="searchItems"
           (input)="onSearchChange()"
           class="w-100"
+        />
+        <input
+          type="text"
+          pInputText
+          placeholder="Scan barcode"
+          [(ngModel)]="barcodeInput"
+          (input)="onBarcodeInput()"
+          #barcodeScan
+          autocomplete="off"
+          style="width: 260px"
         />
       </div>
 

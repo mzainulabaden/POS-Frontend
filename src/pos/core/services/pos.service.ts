@@ -67,6 +67,17 @@ export class PosService {
     this.searchTerm.next(term);
   }
 
+	//  ------------ Barcode Scan ---------------
+
+	private barcodeScanSubject = new Subject<string>();
+	barcodeScan$ = this.barcodeScanSubject.asObservable();
+
+	emitBarcodeScan(code: string) {
+		if (code && code.trim()) {
+			this.barcodeScanSubject.next(code.trim());
+		}
+	}
+
   getAll(target: string, skipCount?: number, maxCount?: number) {
     this.url = `${this.baseUrl}${target}/GetAll`;
     const params = [];
