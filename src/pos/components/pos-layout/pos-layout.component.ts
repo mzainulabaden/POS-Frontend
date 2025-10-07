@@ -1,4 +1,4 @@
-import { Component, Renderer2, ViewChild, ElementRef, AfterViewInit } from "@angular/core";
+import { Component, Renderer2, ViewChild, ElementRef, AfterViewInit, HostListener } from "@angular/core";
 import { Router } from "@node_modules/@angular/router";
 import { PosService } from "../../core/services/pos.service";
 
@@ -14,6 +14,9 @@ export class PosLayoutComponent implements AfterViewInit {
   barcodeInput: string = "";
   private barcodeTimer: any;
   @ViewChild("barcodeScan") barcodeScanInput!: ElementRef<HTMLInputElement>;
+  private scanBuffer: string = "";
+  private scanTimeout: any;
+  private lastKeyTime = 0;
 
   constructor(private sidebarService: PosService, private router: Router) {}
 
@@ -70,20 +73,55 @@ export class PosLayoutComponent implements AfterViewInit {
     setTimeout(() => this.barcodeScanInput?.nativeElement?.focus(), 0);
   }
 
-  onBarcodeInput() {
-    debugger
-    // Debounce to detect end of scan without requiring Enter key
-    if (this.barcodeTimer) {
-      clearTimeout(this.barcodeTimer);
+  // onBarcodeInput removed to prevent double-trigger with global listener
+
+  // Global listener to capture barcode scans even if input loses focus
+  @HostListener('document:keydown', ['$event'])
+  handleDocumentKeydown(event: KeyboardEvent) {
+    if (event.ctrlKey || event.altKey || event.metaKey) {
+      return;
     }
 
-    this.barcodeTimer = setTimeout(() => {
-      const code = (this.barcodeInput || "").trim();
-      if (code) {
-        this.sidebarService.emitBarcodeScan(code);
+    const now = Date.now();
+
+    if (event.key === 'Enter') {
+      if (this.scanBuffer) {
+        if (this.scanTimeout) {
+          clearTimeout(this.scanTimeout);
+          this.scanTimeout = null;
+        }
+        this.sidebarService.emitBarcodeScan(this.scanBuffer);
+        this.scanBuffer = "";
+        if (this.barcodeScanInput?.nativeElement) {
+          this.barcodeScanInput.nativeElement.value = "";
+          this.barcodeScanInput.nativeElement.focus();
+        }
+        event.preventDefault();
       }
-      this.barcodeInput = "";
-      this.barcodeScanInput?.nativeElement?.focus();
-    }, 200); // adjust delay if scanner needs more/less time
+      return;
+    }
+
+    if (event.key && event.key.length === 1) {
+      const delta = now - this.lastKeyTime;
+      this.lastKeyTime = now;
+
+      this.scanBuffer += event.key;
+
+      if (this.scanTimeout) {
+        clearTimeout(this.scanTimeout);
+      }
+
+      this.scanTimeout = setTimeout(() => {
+        const code = this.scanBuffer.trim();
+        if (code) {
+          this.sidebarService.emitBarcodeScan(code);
+        }
+        this.scanBuffer = "";
+        if (this.barcodeScanInput?.nativeElement) {
+          this.barcodeScanInput.nativeElement.value = "";
+          this.barcodeScanInput.nativeElement.focus();
+        }
+      }, 120);
+    }
   }
 }
