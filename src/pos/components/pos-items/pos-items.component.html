@@ -69,12 +69,12 @@
               [src]="baseurl + product.imageUrl"
               class="card-img-top rounded-top p-3"
               alt="{{ product.name }}"
-              style="height: 180px; object-fit: contain"
+              style="height: 140px; object-fit: contain"
             />
             <div class="card-body text-center d-flex flex-column">
               <h6 class="card-title mb-2 text-truncate">{{ product.name }}</h6>
-              <p class="fw-bold text-primary fs-5 mb-0">
-                PKR {{ product.unitPrice }}
+              <p class="fw-bold text-primary fs-4 mb-0">
+                {{ product.unitPrice }}
               </p>
             </div>
           </div>

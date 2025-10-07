@@ -1,6 +1,6 @@
 .card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  max-height: 300px;
+  max-height: 200px;
   max-width: 300px;
 }
 
