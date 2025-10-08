@@ -57,8 +57,8 @@ export class PosCartSidebarComponent {
       commissionAmount: [0],
       grandTotal: [0],
       advanceAmount: [0],
-      discountPercentage: [0],
-      discountAmount: [0],
+      discountPercentage: [0], // bill discount %
+      discountAmount: [0], // bill discount amount
       freightAmount: [0],
       taxAmount: [0],
       selectedWarehouseId: [null],
@@ -175,12 +175,84 @@ export class PosCartSidebarComponent {
       itemName: [product.name],
       rate: [product.unitPrice || 0],
       invoiceQty: [product.qty || 1],
-      discount: [product.discount || 0],
+      discount: [product.discount || 0], // amount
+      discountPercentage: [0], // percent
       unitId: [product.unitId || 0],
       warehouseId: [defaultId],
+      lineTotal: [((product.qty || 1) * (product.unitPrice || 0)) || 0],
     });
+    const qtyCtrl = itemForm.get("invoiceQty"); // decimal units
+    const rateCtrl = itemForm.get("rate"); // price per unit
+    const totalCtrl = itemForm.get("lineTotal"); // amount
+    const discAmtCtrl = itemForm.get("discount"); // amount
+    const discPctCtrl = itemForm.get("discountPercentage"); // percent
+
+    let isUpdating = false;
+
+    // When quantity changes: amount = qty * rate
+    qtyCtrl?.valueChanges.subscribe((qty) => {
+      if (isUpdating) return;
+      isUpdating = true;
+      const quantity = +qty || 0;
+      const unitRate = +(rateCtrl?.value as any) || 0;
+      const amount = quantity * unitRate;
+      totalCtrl?.setValue(+amount.toFixed(2), { emitEvent: false });
+      // Recompute item discount amount from %
+      const pct = +(discPctCtrl?.value as any) || 0;
+      if (pct > 0) {
+        const dAmt = +(amount * (pct / 100)).toFixed(2);
+        discAmtCtrl?.setValue(dAmt, { emitEvent: false });
+      }
+      isUpdating = false;
+    });
+
+    // When unit price changes: amount = qty * rate
+    rateCtrl?.valueChanges.subscribe((rate) => {
+      if (isUpdating) return;
+      isUpdating = true;
+      const unitRate = +rate || 0;
+      const quantity = +(qtyCtrl?.value as any) || 0;
+      const amount = quantity * unitRate;
+      totalCtrl?.setValue(+amount.toFixed(2), { emitEvent: false });
+      // Recompute item discount amount from %
+      const pct = +(discPctCtrl?.value as any) || 0;
+      if (pct > 0) {
+        const dAmt = +(amount * (pct / 100)).toFixed(2);
+        discAmtCtrl?.setValue(dAmt, { emitEvent: false });
+      }
+      isUpdating = false;
+    });
+
+    // When amount changes: qty = amount / rate (if rate > 0)
+    totalCtrl?.valueChanges.subscribe((total) => {
+      if (isUpdating) return;
+      isUpdating = true;
+      const amount = +total || 0;
+      const unitRate = +(rateCtrl?.value as any) || 0;
+      if (unitRate > 0) {
+        const quantity = +(amount / unitRate).toFixed(3);
+        qtyCtrl?.setValue(quantity, { emitEvent: false });
+      }
+      isUpdating = false;
+    });
+
+    // When discount % changes: recompute discount amount
+    discPctCtrl?.valueChanges.subscribe((pct) => {
+      if (isUpdating) return;
+      isUpdating = true;
+      const percent = +pct || 0;
+      const quantity = +(qtyCtrl?.value as any) || 0;
+      const unitRate = +(rateCtrl?.value as any) || 0;
+      const gross = quantity * unitRate;
+      const dAmt = +(gross * (percent / 100)).toFixed(2);
+      discAmtCtrl?.setValue(dAmt, { emitEvent: false });
+      isUpdating = false;
+    });
+
     this.salesInvoiceDetails.push(itemForm);
   }
+
+  // Removed kg conversion; keeping qty as decimal units
 
   removeFromList(index: number) {
     this.salesInvoiceDetails.removeAt(index);
@@ -211,7 +283,11 @@ export class PosCartSidebarComponent {
   }
 
   get payableAmount(): number {
-    return this.subtotal; // Tax excluded, adjust if needed
+    const billDiscountAmt = this.purchaseForm.get("discountAmount")?.value || 0;
+    const billDiscountPct = this.purchaseForm.get("discountPercentage")?.value || 0;
+    const pctAmt = +(this.subtotal * (billDiscountPct / 100)).toFixed(2);
+    const total = this.subtotal - billDiscountAmt - pctAmt;
+    return total < 0 ? 0 : total; // prevent negative totals
   }
 
   formatPrice(value: number): string {
