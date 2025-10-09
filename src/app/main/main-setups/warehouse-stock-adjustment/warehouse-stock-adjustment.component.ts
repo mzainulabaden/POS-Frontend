@@ -283,9 +283,9 @@ export class WarehouseStockAdjustmentComponent {
       }
     }
 
-    // ✅ Get item pricing details
+    // ✅ Get item pricing details (with warehouse context if available)
     this._salesService
-      .getDetailsForItem(itemId, unitId, "SalesOrder")
+      .getDetailsForItem(itemId, unitId, "SalesOrder", params.data.warehouseId)
       .subscribe({
         next: (response) => {
           debugger;
@@ -303,15 +303,26 @@ export class WarehouseStockAdjustmentComponent {
   fetchCurrentStock(params: any) {
     const unitId = params.data.unitId;
     const itemId = params.data.inventoryItemId;
-    if (!unitId && !itemId) return;
+    const warehouseId = params.data.warehouseId;
+    if (!unitId || !itemId || !warehouseId) return;
 
-    this._salesService.getMinStockLevel(itemId, unitId).subscribe({
-      next: (response) => {
-        params.data.minStockLevel = response || 0;
-        this.cdr.detectChanges();
-        this.gridApi.refreshCells({ rowNodes: [params.node], force: true });
-      },
-    });
+    this._salesService
+      .getDetailsForItem(itemId, unitId, "SalesOrder", warehouseId)
+      .subscribe({
+        next: (response) => {
+          const stock =
+            (response && (
+              response.minStockLevel ??
+              response.stock ??
+              response.availableQty ??
+              response.availableQuantity ??
+              response.currentStock
+            )) || 0;
+          params.data.minStockLevel = stock;
+          this.cdr.detectChanges();
+          this.gridApi.refreshCells({ rowNodes: [params.node], force: true });
+        },
+      });
   }
 
   updateVisibility(value: number) {
