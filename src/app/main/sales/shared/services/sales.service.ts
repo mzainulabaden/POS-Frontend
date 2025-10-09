@@ -132,9 +132,17 @@ export class SalesService {
     );
   }
 
-  getDetailsForItem(itemId: number, unitId: number, target: string) {
+  getDetailsForItem(
+    itemId: number,
+    unitId: number,
+    target: string,
+    warehouseId?: number
+  ) {
     this.url = this.baseUrl;
     this.url += `${target}/GetItemPricingInfo?itemId=${itemId}&unitId=${unitId}`;
+    if (warehouseId !== undefined && warehouseId !== null) {
+      this.url += `&warehouseId=${warehouseId}`;
+    }
     return this.http.get(this.url).pipe(
       map((response: any) => {
         return response["result"];

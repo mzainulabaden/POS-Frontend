@@ -309,13 +309,37 @@ export class WarehouseStockTransferComponent {
   fetchCurrentStock(params: any) {
     const unitId = params.data.unitId;
     const itemId = params.data.inventoryItemId;
-    if (!unitId || !itemId) return;
-    this._salesService.getMinStockLevel(itemId, unitId).subscribe({
-      next: (response) => {
-        params.data.minStockLevel = response || 0;
-        this.cdr.detectChanges();
-        this.gridApi.refreshCells({ rowNodes: [params.node], force: true });
-      },
+    const warehouseId = this.form.value.warehouseId;
+    if (!unitId || !itemId || !warehouseId) return;
+    this._salesService
+      .getDetailsForItem(itemId, unitId, "SalesOrder", warehouseId)
+      .subscribe({
+        next: (response) => {
+          const stock =
+            (response && (
+              response.minStockLevel ??
+              response.stock ??
+              response.availableQty ??
+              response.availableQuantity ??
+              response.currentStock
+            )) || 0;
+          params.data.minStockLevel = stock;
+          this.cdr.detectChanges();
+          this.gridApi.refreshCells({ rowNodes: [params.node], force: true });
+        },
+      });
+  }
+
+  onWarehouseChange() {
+    if (!this.gridApi) return;
+    const warehouseId = this.form.value.warehouseId;
+    if (!warehouseId) return;
+    const nodes: any[] = [];
+    this.gridApi.forEachNode((node) => nodes.push(node));
+    nodes.forEach((node) => {
+      if (node?.data?.inventoryItemId && node?.data?.unitId) {
+        this.fetchCurrentStock({ data: node.data, node });
+      }
     });
   }
 
