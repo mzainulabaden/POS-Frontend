@@ -40,6 +40,7 @@
     <ng-template pTemplate="header">
       <tr>
         <th style="min-width: 160px">Issue Date</th>
+        <th style="min-width: 160px">Voucher No</th>
         <th style="min-width: 200px">Warehouse</th>
         <th style="min-width: 200px">Department</th>
         <th style="min-width: 200px">Receiver Employee</th>
@@ -50,19 +51,39 @@
     <ng-template pTemplate="body" let-item>
       <tr *ngIf="!loading; else loadingRow">
         <td>{{ item.issueDate | date: 'yyyy-MM-dd' }}</td>
+        <td>{{ item.voucherNumber }}</td>
         <td>{{ getWarehouseName(item.warehouseId) }}</td>
         <td>{{ getDepartmentName(item.departmentId) }}</td>
         <td>{{ getEmployeeName(item.receiverEmployeeId) }}</td>
         <td>{{ item.remarks }}</td>
         <td class="icon-group">
-          <a class="dropdown-item edit" (click)="show(item.id)">
+          <a
+            *ngIf="item.status == 'PENDING'"
+            class="dropdown-item edit"
+            (click)="show(item.id)"
+          >
             <i class="fa-solid fa-pencil"></i>
           </a>
-          <a class="dropdown-item delete" (click)="delete(item.id)">
+          <a
+            *ngIf="item.status == 'PENDING'"
+            class="dropdown-item delete"
+            (click)="delete(item.id)"
+          >
             <i class="fa-solid fa-trash"></i>
           </a>
-          <a class="dropdown-item approve" (click)="approve(item.id)">
+          <a
+            *ngIf="item.status == 'PENDING'"
+            class="dropdown-item approve"
+            (click)="approve(item.id)"
+          >
             <i class="fa-solid fa-check"></i>
+          </a>
+          <a
+            *ngIf="item.status == 'APPROVED'"
+            class="dropdown-item view"
+            (click)="viewOnly(item.id)"
+          >
+            <i class="fa-solid fa-eye"></i>
           </a>
         </td>
       </tr>
@@ -117,6 +138,16 @@
   <form [formGroup]="form">
     <div class="row col-md-12 mt-2" id="inputField">
       <div class="col-md-3 p-field flex flex-column">
+        <label class="label-text" for="voucherNumber">Voucher No</label>
+        <input
+          id="voucherNumber"
+          type="text"
+          pInputText
+          formControlName="voucherNumber"
+          readonly
+        />
+      </div>
+      <div class="col-md-3 p-field flex flex-column">
         <label class="label-text" for="issueDate">Issue Date</label>
         <p-calendar
           formControlName="issueDate"
@@ -124,10 +155,13 @@
           appendTo="body"
           [showOnFocus]="true"
           [showIcon]="true"
+          (onSelect)="onDateChange($event)"
           [style]="{ width: '100%' }"
         ></p-calendar>
       </div>
-      <div class="col-md-3 p-field flex flex-column">
+    </div>
+    <div class="row col-md-12 mt-2">
+      <div class="col-md-4 p-field flex flex-column">
         <label class="label-text" for="warehouse">Warehouse</label>
         <p-dropdown
           formControlName="warehouseId"
@@ -137,7 +171,7 @@
           [style]="{ width: '100%' }"
         ></p-dropdown>
       </div>
-      <div class="col-md-3 p-field flex flex-column">
+      <div class="col-md-4 p-field flex flex-column">
         <label class="label-text" for="department">Department</label>
         <p-dropdown
           formControlName="departmentId"
@@ -147,7 +181,7 @@
           [style]="{ width: '100%' }"
         ></p-dropdown>
       </div>
-      <div class="col-md-3 p-field flex flex-column">
+      <div class="col-md-4 p-field flex flex-column">
         <label class="label-text" for="receiver">Receiver Employee</label>
         <p-dropdown
           formControlName="receiverEmployeeId"

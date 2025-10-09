@@ -140,6 +140,7 @@ export class WarehouseStockTransferComponent {
       receiverEmployeeId: [null, [Validators.required]],
       issueDate: ["", [Validators.required]],
       remarks: [""],
+      voucherNumber: [""],
       warehouseStockTransferDetails: [[]],
     });
   }
@@ -197,6 +198,46 @@ export class WarehouseStockTransferComponent {
 
   getTodayDate(): Date {
     return new Date();
+  }
+
+  getVoucherNumber() {
+    this._salesService
+      .getVoucherNumber(
+        "WST",
+        this.form.value.issueDate,
+        this.target
+      )
+      .pipe(
+        finalize(() => {}),
+        catchError((error) => {
+          this.msgService.add({
+            severity: "error",
+            summary: "Error",
+            detail: error.error.error.message,
+            life: 2000,
+          });
+          return throwError(error.error.error.message);
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          if (this.form.value.issueDate) {
+            this.form.get("voucherNumber")?.setValue(response);
+          }
+        },
+        error: (err) => {
+          console.log("An error occurred", err);
+        },
+      });
+  }
+
+  onDateChange(value?: any) {
+    if (value) {
+      this.form.value.issueDate = value;
+    }
+    if (this.form.value.issueDate) {
+      this.getVoucherNumber();
+    }
   }
 
   onGlobalFilter(table: Table, event: Event) {
@@ -305,6 +346,7 @@ export class WarehouseStockTransferComponent {
               receiverEmployeeId: data.receiverEmployeeId,
               issueDate: data.issueDate ? new Date(data.issueDate) : this.getTodayDate(),
               remarks: data.remarks,
+              voucherNumber: data.voucherNumber,
               warehouseStockTransferDetails: data.warehouseStockTransferDetails || [],
             });
             this.rowData = (data.warehouseStockTransferDetails || []).map((r: any) => ({
@@ -322,7 +364,16 @@ export class WarehouseStockTransferComponent {
       this.rowData = [];
       this.displayModal = true;
       this.form.patchValue({ issueDate: this.getTodayDate(), id: 0 });
+      this.getVoucherNumber();
     }
+  }
+
+  viewOnly(id: any) {
+    this.viewMode = true;
+    this.displayModal = true;
+    this.editMode = false;
+    this.show(id);
+    this.form.disable();
   }
 
   save() {
