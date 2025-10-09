@@ -6,6 +6,7 @@ import { PaymentTermsComponent } from "./payment-terms/payment-terms.component";
 import { DefaultIntegrationsComponent } from "./default-integrations/default-integrations.component";
 import { WarehouseStockAdjustmentComponent } from "./warehouse-stock-adjustment/warehouse-stock-adjustment.component";
 import { DayBookComponent } from "./daybook/dayBook.component";
+import { DepartmentComponent } from "./department/department.component";
 const routes: Routes = [
   {
     path: "",
@@ -33,6 +34,10 @@ const routes: Routes = [
       {
         path: "daybook",
         component: DayBookComponent,
+      },
+      {
+        path: "department",
+        component: DepartmentComponent,
       },
     ],
   },
