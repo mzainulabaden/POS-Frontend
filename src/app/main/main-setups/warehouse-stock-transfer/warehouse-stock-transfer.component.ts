@@ -45,7 +45,7 @@ export class WarehouseStockTransferComponent {
 
   warehouses: { id: any; name: string }[] = [];
   departments: { id: any; name: string }[] = [];
-  employees: { id: any; name: string }[] = [];
+  Employee: { id: any; name: string }[] = [];
   items: { id: any; name: string }[] = [];
   units: { id: any; name: string; additional: string }[] = [];
 
@@ -163,7 +163,7 @@ export class WarehouseStockTransferComponent {
     return found ? found.name : "";
   }
   getEmployeeName(id: any): string {
-    const found = this.employees.find((e) => e.id === id);
+    const found = this.Employee.find((e) => e.id === id);
     return found ? found.name : "";
   }
 
@@ -182,7 +182,7 @@ export class WarehouseStockTransferComponent {
           this.departments = mapped;
           break;
         case "Employee":
-          this.employees = mapped;
+          this.Employee = mapped;
           break;
         case "Item":
           this.items = mapped;

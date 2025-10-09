@@ -42,7 +42,7 @@
         <th style="min-width: 160px">Issue Date</th>
         <th style="min-width: 200px">Warehouse</th>
         <th style="min-width: 200px">Department</th>
-        <th style="min-width: 200px">Receiver</th>
+        <th style="min-width: 200px">Receiver Employee</th>
         <th style="min-width: 200px">Remarks</th>
         <th style="min-width: 160px">Actions</th>
       </tr>
@@ -114,63 +114,92 @@
   [draggable]="false"
   [style]="{ width: '80%' }"
 >
-  <div class="row col-md-12 mt-2">
-    <div class="col-md-3 p-field flex flex-column">
-      <label class="label-text" for="issueDate">Issue Date</label>
-      <input id="issueDate" type="date" pInputText [(ngModel)]="form.value.issueDate" (ngModelChange)="form.get('issueDate').setValue($event)" />
+  <form [formGroup]="form">
+    <div class="row col-md-12 mt-2" id="inputField">
+      <div class="col-md-3 p-field flex flex-column">
+        <label class="label-text" for="issueDate">Issue Date</label>
+        <p-calendar
+          formControlName="issueDate"
+          inputId="issueDate"
+          appendTo="body"
+          [showOnFocus]="true"
+          [showIcon]="true"
+          [style]="{ width: '100%' }"
+        ></p-calendar>
+      </div>
+      <div class="col-md-3 p-field flex flex-column">
+        <label class="label-text" for="warehouse">Warehouse</label>
+        <p-dropdown
+          formControlName="warehouseId"
+          [options]="warehouses"
+          optionLabel="name"
+          optionValue="id"
+          [style]="{ width: '100%' }"
+        ></p-dropdown>
+      </div>
+      <div class="col-md-3 p-field flex flex-column">
+        <label class="label-text" for="department">Department</label>
+        <p-dropdown
+          formControlName="departmentId"
+          [options]="departments"
+          optionLabel="name"
+          optionValue="id"
+          [style]="{ width: '100%' }"
+        ></p-dropdown>
+      </div>
+      <div class="col-md-3 p-field flex flex-column">
+        <label class="label-text" for="receiver">Receiver Employee</label>
+        <p-dropdown
+          formControlName="receiverEmployeeId"
+          [options]="Employee"
+          optionLabel="name"
+          optionValue="id"
+          [style]="{ width: '100%' }"
+        ></p-dropdown>
+      </div>
     </div>
-    <div class="col-md-3 p-field flex flex-column">
-      <label class="label-text" for="warehouse">Warehouse</label>
-      <p-dropdown [options]="warehouses" optionLabel="name" optionValue="id" [(ngModel)]="form.value.warehouseId" (onChange)="form.get('warehouseId').setValue($event.value)"></p-dropdown>
-    </div>
-    <div class="col-md-3 p-field flex flex-column">
-      <label class="label-text" for="department">Department</label>
-      <p-dropdown [options]="departments" optionLabel="name" optionValue="id" [(ngModel)]="form.value.departmentId" (onChange)="form.get('departmentId').setValue($event.value)"></p-dropdown>
-    </div>
-    <div class="col-md-3 p-field flex flex-column">
-      <label class="label-text" for="receiver">Receiver</label>
-      <p-dropdown [options]="employees" optionLabel="name" optionValue="id" [(ngModel)]="form.value.receiverEmployeeId" (onChange)="form.get('receiverEmployeeId').setValue($event.value)"></p-dropdown>
-    </div>
-  </div>
 
-  <div class="row col-md-12 mt-2">
-    <div class="col-md-12 p-field flex flex-column">
-      <label class="label-text" for="remarks">Remarks</label>
-      <input id="remarks" type="text" pInputText [(ngModel)]="form.value.remarks" (ngModelChange)="form.get('remarks').setValue($event)" />
+    <div class="row-btn-container mt-4">
+      <button type="button" class="add-row-btn" (click)="onAddRow()">Add Row</button>
+      <button type="button" class="remove-row-btn" (click)="onRemoveSelected()">Remove Row</button>
     </div>
-  </div>
 
-  <div class="row col-md-12 mt-3">
-    <div class="col-md-12">
-      <button pButton pRipple class="p-button-sm" (click)="onAddRow()">Add Row</button>
-      <button pButton pRipple class="p-button-sm p-button-danger ml-2" (click)="onRemoveSelected()">Remove Selected</button>
+    <div class="row col-md-12 mt-2">
+      <div class="col-md-12">
+        <ag-grid-angular
+          class="ag-theme-quartz"
+          style="height: 320px"
+          [rowData]="rowData"
+          [columnDefs]="colDefs"
+          [rowSelection]="rowSelection"
+          (gridReady)="onGridReady($event)"
+          (cellValueChanged)="onUnitChanged($event)"
+          [components]="frameworkComponents"
+          [singleClickEdit]="true"
+        >
+        </ag-grid-angular>
+      </div>
     </div>
-    <div class="col-md-12 mt-2">
-      <ag-grid-angular
-        class="ag-theme-alpine"
-        style="width: 100%; height: 320px"
-        [rowData]="rowData"
-        [columnDefs]="colDefs"
-        [rowSelection]="rowSelection"
-        (gridReady)="onGridReady($event)"
-        (cellValueChanged)="onUnitChanged($event)"
-        [components]="frameworkComponents"
-      >
-      </ag-grid-angular>
-    </div>
-  </div>
 
-  <div class="modal-btn-container mt-4">
-    <button pButton pRipple [loading]="saving" *ngIf="!editMode" (click)="save()" [rounded]="true" class="save-btn">
-      Save
-    </button>
-    <button pButton pRipple [loading]="saving" *ngIf="editMode" (click)="update()" [rounded]="true" class="update-btn">
-      Update
-    </button>
-    <button (click)="displayModal = false" pButton pRipple [rounded]="true" class="cancel-btn">
-      Cancel
-    </button>
-  </div>
+    <div class="row col-md-12 mt-2">
+      <div class="col-md-12 p-field flex flex-column">
+        <label class="label-text" for="remarks">Remarks</label>
+        <input id="remarks" type="text" pInputText formControlName="remarks" />
+      </div>
+    </div>
+
+    <div class="modal-btn-container mt-4">
+      <button pButton pRipple [loading]="saving" *ngIf="!editMode" (click)="save()" [rounded]="true" class="save-btn" [disabled]="!form.valid">
+        Save
+      </button>
+      <button pButton pRipple [loading]="saving" *ngIf="editMode" (click)="update()" [rounded]="true" class="update-btn" [disabled]="!form.valid">
+        Update
+      </button>
+      <button (click)="displayModal = false" pButton pRipple [rounded]="true" class="cancel-btn">
+        Cancel
+      </button>
+    </div>
+  </form>
 </p-dialog>
 
 <div>
