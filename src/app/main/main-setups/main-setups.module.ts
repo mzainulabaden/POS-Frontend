@@ -19,6 +19,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import {DayBookComponent} from "./daybook/dayBook.component";
 import { CreateItemCategoryModalComponent } from './shared/create-item-category-modal/create-item-category-modal.component'
 import { DepartmentComponent } from "./department/department.component";
+import { WarehouseStockTransferComponent } from "./warehouse-stock-transfer/warehouse-stock-transfer.component";
 
 @NgModule({
   declarations: [
@@ -34,6 +35,7 @@ import { DepartmentComponent } from "./department/department.component";
     DayBookComponent,
     CreateItemCategoryModalComponent,
     DepartmentComponent,
+    WarehouseStockTransferComponent,
   ],
   imports: [
     CommonModule,

@@ -7,6 +7,7 @@ import { DefaultIntegrationsComponent } from "./default-integrations/default-int
 import { WarehouseStockAdjustmentComponent } from "./warehouse-stock-adjustment/warehouse-stock-adjustment.component";
 import { DayBookComponent } from "./daybook/dayBook.component";
 import { DepartmentComponent } from "./department/department.component";
+import { WarehouseStockTransferComponent } from "./warehouse-stock-transfer/warehouse-stock-transfer.component";
 const routes: Routes = [
   {
     path: "",
@@ -34,6 +35,10 @@ const routes: Routes = [
       {
         path: "daybook",
         component: DayBookComponent,
+      },
+      {
+        path: "warehouse-stock-transfer",
+        component: WarehouseStockTransferComponent,
       },
       {
         path: "department",

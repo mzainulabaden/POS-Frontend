@@ -104,6 +104,12 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
           ""
         ),
         new MenuItem(
+          this.l("Warehouse Stock Transfer"),
+          "/app/main/main-setups/warehouse-stock-transfer",
+          "fas fa-people-carry-box",
+          ""
+        ),
+        new MenuItem(
           this.l("Day Book"),
           "/app/main/main-setups/daybook",
           "fas fa-book",

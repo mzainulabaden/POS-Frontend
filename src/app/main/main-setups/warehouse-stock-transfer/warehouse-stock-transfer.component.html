@@ -1,0 +1,181 @@
+<p-toolbar class="col-lg-12 col-md-12 col-sm-12">
+  <ng-template pTemplate="left">
+    <h3>Warehouse Stock Transfer</h3>
+  </ng-template>
+  <ng-template pTemplate="right">
+    <div class="gap-4 flex">
+      <span class="block md:mt-0 p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input
+          pInputText
+          type="text"
+          (input)="onGlobalFilter(policyTable, $event)"
+          placeholder="Search..."
+          style="height: 40px; cursor: pointer"
+          (keydown.enter)="onEnter($event)"
+        />
+      </span>
+      <div class="p-toolbar-group-left">
+        <button pButton pRipple [rounded]="true" class="create-btn" (click)="show()">
+          Create
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</p-toolbar>
+
+<!-- Table -->
+<div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+  <p-table
+    #policyTable
+    [loading]="loading"
+    [value]="tableData"
+    [rowHover]="true"
+    dataKey="id"
+    [scrollable]="true"
+    [paginatorDropdownAppendTo]="'body'"
+    scrollHeight="58vh"
+    [globalFilterFields]="['remarks','voucherNumber']"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="min-width: 160px">Issue Date</th>
+        <th style="min-width: 200px">Warehouse</th>
+        <th style="min-width: 200px">Department</th>
+        <th style="min-width: 200px">Receiver</th>
+        <th style="min-width: 200px">Remarks</th>
+        <th style="min-width: 160px">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr *ngIf="!loading; else loadingRow">
+        <td>{{ item.issueDate | date: 'yyyy-MM-dd' }}</td>
+        <td>{{ getWarehouseName(item.warehouseId) }}</td>
+        <td>{{ getDepartmentName(item.departmentId) }}</td>
+        <td>{{ getEmployeeName(item.receiverEmployeeId) }}</td>
+        <td>{{ item.remarks }}</td>
+        <td class="icon-group">
+          <a class="dropdown-item edit" (click)="show(item.id)">
+            <i class="fa-solid fa-pencil"></i>
+          </a>
+          <a class="dropdown-item delete" (click)="delete(item.id)">
+            <i class="fa-solid fa-trash"></i>
+          </a>
+          <a class="dropdown-item approve" (click)="approve(item.id)">
+            <i class="fa-solid fa-check"></i>
+          </a>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Skeleton Row Template -->
+    <ng-template #loadingRow>
+      <tr *ngFor="let i of [1, 2, 3, 4, 5]">
+        <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
+        <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
+        <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
+        <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
+        <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
+        <td class="icon-group d-flex gap-2">
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+          <p-skeleton shape="circle" size="2rem"></p-skeleton>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+  <div class="paginator-wrapper d-flex justify-content-end mt-3">
+    <p-paginator
+      [rows]="10"
+      [totalRecords]="count"
+      (onPageChange)="onPageChange($event)"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+      [showCurrentPageReport]="true"
+      [rowsPerPageOptions]="[10, 50, 100, count]"
+      dropdownAppendTo="body"
+      appendTo="body"
+    ></p-paginator>
+  </div>
+</div>
+
+<!-- Modal -->
+<p-dialog
+  [maximizable]="true"
+  [closeOnEscape]="false"
+  [header]="
+    viewMode
+      ? 'View Warehouse Stock Transfer'
+      : editMode
+      ? 'Edit Warehouse Stock Transfer'
+      : 'Create Warehouse Stock Transfer'
+  "
+  [modal]="true"
+  [(visible)]="displayModal"
+  [draggable]="false"
+  [style]="{ width: '80%' }"
+>
+  <div class="row col-md-12 mt-2">
+    <div class="col-md-3 p-field flex flex-column">
+      <label class="label-text" for="issueDate">Issue Date</label>
+      <input id="issueDate" type="date" pInputText [(ngModel)]="form.value.issueDate" (ngModelChange)="form.get('issueDate').setValue($event)" />
+    </div>
+    <div class="col-md-3 p-field flex flex-column">
+      <label class="label-text" for="warehouse">Warehouse</label>
+      <p-dropdown [options]="warehouses" optionLabel="name" optionValue="id" [(ngModel)]="form.value.warehouseId" (onChange)="form.get('warehouseId').setValue($event.value)"></p-dropdown>
+    </div>
+    <div class="col-md-3 p-field flex flex-column">
+      <label class="label-text" for="department">Department</label>
+      <p-dropdown [options]="departments" optionLabel="name" optionValue="id" [(ngModel)]="form.value.departmentId" (onChange)="form.get('departmentId').setValue($event.value)"></p-dropdown>
+    </div>
+    <div class="col-md-3 p-field flex flex-column">
+      <label class="label-text" for="receiver">Receiver</label>
+      <p-dropdown [options]="employees" optionLabel="name" optionValue="id" [(ngModel)]="form.value.receiverEmployeeId" (onChange)="form.get('receiverEmployeeId').setValue($event.value)"></p-dropdown>
+    </div>
+  </div>
+
+  <div class="row col-md-12 mt-2">
+    <div class="col-md-12 p-field flex flex-column">
+      <label class="label-text" for="remarks">Remarks</label>
+      <input id="remarks" type="text" pInputText [(ngModel)]="form.value.remarks" (ngModelChange)="form.get('remarks').setValue($event)" />
+    </div>
+  </div>
+
+  <div class="row col-md-12 mt-3">
+    <div class="col-md-12">
+      <button pButton pRipple class="p-button-sm" (click)="onAddRow()">Add Row</button>
+      <button pButton pRipple class="p-button-sm p-button-danger ml-2" (click)="onRemoveSelected()">Remove Selected</button>
+    </div>
+    <div class="col-md-12 mt-2">
+      <ag-grid-angular
+        class="ag-theme-alpine"
+        style="width: 100%; height: 320px"
+        [rowData]="rowData"
+        [columnDefs]="colDefs"
+        [rowSelection]="rowSelection"
+        (gridReady)="onGridReady($event)"
+        (cellValueChanged)="onUnitChanged($event)"
+        [components]="frameworkComponents"
+      >
+      </ag-grid-angular>
+    </div>
+  </div>
+
+  <div class="modal-btn-container mt-4">
+    <button pButton pRipple [loading]="saving" *ngIf="!editMode" (click)="save()" [rounded]="true" class="save-btn">
+      Save
+    </button>
+    <button pButton pRipple [loading]="saving" *ngIf="editMode" (click)="update()" [rounded]="true" class="update-btn">
+      Update
+    </button>
+    <button (click)="displayModal = false" pButton pRipple [rounded]="true" class="cancel-btn">
+      Cancel
+    </button>
+  </div>
+</p-dialog>
+
+<div>
+  <p-toast />
+  <p-confirmDialog class="cancel-modal" />
+</div>
+
+
