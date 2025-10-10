@@ -1,0 +1,29 @@
+<div class="inventory-reports">
+  <div class="reports-grid">
+    <div
+      *ngFor="let report of reports"
+      class="report-card"
+      (click)="openReportModal(report)"
+    >
+      <div class="report-icon">
+        <i [class]="report.icon"></i>
+      </div>
+      <div class="report-content">
+        <h3>{{ report.name }}</h3>
+        <p>{{ report.description }}</p>
+      </div>
+      <div class="report-action">
+        <i class="pi pi-angle-right"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Report Modal -->
+<app-item-tracking-modal
+  *ngIf="selectedReport && displayReportModal"
+  [visible]="displayReportModal"
+  [reportName]="selectedReport.name"
+  (onClose)="closeReportModal()"
+></app-item-tracking-modal>
+

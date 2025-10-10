@@ -21,6 +21,7 @@ import { CreateItemCategoryModalComponent } from './shared/create-item-category-
 import { DepartmentComponent } from "./department/department.component";
 import { WarehouseStockTransferComponent } from "./warehouse-stock-transfer/warehouse-stock-transfer.component";
 import { DepartmentStockComponent } from "./department-stock/department-stock.component";
+import { DepartmentStockTransferComponent } from "./department-stock-transfer/department-stock-transfer.component";
 
 @NgModule({
   declarations: [
@@ -38,6 +39,7 @@ import { DepartmentStockComponent } from "./department-stock/department-stock.co
     DepartmentComponent,
     WarehouseStockTransferComponent,
     DepartmentStockComponent,
+    DepartmentStockTransferComponent,
   ],
   imports: [
     CommonModule,

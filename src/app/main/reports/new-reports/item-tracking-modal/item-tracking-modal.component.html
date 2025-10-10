@@ -1,0 +1,262 @@
+<p-dialog
+  [(visible)]="visible"
+  [header]="reportName"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [maximizable]="true"
+  [style]="{ width: reportGenerated ? '95vw' : '600px' }"
+  (onHide)="closeModal()"
+  styleClass="report-dialog"
+>
+  <!-- Parameters Form -->
+  <div *ngIf="!reportGenerated" class="report-parameters">
+    <form [formGroup]="form">
+      <div class="row">
+        <div class="col-md-6 p-field">
+          <label for="fromDate" class="label-text">From Date <span class="text-danger">*</span></label>
+          <p-calendar
+            formControlName="fromDate"
+            inputId="fromDate"
+            [showIcon]="true"
+            dateFormat="yy-mm-dd"
+            appendTo="body"
+            [style]="{ width: '100%' }"
+          ></p-calendar>
+        </div>
+
+        <div class="col-md-6 p-field">
+          <label for="toDate" class="label-text">To Date <span class="text-danger">*</span></label>
+          <p-calendar
+            formControlName="toDate"
+            inputId="toDate"
+            [showIcon]="true"
+            dateFormat="yy-mm-dd"
+            appendTo="body"
+            [style]="{ width: '100%' }"
+          ></p-calendar>
+        </div>
+      </div>
+
+      <div class="row mt-3">
+        <div class="col-md-6 p-field">
+          <label for="warehouse" class="label-text">Warehouse</label>
+          <p-dropdown
+            formControlName="warehouseId"
+            [options]="warehouses"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Select Warehouse (Optional)"
+            [filter]="true"
+            filterBy="name"
+            [showClear]="true"
+            appendTo="body"
+            [style]="{ width: '100%' }"
+          ></p-dropdown>
+        </div>
+
+        <div class="col-md-6 p-field">
+          <label for="item" class="label-text">Item</label>
+          <p-dropdown
+            formControlName="itemId"
+            [options]="items"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Select Item (Optional)"
+            [filter]="true"
+            filterBy="name"
+            [showClear]="true"
+            appendTo="body"
+            [style]="{ width: '100%' }"
+          ></p-dropdown>
+        </div>
+      </div>
+
+      <div class="button-container mt-4">
+        <button
+          pButton
+          pRipple
+          type="button"
+          label="Generate Report"
+          icon="pi pi-file"
+          class="p-button-primary"
+          (click)="generateReport()"
+          [loading]="loading"
+          [disabled]="!form.valid"
+        ></button>
+        <button
+          pButton
+          pRipple
+          type="button"
+          label="Cancel"
+          icon="pi pi-times"
+          class="p-button-secondary"
+          (click)="closeModal()"
+        ></button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Report Preview -->
+  <div *ngIf="reportGenerated" class="report-preview">
+    <!-- Company Header -->
+    <div class="report-header" *ngIf="companyProfile">
+      <h2>{{ companyProfile.companyName || 'Company Name' }}</h2>
+      <p class="address">{{ companyProfile.address || 'Address' }}</p>
+      <p class="contact" *ngIf="companyProfile.phone1 || companyProfile.phone2">
+        {{ companyProfile.phone1 }}{{ companyProfile.phone1 && companyProfile.phone2 ? ', ' : '' }}{{ companyProfile.phone2 }}
+      </p>
+      <p class="email" *ngIf="companyProfile.email">
+        For Accounts inquiry, contact {{ companyProfile.email }}
+      </p>
+    </div>
+
+    <!-- Report Title -->
+    <div class="report-title">
+      <h3>{{ reportName }}</h3>
+    </div>
+
+    <!-- Report Metadata -->
+    <div class="report-metadata">
+      <div class="metadata-item" *ngIf="form.value.fromDate && form.value.toDate">
+        <strong>Period:</strong> {{ form.value.fromDate | date: 'dd/MM/yyyy' }} - {{ form.value.toDate | date: 'dd/MM/yyyy' }}
+      </div>
+      <div class="metadata-item" *ngIf="form.value.warehouseId">
+        <strong>Warehouse:</strong> {{ getWarehouseName() }}
+      </div>
+      <div class="metadata-item" *ngIf="form.value.itemId">
+        <strong>Item:</strong> {{ getItemName() }}
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="report-actions">
+      <button
+        pButton
+        pRipple
+        type="button"
+        label="Download PDF"
+        icon="pi pi-file-pdf"
+        class="p-button-danger"
+        (click)="downloadPDF()"
+      ></button>
+      <button
+        pButton
+        pRipple
+        type="button"
+        label="Download Excel"
+        icon="pi pi-file-excel"
+        class="p-button-success"
+        (click)="downloadExcel()"
+      ></button>
+      <button
+        pButton
+        pRipple
+        type="button"
+        label="New Report"
+        icon="pi pi-refresh"
+        class="p-button-secondary"
+        (click)="reportGenerated = false; reportData = []"
+      ></button>
+    </div>
+
+    <!-- Report Table -->
+    <div class="report-table-container">
+      <p-table
+        [value]="reportData"
+        [paginator]="true"
+        [rows]="20"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+        [rowsPerPageOptions]="[10, 20, 50, 100]"
+        [scrollable]="true"
+        scrollHeight="400px"
+        styleClass="p-datatable-sm p-datatable-striped"
+        [globalFilterFields]="['voucherNumber', 'itemName', 'transactionType', 'counterpartyName']"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="issueDate" style="min-width: 100px">
+              Date <p-sortIcon field="issueDate"></p-sortIcon>
+            </th>
+            <th pSortableColumn="voucherNumber" style="min-width: 120px">
+              Voucher <p-sortIcon field="voucherNumber"></p-sortIcon>
+            </th>
+            <th pSortableColumn="transactionType" style="min-width: 120px">
+              Type <p-sortIcon field="transactionType"></p-sortIcon>
+            </th>
+            <th pSortableColumn="warehouseName" style="min-width: 120px">
+              Warehouse <p-sortIcon field="warehouseName"></p-sortIcon>
+            </th>
+            <th pSortableColumn="itemName" style="min-width: 150px">
+              Item <p-sortIcon field="itemName"></p-sortIcon>
+            </th>
+            <th pSortableColumn="unitName" style="min-width: 80px">
+              Unit <p-sortIcon field="unitName"></p-sortIcon>
+            </th>
+            <th pSortableColumn="counterpartyName" style="min-width: 150px">
+              Counterparty <p-sortIcon field="counterpartyName"></p-sortIcon>
+            </th>
+            <th pSortableColumn="qtyIn" style="min-width: 100px" class="text-right">
+              Qty In <p-sortIcon field="qtyIn"></p-sortIcon>
+            </th>
+            <th pSortableColumn="qtyOut" style="min-width: 100px" class="text-right">
+              Qty Out <p-sortIcon field="qtyOut"></p-sortIcon>
+            </th>
+            <th pSortableColumn="rate" style="min-width: 100px" class="text-right">
+              Rate <p-sortIcon field="rate"></p-sortIcon>
+            </th>
+            <th pSortableColumn="totalAmount" style="min-width: 120px" class="text-right">
+              Amount <p-sortIcon field="totalAmount"></p-sortIcon>
+            </th>
+            <th pSortableColumn="openingBalance" style="min-width: 120px" class="text-right">
+              Opening <p-sortIcon field="openingBalance"></p-sortIcon>
+            </th>
+            <th pSortableColumn="closingBalance" style="min-width: 120px" class="text-right">
+              Closing <p-sortIcon field="closingBalance"></p-sortIcon>
+            </th>
+            <th style="min-width: 150px">Remarks</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-item>
+          <tr>
+            <td>{{ item.issueDate | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ item.voucherNumber }}</td>
+            <td>
+              <span class="transaction-badge" [ngClass]="item.transactionType">
+                {{ item.transactionType }}
+              </span>
+            </td>
+            <td>{{ item.warehouseName }}</td>
+            <td>{{ item.itemName }}</td>
+            <td>{{ item.unitName }}</td>
+            <td>{{ item.counterpartyName }}</td>
+            <td class="text-right">{{ item.qtyIn | number: '1.2-2' }}</td>
+            <td class="text-right">{{ item.qtyOut | number: '1.2-2' }}</td>
+            <td class="text-right">{{ item.rate | number: '1.2-2' }}</td>
+            <td class="text-right">{{ item.totalAmount | number: '1.2-2' }}</td>
+            <td class="text-right">{{ item.openingBalance | number: '1.2-2' }}</td>
+            <td class="text-right">{{ item.closingBalance | number: '1.2-2' }}</td>
+            <td>{{ item.remarks }}</td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="14" class="text-center">
+              <div class="empty-state">
+                <i class="pi pi-inbox" style="font-size: 3rem; color: #6c757d"></i>
+                <p>No data found for the selected parameters</p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+
+  <p-toast></p-toast>
+</p-dialog>
+

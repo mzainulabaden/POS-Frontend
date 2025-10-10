@@ -8,6 +8,7 @@ import { WarehouseStockAdjustmentComponent } from "./warehouse-stock-adjustment/
 import { DayBookComponent } from "./daybook/dayBook.component";
 import { DepartmentComponent } from "./department/department.component";
 import { DepartmentStockComponent } from "./department-stock/department-stock.component";
+import { DepartmentStockTransferComponent } from "./department-stock-transfer/department-stock-transfer.component";
 import { WarehouseStockTransferComponent } from "./warehouse-stock-transfer/warehouse-stock-transfer.component";
 const routes: Routes = [
   {
@@ -48,6 +49,10 @@ const routes: Routes = [
       {
         path: "department-stock",
         component: DepartmentStockComponent,
+      },
+      {
+        path: "department-stock-transfer",
+        component: DepartmentStockTransferComponent,
       },
     ],
   },

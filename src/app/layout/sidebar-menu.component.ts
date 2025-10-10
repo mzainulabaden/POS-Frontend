@@ -84,6 +84,12 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
           "fas fa-building-circle-arrow-right",
           ""
         ),
+        new MenuItem(
+          this.l("Department Stock Transfer"),
+          "/app/main/main-setups/department-stock-transfer",
+          "fas fa-arrow-right-arrow-left",
+          ""
+        ),
       ]),
       new MenuItem(this.l("General Setups"), "", " fa-user fas fa-tools", "", [
         new MenuItem(
@@ -355,6 +361,12 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
           this.l("SSRS Reports"),
           "main/reports/ssrs-reports",
           "fas fa-file",
+          ""
+        ),
+        new MenuItem(
+          this.l("New Reports"),
+          "main/reports/new-reports",
+          "fas fa-file-alt",
           ""
         ),
       ]),

@@ -1,0 +1,28 @@
+<div class="reports-container">
+  <div class="reports-header">
+    <h2>Reports</h2>
+  </div>
+
+  <p-tabView [(activeIndex)]="activeIndex" (onChange)="onTabChange($event)">
+    <p-tabPanel header="Inventory" leftIcon="pi pi-box">
+      <app-inventory-report></app-inventory-report>
+    </p-tabPanel>
+
+    <p-tabPanel header="Finance" leftIcon="pi pi-dollar">
+      <div class="coming-soon">
+        <i class="pi pi-clock" style="font-size: 3rem; color: #6c757d"></i>
+        <h3>Finance Reports</h3>
+        <p>Coming Soon</p>
+      </div>
+    </p-tabPanel>
+
+    <p-tabPanel header="HRM" leftIcon="pi pi-users">
+      <div class="coming-soon">
+        <i class="pi pi-clock" style="font-size: 3rem; color: #6c757d"></i>
+        <h3>HRM Reports</h3>
+        <p>Coming Soon</p>
+      </div>
+    </p-tabPanel>
+  </p-tabView>
+</div>
+

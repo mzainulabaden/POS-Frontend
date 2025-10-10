@@ -1,0 +1,8 @@
+/* Using global styles from styles.css for consistency with department-stock */
+.icon-group a {
+  margin-right: 8px;
+}
+.no-wrap-header {
+  white-space: nowrap;
+}
+
