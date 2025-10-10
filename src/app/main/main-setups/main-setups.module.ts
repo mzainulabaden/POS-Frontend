@@ -20,6 +20,7 @@ import {DayBookComponent} from "./daybook/dayBook.component";
 import { CreateItemCategoryModalComponent } from './shared/create-item-category-modal/create-item-category-modal.component'
 import { DepartmentComponent } from "./department/department.component";
 import { WarehouseStockTransferComponent } from "./warehouse-stock-transfer/warehouse-stock-transfer.component";
+import { DepartmentStockComponent } from "./department-stock/department-stock.component";
 
 @NgModule({
   declarations: [
@@ -36,6 +37,7 @@ import { WarehouseStockTransferComponent } from "./warehouse-stock-transfer/ware
     CreateItemCategoryModalComponent,
     DepartmentComponent,
     WarehouseStockTransferComponent,
+    DepartmentStockComponent,
   ],
   imports: [
     CommonModule,

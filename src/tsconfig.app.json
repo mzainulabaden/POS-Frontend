@@ -1,5 +1,20 @@
 {
-    "extends": "./tsconfig.json",
-    "files": ["main.ts", "polyfills.ts"],
-    "include": ["src/**/*.d.ts", "typings.d.ts"]
-  }
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "../dist/out-tsc/app",
+    "types": []
+  },
+  "files": [
+    "main.ts",
+    "polyfills.ts"
+  ],
+  "include": [
+    "src/**/*.d.ts",
+    "typings.d.ts"
+  ],
+  "exclude": [
+    "test.ts",
+    "**/*.spec.ts"
+  ]
+}
