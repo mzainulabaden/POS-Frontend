@@ -29,7 +29,7 @@ export class DepartmentComponent implements OnInit {
   currentPage = 1;
   filterDto = {
     skipCount: 0,
-    maxCount: 5,
+    maxCount: 10,
     DocOrVocNumber: "",
     name: "",
   };
@@ -48,9 +48,11 @@ export class DepartmentComponent implements OnInit {
   getAll() {
     this.loading = true;
     this._service
-      .getAll(this.target)
+      .getAllRecord(this.target, this.filterDto)
       .pipe(
-        finalize(() => {}),
+        finalize(() => {
+          this.loading = false;
+        }),
         catchError((error) => {
           this.messageService.add({
             severity: "error",
@@ -68,7 +70,6 @@ export class DepartmentComponent implements OnInit {
           this.cdr.detectChanges();
         },
       });
-    this.loading = false;
   }
 
   delete(id: number) {
@@ -184,7 +185,15 @@ export class DepartmentComponent implements OnInit {
 
   update() {
     this.saving = true;
-
+    if (!this.department.name) {
+      this.messageService.add({
+        severity: "error",
+        detail: "Name is Required",
+        life: 2000,
+      });
+      this.saving = false;
+      return;
+    }
     this._service
       .update(this.department, this.target)
       .pipe(
@@ -195,10 +204,10 @@ export class DepartmentComponent implements OnInit {
           this.messageService.add({
             severity: "error",
             summary: "Error",
-            detail: error.message,
+            detail: error.error.error.message,
             life: 2000,
           });
-          return throwError(error.message);
+          return throwError(error.error.error.message);
         })
       )
       .subscribe({
@@ -226,11 +235,14 @@ export class DepartmentComponent implements OnInit {
   }
   onEnter(event: any) {
     const inputValue = (event.target as HTMLInputElement).value;
+    this.loading = true;
     this.filterDto.name = inputValue;
     this._service.getAllRecord(this.target, this.filterDto).subscribe({
       next: (response) => {
         this.tableData = response.items;
         this.count = response.totalCount;
+        this.loading = false;
+        this.cdr.detectChanges();
       },
     });
   }

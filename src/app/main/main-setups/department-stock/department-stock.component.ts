@@ -14,14 +14,12 @@ import { ProductSearchEditorComponent } from "../../search-component/product-sea
 })
 export class DepartmentStockComponent {
   form: FormGroup;
-  target: string = "Department";
+  target: string = "DepartmentStock";
   loading: boolean;
-  gridApi: GridApi;
   gridApiIn: GridApi;
   gridApiOut: GridApi;
   rowSelection: string;
   tableData: any;
-  rowData: any = [];
   rowDataIn: any[] = [];
   rowDataOut: any[] = [];
   count: number;
@@ -32,6 +30,7 @@ export class DepartmentStockComponent {
   editMode: boolean;
   viewMode: boolean;
   displayModal: boolean;
+  today: Date = new Date();
 
   frameworkComponents = {
     productSearchEditor: ProductSearchEditorComponent,
@@ -41,6 +40,7 @@ export class DepartmentStockComponent {
     skipCount: this.skipCount,
     maxCount: this.maxCount,
     name: "",
+    VoucherNumber: "",
   };
 
   departments: { id: any; name: string }[] = [];
@@ -238,6 +238,7 @@ export class DepartmentStockComponent {
       receiverEmployeeId: [null, [Validators.required]],
       issueDate: ["", [Validators.required]],
       remarks: [""],
+      voucherNumber: [""],
       departmentStockDetails: [[]],
       departmentStockConsumptionDetails: [[]],
     });
@@ -276,6 +277,62 @@ export class DepartmentStockComponent {
     });
   }
 
+  getTodayDate(): Date {
+    return new Date();
+  }
+
+  getVoucherNumber() {
+    const issueDate = this.form.get("issueDate")?.value;
+    console.log("Getting voucher number with date:", issueDate, "and target:", this.target);
+    
+    if (!issueDate) {
+      console.warn("No issue date available for voucher number generation");
+      return;
+    }
+    
+    this._salesService
+      .getVoucherNumber(
+        "DS",
+        issueDate,
+        "DepartmentStock"
+      )
+      .pipe(
+        finalize(() => {}),
+        catchError((error) => {
+          console.error("Error fetching voucher number:", error);
+          this.msgService.add({
+            severity: "error",
+            summary: "Error",
+            detail: error?.error?.error?.message || "Failed to generate voucher number",
+            life: 2000,
+          });
+          return throwError(error?.error?.error?.message || error);
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          console.log("Voucher number received:", response);
+          this.form.get("voucherNumber")?.setValue(response);
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error("An error occurred getting voucher number:", err);
+        },
+      });
+  }
+
+  onDateChange(value?: any) {
+    if (value) {
+      this.form.patchValue({ issueDate: value });
+    }
+    // Use setTimeout to ensure form value is updated before getting voucher number
+    setTimeout(() => {
+      if (this.form.value.issueDate) {
+        this.getVoucherNumber();
+      }
+    }, 0);
+  }
+
   onGlobalFilter(table: Table, event: Event) {
     table.filterGlobal((event.target as HTMLInputElement).value, "contains");
   }
@@ -303,7 +360,7 @@ export class DepartmentStockComponent {
   onRemoveSelectedIn() { const sel = this.gridApiIn.getSelectedNodes(); if (sel.length) { const toRemove = sel.map(n=>n.data); this.gridApiIn.applyTransaction({ remove: toRemove }); this.rowDataIn = []; this.gridApiIn.forEachNode(n=>this.rowDataIn.push(n.data)); } }
   onRemoveSelectedOut() { const sel = this.gridApiOut.getSelectedNodes(); if (sel.length) { const toRemove = sel.map(n=>n.data); this.gridApiOut.applyTransaction({ remove: toRemove }); this.rowDataOut = []; this.gridApiOut.forEachNode(n=>this.rowDataOut.push(n.data)); } }
 
-  onProductChange(params: any) {
+  onProductChange(params: any, gridApi?: GridApi) {
     const itemId = params.data.inventoryItemId;
     if (!itemId) return;
     this._salesService.getItemUnits(itemId, "Item").subscribe({
@@ -311,27 +368,29 @@ export class DepartmentStockComponent {
         const units = response || [];
         params.data.unitId = units[0]?.unitId || null;
         params.data.unitOptions = units.map((u: any) => u.unitName);
-        this.onUnitChanged(params);
+        this.onUnitChanged(params, gridApi);
         this.cdr.detectChanges();
-        this.gridApi.refreshCells({ rowNodes: [params.node], force: true });
+        if (gridApi) {
+          gridApi.refreshCells({ rowNodes: [params.node], force: true });
+        }
       },
     });
   }
 
-  onProductChangeIn(params: any) { this.onProductChange(params); }
-  onProductChangeOut(params: any) { this.onProductChange(params); }
+  onProductChangeIn(params: any) { this.onProductChange(params, this.gridApiIn); }
+  onProductChangeOut(params: any) { this.onProductChange(params, this.gridApiOut); }
 
-  onUnitChangedIn(params: any) { this.onUnitChanged(params); }
-  onUnitChangedOut(params: any) { this.onUnitChanged(params); }
+  onUnitChangedIn(params: any) { this.onUnitChanged(params, this.gridApiIn); }
+  onUnitChangedOut(params: any) { this.onUnitChanged(params, this.gridApiOut); }
 
-  onUnitChanged(params: any) {
+  onUnitChanged(params: any, gridApi?: GridApi) {
     const unitId = params.data.unitId;
     const itemId = params.data.inventoryItemId;
     if (!unitId || !itemId) return;
-    this.fetchCurrentStock(params);
+    this.fetchCurrentStock(params, gridApi);
   }
 
-  fetchCurrentStock(params: any) {
+  fetchCurrentStock(params: any, gridApi?: GridApi) {
     const unitId = params.data.unitId;
     const itemId = params.data.inventoryItemId;
     if (!unitId || !itemId) return;
@@ -349,7 +408,9 @@ export class DepartmentStockComponent {
             )) || 0;
           params.data.minStockLevel = stock;
           this.cdr.detectChanges();
-          this.gridApi.refreshCells({ rowNodes: [params.node], force: true });
+          if (gridApi) {
+            gridApi.refreshCells({ rowNodes: [params.node], force: true });
+          }
         },
       });
   }
@@ -362,13 +423,15 @@ export class DepartmentStockComponent {
         .pipe(
           finalize(() => {}),
           catchError((error) => {
+            console.error('Error fetching department stock for edit:', error);
+            const errorMessage = error?.error?.error?.message || error?.error?.message || error?.message || 'Failed to load department stock';
             this.msgService.add({
               severity: "error",
               summary: "Error",
-              detail: error.error.error.message,
-              life: 2000,
+              detail: errorMessage,
+              life: 3000,
             });
-            return throwError(error.error.error.message);
+            return throwError(() => error);
           })
         )
         .subscribe({
@@ -378,38 +441,24 @@ export class DepartmentStockComponent {
               id: response.id,
               departmentId: response.departmentId,
               receiverEmployeeId: response.receiverEmployeeId,
-              issueDate: response.issueDate ? new Date(response.issueDate) : "",
+              issueDate: response.issueDate ? new Date(response.issueDate) : this.getTodayDate(),
               remarks: response.remarks,
+              voucherNumber: response.voucherNumber,
             });
-            // Merge both detail arrays into a single editable grid dataset
-            const combined = [] as any[];
-            (response.departmentStockDetails || []).forEach((d: any) => {
-              combined.push({
-                inventoryItemId: d.inventoryItemId,
-                unitId: d.unitId,
-                minStockLevel: d.stockLevel,
-                qtyIn: d.qtyIn,
-                consumedQty: null,
-              });
-            });
-            (response.departmentStockConsumptionDetails || []).forEach((c: any) => {
-              const idx = combined.findIndex(
-                (x) => x.inventoryItemId === c.inventoryItemId && x.unitId === c.unitId
-              );
-              if (idx > -1) {
-                combined[idx].consumedQty = c.consumedQty;
-                combined[idx].minStockLevel = c.stockLevel ?? combined[idx].minStockLevel;
-              } else {
-                combined.push({
-                  inventoryItemId: c.inventoryItemId,
-                  unitId: c.unitId,
-                  minStockLevel: c.stockLevel,
-                  qtyIn: null,
-                  consumedQty: c.consumedQty,
-                });
-              }
-            });
-            this.rowData = combined;
+            // Populate rowDataIn and rowDataOut for the two grids
+            this.rowDataIn = (response.departmentStockDetails || []).map((d: any) => ({
+              inventoryItemId: d.inventoryItemId,
+              unitId: d.unitId,
+              minStockLevel: d.stockLevel,
+              qtyIn: d.qtyIn || 0,
+            }));
+            
+            this.rowDataOut = (response.departmentStockConsumptionDetails || []).map((c: any) => ({
+              inventoryItemId: c.inventoryItemId,
+              unitId: c.unitId,
+              minStockLevel: c.stockLevel,
+              consumedQty: c.consumedQty || 0,
+            }));
             this.displayModal = true;
             this.cdr.detectChanges();
           },
@@ -419,42 +468,100 @@ export class DepartmentStockComponent {
       this.viewMode = false;
       this.form.reset();
       this.form.enable();
-      this.rowData = [];
+      this.rowDataIn = [];
+      this.rowDataOut = [];
       this.displayModal = true;
+      this.form.patchValue({ issueDate: this.getTodayDate(), id: 0 });
+      // Use setTimeout to ensure form value is updated before getting voucher number
+      setTimeout(() => {
+        this.getVoucherNumber();
+      }, 0);
     }
   }
 
   save() {
+    // Validate form first
+    if (!this.form.valid) {
+      this.msgService.add({
+        severity: "error",
+        summary: "Validation Error",
+        detail: "Please fill all required fields",
+        life: 3000,
+      });
+      return;
+    }
+
+    const formValue = this.form.value;
+
+    // Additional validation for department and employee
+    if (!formValue.departmentId || formValue.departmentId === 0) {
+      this.msgService.add({
+        severity: "error",
+        summary: "Validation Error",
+        detail: "Please select a department",
+        life: 3000,
+      });
+      return;
+    }
+
+    if (!formValue.receiverEmployeeId || formValue.receiverEmployeeId === 0) {
+      this.msgService.add({
+        severity: "error",
+        summary: "Validation Error",
+        detail: "Please select a receiver employee",
+        life: 3000,
+      });
+      return;
+    }
+
     this.saving = true;
     this.rowDataIn = []; this.rowDataOut = [];
     if (this.gridApiIn) { this.gridApiIn.forEachNodeAfterFilterAndSort(n=>this.rowDataIn.unshift(n.data)); }
     if (this.gridApiOut) { this.gridApiOut.forEachNodeAfterFilterAndSort(n=>this.rowDataOut.unshift(n.data)); }
+    
     const detailsIn = this.rowDataIn
-      .filter((r: any) => (r.qtyIn || 0) > 0)
+      .filter((r: any) => r.inventoryItemId && r.unitId && (r.qtyIn || 0) > 0)
       .map((r: any) => ({
         id: 0,
-        inventoryItemId: r.inventoryItemId,
-        unitId: r.unitId,
-        stockLevel: r.minStockLevel || 0,
-        qtyIn: r.qtyIn || 0,
+        inventoryItemId: Number(r.inventoryItemId),
+        unitId: Number(r.unitId),
+        stockLevel: Number(r.minStockLevel) || 0,
+        qtyIn: Number(r.qtyIn) || 0,
       }));
 
     const detailsOut = this.rowDataOut
-      .filter((r: any) => (r.consumedQty || 0) > 0)
+      .filter((r: any) => r.inventoryItemId && r.unitId && (r.consumedQty || 0) > 0)
       .map((r: any) => ({
         id: 0,
-        inventoryItemId: r.inventoryItemId,
-        unitId: r.unitId,
-        stockLevel: r.minStockLevel || 0,
-        consumedQty: r.consumedQty || 0,
+        inventoryItemId: Number(r.inventoryItemId),
+        unitId: Number(r.unitId),
+        stockLevel: Number(r.minStockLevel) || 0,
+        consumedQty: Number(r.consumedQty) || 0,
       }));
 
+    // Validate that we have at least one detail record
+    if (detailsIn.length === 0 && detailsOut.length === 0) {
+      this.msgService.add({
+        severity: "warn",
+        summary: "Warning",
+        detail: "Please add at least one product with quantity",
+        life: 3000,
+      });
+      this.saving = false;
+      return;
+    }
+
     const payload = {
-      ...this.form.value,
       id: 0,
+      issueDate: formValue.issueDate ? new Date(formValue.issueDate).toISOString() : new Date().toISOString(),
+      remarks: formValue.remarks || "",
+      departmentId: Number(formValue.departmentId),
+      receiverEmployeeId: Number(formValue.receiverEmployeeId),
       departmentStockDetails: detailsIn,
       departmentStockConsumptionDetails: detailsOut,
     };
+
+    console.log('Save payload:', JSON.stringify(payload, null, 2));
 
     this._salesService
       .create(payload, this.target)
@@ -463,13 +570,15 @@ export class DepartmentStockComponent {
           this.saving = false;
         }),
         catchError((error) => {
+          console.error('Error saving department stock:', error);
+          const errorMessage = error?.error?.error?.message || error?.error?.message || error?.message || 'Failed to save department stock';
           this.msgService.add({
             severity: "error",
             summary: "Error",
-            detail: error.error.error.message,
-            life: 2000,
+            detail: errorMessage,
+            life: 3000,
           });
-          return throwError(error.error.error.message);
+          return throwError(() => error);
         })
       )
       .subscribe({
@@ -488,36 +597,88 @@ export class DepartmentStockComponent {
   }
 
   update() {
+    // Validate form first
+    if (!this.form.valid) {
+      this.msgService.add({
+        severity: "error",
+        summary: "Validation Error",
+        detail: "Please fill all required fields",
+        life: 3000,
+      });
+      return;
+    }
+
+    const formValue = this.form.value;
+
+    // Additional validation for department and employee
+    if (!formValue.departmentId || formValue.departmentId === 0) {
+      this.msgService.add({
+        severity: "error",
+        summary: "Validation Error",
+        detail: "Please select a department",
+        life: 3000,
+      });
+      return;
+    }
+
+    if (!formValue.receiverEmployeeId || formValue.receiverEmployeeId === 0) {
+      this.msgService.add({
+        severity: "error",
+        summary: "Validation Error",
+        detail: "Please select a receiver employee",
+        life: 3000,
+      });
+      return;
+    }
+
     this.saving = true;
     this.rowDataIn = []; this.rowDataOut = [];
     if (this.gridApiIn) { this.gridApiIn.forEachNodeAfterFilterAndSort(n=>this.rowDataIn.unshift(n.data)); }
     if (this.gridApiOut) { this.gridApiOut.forEachNodeAfterFilterAndSort(n=>this.rowDataOut.unshift(n.data)); }
 
     const detailsIn = this.rowDataIn
-      .filter((r: any) => (r.qtyIn || 0) > 0)
+      .filter((r: any) => r.inventoryItemId && r.unitId && (r.qtyIn || 0) > 0)
       .map((r: any) => ({
         id: 0,
-        inventoryItemId: r.inventoryItemId,
-        unitId: r.unitId,
-        stockLevel: r.minStockLevel || 0,
-        qtyIn: r.qtyIn || 0,
+        inventoryItemId: Number(r.inventoryItemId),
+        unitId: Number(r.unitId),
+        stockLevel: Number(r.minStockLevel) || 0,
+        qtyIn: Number(r.qtyIn) || 0,
       }));
 
     const detailsOut = this.rowDataOut
-      .filter((r: any) => (r.consumedQty || 0) > 0)
+      .filter((r: any) => r.inventoryItemId && r.unitId && (r.consumedQty || 0) > 0)
       .map((r: any) => ({
         id: 0,
-        inventoryItemId: r.inventoryItemId,
-        unitId: r.unitId,
-        stockLevel: r.minStockLevel || 0,
-        consumedQty: r.consumedQty || 0,
+        inventoryItemId: Number(r.inventoryItemId),
+        unitId: Number(r.unitId),
+        stockLevel: Number(r.minStockLevel) || 0,
+        consumedQty: Number(r.consumedQty) || 0,
       }));
 
+    // Validate that we have at least one detail record
+    if (detailsIn.length === 0 && detailsOut.length === 0) {
+      this.msgService.add({
+        severity: "warn",
+        summary: "Warning",
+        detail: "Please add at least one product with quantity",
+        life: 3000,
+      });
+      this.saving = false;
+      return;
+    }
+
     const payload = {
-      ...this.form.value,
+      id: formValue.id || 0,
+      issueDate: formValue.issueDate ? new Date(formValue.issueDate).toISOString() : new Date().toISOString(),
+      remarks: formValue.remarks || "",
+      departmentId: Number(formValue.departmentId),
+      receiverEmployeeId: Number(formValue.receiverEmployeeId),
       departmentStockDetails: detailsIn,
       departmentStockConsumptionDetails: detailsOut,
     };
+
+    console.log('Update payload:', JSON.stringify(payload, null, 2));
 
     this._salesService
       .update(payload, this.target)
@@ -526,13 +687,15 @@ export class DepartmentStockComponent {
           this.saving = false;
         }),
         catchError((error) => {
+          console.error('Error updating department stock:', error);
+          const errorMessage = error?.error?.error?.message || error?.error?.message || error?.message || 'Failed to update department stock';
           this.msgService.add({
             severity: "error",
             summary: "Error",
-            detail: error.error.error.message,
-            life: 2000,
+            detail: errorMessage,
+            life: 3000,
           });
-          return throwError(error.error.error.message);
+          return throwError(() => error);
         })
       )
       .subscribe({
@@ -562,13 +725,15 @@ export class DepartmentStockComponent {
           .pipe(
             finalize(() => {}),
             catchError((error) => {
+              console.error('Error deleting department stock:', error);
+              const errorMessage = error?.error?.error?.message || error?.error?.message || error?.message || 'Failed to delete department stock';
               this.msgService.add({
                 severity: "error",
                 summary: "Error",
-                detail: error.error.error.message,
-                life: 2000,
+                detail: errorMessage,
+                life: 3000,
               });
-              return throwError(error.error.error.message);
+              return throwError(() => error);
             })
           )
           .subscribe({
@@ -594,13 +759,15 @@ export class DepartmentStockComponent {
       .pipe(
         finalize(() => {}),
         catchError((error) => {
+          console.error('Error fetching department stock list:', error);
+          const errorMessage = error?.error?.error?.message || error?.error?.message || error?.message || 'Failed to load department stock list';
           this.msgService.add({
             severity: "error",
             summary: "Error",
-            detail: error.error.error.message,
-            life: 2000,
+            detail: errorMessage,
+            life: 3000,
           });
-          return throwError(error.error.error.message);
+          return throwError(() => error);
         })
       )
       .subscribe({

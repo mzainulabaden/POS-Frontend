@@ -35,11 +35,12 @@
     [scrollable]="true"
     [paginatorDropdownAppendTo]="'body'"
     scrollHeight="58vh"
-    [globalFilterFields]="['remarks']"
+    [globalFilterFields]="['remarks','voucherNumber']"
   >
     <ng-template pTemplate="header">
       <tr>
         <th style="min-width: 160px">Issue Date</th>
+        <th style="min-width: 160px">Voucher No</th>
         <th style="min-width: 200px">Department</th>
         <th style="min-width: 200px">Receiver Employee</th>
         <th style="min-width: 200px">Remarks</th>
@@ -49,6 +50,7 @@
     <ng-template pTemplate="body" let-item>
       <tr *ngIf="!loading; else loadingRow">
         <td>{{ item.issueDate | date: 'yyyy-MM-dd' }}</td>
+        <td>{{ item.voucherNumber }}</td>
         <td>{{ item?.departmentName }}</td>
         <td>{{ item?.receiverEmployeeName }}</td>
         <td>{{ item.remarks }}</td>
@@ -66,6 +68,7 @@
     <!-- Skeleton Row Template -->
     <ng-template #loadingRow>
       <tr *ngFor="let i of [1, 2, 3, 4, 5]">
+        <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
         <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
         <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
         <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
@@ -103,34 +106,56 @@
 >
   <form [formGroup]="form">
     <div class="row col-md-12 mt-2" id="inputField">
-      <div class="col-md-4 p-field flex flex-column">
-        <label class="label-text" for="issueDate">Issue Date</label>
+      <div class="col-md-3 p-field flex flex-column">
+        <label class="label-text" for="voucherNumber">Voucher No</label>
+        <input
+          id="voucherNumber"
+          type="text"
+          pInputText
+          formControlName="voucherNumber"
+          readonly
+        />
+      </div>
+      <div class="col-md-3 p-field flex flex-column">
+        <label class="label-text" for="issueDate">Issue Date <span class="text-danger">*</span></label>
         <p-calendar
           formControlName="issueDate"
           inputId="issueDate"
           appendTo="body"
           [showOnFocus]="true"
           [showIcon]="true"
+          dateFormat="yy-mm-dd"
+          (onSelect)="onDateChange($event)"
           [style]="{ width: '100%' }"
         ></p-calendar>
       </div>
-      <div class="col-md-4 p-field flex flex-column">
-        <label class="label-text" for="department">Department</label>
+      <div class="col-md-3 p-field flex flex-column">
+        <label class="label-text" for="department">Department <span class="text-danger">*</span></label>
         <p-dropdown
           formControlName="departmentId"
           [options]="departments"
           optionLabel="name"
           optionValue="id"
+          placeholder="Select Department"
+          [filter]="true"
+          filterBy="name"
+          [showClear]="true"
+          appendTo="body"
           [style]="{ width: '100%' }"
         ></p-dropdown>
       </div>
-      <div class="col-md-4 p-field flex flex-column">
-        <label class="label-text" for="receiver">Receiver Employee</label>
+      <div class="col-md-3 p-field flex flex-column">
+        <label class="label-text" for="receiver">Receiver Employee <span class="text-danger">*</span></label>
         <p-dropdown
           formControlName="receiverEmployeeId"
           [options]="employees"
           optionLabel="name"
           optionValue="id"
+          placeholder="Select Employee"
+          [filter]="true"
+          filterBy="name"
+          [showClear]="true"
+          appendTo="body"
           [style]="{ width: '100%' }"
         ></p-dropdown>
       </div>
@@ -162,7 +187,6 @@
           [columnDefs]="colDefsIn"
           [rowSelection]="rowSelection"
           (gridReady)="onGridReadyIn($event)"
-          (cellValueChanged)="onUnitChanged($event)"
           [components]="frameworkComponents"
           [singleClickEdit]="true"
         >
@@ -176,7 +200,6 @@
           [columnDefs]="colDefsOut"
           [rowSelection]="rowSelection"
           (gridReady)="onGridReadyOut($event)"
-          (cellValueChanged)="onUnitChanged($event)"
           [components]="frameworkComponents"
           [singleClickEdit]="true"
         >
