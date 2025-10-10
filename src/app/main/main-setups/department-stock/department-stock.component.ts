@@ -44,7 +44,7 @@ export class DepartmentStockComponent {
   };
 
   departments: { id: any; name: string }[] = [];
-  employees: { id: any; name: string }[] = [];
+  warehouses: { id: any; name: string }[] = [];
   items: { id: any; name: string }[] = [];
   units: { id: any; name: string }[] = [];
 
@@ -235,7 +235,7 @@ export class DepartmentStockComponent {
     this.form = this.fb.group({
       id: [0],
       departmentId: [null, [Validators.required]],
-      receiverEmployeeId: [null, [Validators.required]],
+      warehouseId: [null, [Validators.required]],
       issueDate: ["", [Validators.required]],
       remarks: [""],
       voucherNumber: [""],
@@ -247,7 +247,7 @@ export class DepartmentStockComponent {
   ngOnInit() {
     this.getAll();
     this.fetchDropdownData("Department");
-    this.fetchDropdownData("Employee");
+    this.fetchDropdownData("Warehouse");
     this.fetchDropdownData("Item");
     this.fetchDropdownData("Unit");
   }
@@ -263,8 +263,8 @@ export class DepartmentStockComponent {
         case "Department":
           this.departments = mapped;
           break;
-        case "Employee":
-          this.employees = mapped;
+        case "Warehouse":
+          this.warehouses = mapped;
           break;
         case "Item":
           this.items = mapped;
@@ -440,7 +440,7 @@ export class DepartmentStockComponent {
             this.form.patchValue({
               id: response.id,
               departmentId: response.departmentId,
-              receiverEmployeeId: response.receiverEmployeeId,
+              warehouseId: response.warehouseId,
               issueDate: response.issueDate ? new Date(response.issueDate) : this.getTodayDate(),
               remarks: response.remarks,
               voucherNumber: response.voucherNumber,
@@ -493,7 +493,7 @@ export class DepartmentStockComponent {
 
     const formValue = this.form.value;
 
-    // Additional validation for department and employee
+    // Additional validation for department and warehouse
     if (!formValue.departmentId || formValue.departmentId === 0) {
       this.msgService.add({
         severity: "error",
@@ -556,7 +556,7 @@ export class DepartmentStockComponent {
       issueDate: formValue.issueDate ? new Date(formValue.issueDate).toISOString() : new Date().toISOString(),
       remarks: formValue.remarks || "",
       departmentId: Number(formValue.departmentId),
-      receiverEmployeeId: Number(formValue.receiverEmployeeId),
+      warehouseId: Number(formValue.warehouseId),
       departmentStockDetails: detailsIn,
       departmentStockConsumptionDetails: detailsOut,
     };
@@ -610,7 +610,7 @@ export class DepartmentStockComponent {
 
     const formValue = this.form.value;
 
-    // Additional validation for department and employee
+    // Additional validation for department and warehouse
     if (!formValue.departmentId || formValue.departmentId === 0) {
       this.msgService.add({
         severity: "error",
@@ -621,11 +621,11 @@ export class DepartmentStockComponent {
       return;
     }
 
-    if (!formValue.receiverEmployeeId || formValue.receiverEmployeeId === 0) {
+    if (!formValue.warehouseId || formValue.warehouseId === 0) {
       this.msgService.add({
         severity: "error",
         summary: "Validation Error",
-        detail: "Please select a receiver employee",
+        detail: "Please select a warehouse",
         life: 3000,
       });
       return;
@@ -673,7 +673,7 @@ export class DepartmentStockComponent {
       issueDate: formValue.issueDate ? new Date(formValue.issueDate).toISOString() : new Date().toISOString(),
       remarks: formValue.remarks || "",
       departmentId: Number(formValue.departmentId),
-      receiverEmployeeId: Number(formValue.receiverEmployeeId),
+      warehouseId: Number(formValue.warehouseId),
       departmentStockDetails: detailsIn,
       departmentStockConsumptionDetails: detailsOut,
     };
@@ -777,6 +777,45 @@ export class DepartmentStockComponent {
           this.cdr.detectChanges();
         },
       });
+  }
+
+  approve(id: number) {
+    this.confirmationService.confirm({
+      message: "Are you sure you want to approve this document?",
+      header: "Confirmation",
+      icon: "pi pi-exclamation-triangle",
+      rejectButtonStyleClass: "p-button-text",
+      accept: () => {
+        this._salesService
+          .Approve(id, this.target)
+          .pipe(
+            finalize(() => {}),
+            catchError((error) => {
+              const errorMessage = error?.error?.error?.message || error?.error?.message || error?.message || 'Failed to approve document';
+              this.msgService.add({
+                severity: "error",
+                summary: "Error",
+                detail: errorMessage,
+                life: 3000,
+              });
+              return throwError(() => error);
+            })
+          )
+          .subscribe({
+            next: (response) => {
+              if (response) {
+                this.msgService.add({
+                  severity: "success",
+                  summary: "Confirmed",
+                  detail: "Approved Successfully",
+                  life: 2000,
+                });
+                this.getAll();
+              }
+            },
+          });
+      },
+    });
   }
 
   viewOnly(id: any) {

@@ -65,6 +65,26 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
           ""
         ),
       ]),
+      new MenuItem(this.l("Warehouse"), "", "fas fa-warehouse", "", [
+        new MenuItem(
+          this.l("Warehouse Stock Adjustment"),
+          "/app/main/main-setups/warehouse-stock-adjustment",
+          "fas fa-boxes",
+          ""
+        ),
+        new MenuItem(
+          this.l("Warehouse Stock Transfer"),
+          "/app/main/main-setups/warehouse-stock-transfer",
+          "fas fa-people-carry-box",
+          ""
+        ),
+        new MenuItem(
+          this.l("Department Stock"),
+          "/app/main/main-setups/department-stock",
+          "fas fa-building-circle-arrow-right",
+          ""
+        ),
+      ]),
       new MenuItem(this.l("General Setups"), "", " fa-user fas fa-tools", "", [
         new MenuItem(
           this.l("Unit"),
@@ -95,24 +115,6 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
           this.l("Default Integrations"),
           "/app/main/main-setups/default-integrations",
           "fas fa-link",
-          ""
-        ),
-        new MenuItem(
-          this.l("Warehouse Stock Adjustment"),
-          "/app/main/main-setups/warehouse-stock-adjustment",
-          "fas fa-boxes",
-          ""
-        ),
-        new MenuItem(
-          this.l("Warehouse Stock Transfer"),
-          "/app/main/main-setups/warehouse-stock-transfer",
-          "fas fa-people-carry-box",
-          ""
-        ),
-        new MenuItem(
-          this.l("Department Stock"),
-          "/app/main/main-setups/department-stock",
-          "fas fa-people-carry-box",
           ""
         ),
         new MenuItem(

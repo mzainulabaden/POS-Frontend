@@ -42,8 +42,9 @@
         <th style="min-width: 160px">Issue Date</th>
         <th style="min-width: 160px">Voucher No</th>
         <th style="min-width: 200px">Department</th>
-        <th style="min-width: 200px">Receiver Employee</th>
+        <th style="min-width: 200px">Warehouse</th>
         <th style="min-width: 200px">Remarks</th>
+        <th style="min-width: 120px">Status</th>
         <th style="min-width: 160px">Actions</th>
       </tr>
     </ng-template>
@@ -52,14 +53,44 @@
         <td>{{ item.issueDate | date: 'yyyy-MM-dd' }}</td>
         <td>{{ item.voucherNumber }}</td>
         <td>{{ item?.departmentName }}</td>
-        <td>{{ item?.receiverEmployeeName }}</td>
+        <td>{{ item?.warehouseName }}</td>
         <td>{{ item.remarks }}</td>
+        <td>
+          <div *ngIf="item.status == 'PENDING'" class="deactive-box">
+            PENDING
+          </div>
+          <div *ngIf="item.status == 'APPROVED'" class="active-box">
+            APPROVED
+          </div>
+        </td>
         <td class="icon-group">
-          <a class="dropdown-item edit" (click)="show(item.id)">
+          <a 
+            *ngIf="item.status == 'PENDING'" 
+            class="dropdown-item edit" 
+            (click)="show(item.id)"
+            title="Edit">
             <i class="fa-solid fa-pencil"></i>
           </a>
-          <a class="dropdown-item delete" (click)="delete(item.id)">
+          <a 
+            *ngIf="item.status == 'PENDING'" 
+            class="dropdown-item delete" 
+            (click)="delete(item.id)"
+            title="Delete">
             <i class="fa-solid fa-trash"></i>
+          </a>
+          <a 
+            *ngIf="item.status == 'PENDING'" 
+            class="dropdown-item view" 
+            (click)="approve(item.id)"
+            title="Approve">
+            <i class="fa-solid fa-circle-check"></i>
+          </a>
+          <a 
+            *ngIf="item.status == 'APPROVED'" 
+            class="dropdown-item view" 
+            (click)="viewOnly(item.id)"
+            title="View">
+            <i class="fa-solid fa-eye"></i>
           </a>
         </td>
       </tr>
@@ -68,6 +99,7 @@
     <!-- Skeleton Row Template -->
     <ng-template #loadingRow>
       <tr *ngFor="let i of [1, 2, 3, 4, 5]">
+        <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
         <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
         <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
         <td><p-skeleton width="80%" height="20px"></p-skeleton></td>
@@ -145,13 +177,13 @@
         ></p-dropdown>
       </div>
       <div class="col-md-3 p-field flex flex-column">
-        <label class="label-text" for="receiver">Receiver Employee <span class="text-danger">*</span></label>
+        <label class="label-text" for="warehouse">Warehouse <span class="text-danger">*</span></label>
         <p-dropdown
-          formControlName="receiverEmployeeId"
-          [options]="employees"
+          formControlName="warehouseId"
+          [options]="warehouses"
           optionLabel="name"
           optionValue="id"
-          placeholder="Select Employee"
+          placeholder="Select Warehouse"
           [filter]="true"
           filterBy="name"
           [showClear]="true"
