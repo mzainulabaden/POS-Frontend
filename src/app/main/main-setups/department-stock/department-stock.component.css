@@ -1,28 +1,4 @@
-/* Reuse same styles as warehouse-stock-transfer */
-.create-btn {
-  background-color: #00b894;
-  color: #fff;
-}
-.save-btn {
-  background-color: #3498db;
-  color: #fff;
-}
-.update-btn {
-  background-color: #f39c12;
-  color: #fff;
-}
-.cancel-btn {
-  background-color: #bdc3c7;
-  color: #2c3e50;
-}
-.add-row-btn {
-  background-color: #2ecc71;
-  color: #fff;
-}
-.remove-row-btn {
-  background-color: #e74c3c;
-  color: #fff;
-}
+/* Using global styles from styles.css for consistency with warehouse-stock-transfer */
 .icon-group a {
   margin-right: 8px;
 }
