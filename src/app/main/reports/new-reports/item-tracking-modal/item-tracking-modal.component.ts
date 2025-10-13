@@ -76,10 +76,10 @@ export class ItemTrackingModalComponent implements OnInit {
         console.error("❌ Error loading company profile:", err);
         // Use default values if profile fails to load
         this.companyProfile = {
-          companyName: 'Company Name',
-          address: 'Address',
-          phone1: '',
-          phone2: '',
+          companyName: 'DefenceRice',
+          address: 'Ghazi Road, Lahore',
+          phone1: '0423-5800530, 0423-5800540',
+          phone2: 'For Accounts inquiry, contact 0310-defence',
           email: ''
         };
       },
@@ -225,12 +225,20 @@ export class ItemTrackingModalComponent implements OnInit {
       const address = this.companyProfile.address || "Address";
       doc.text(address, pageWidth / 2, 22, { align: "center" });
 
+      if (this.companyProfile.phone1 ) {
+        const phones = [this.companyProfile.phone1,]
+          .filter(Boolean)
+          .join(", ");
+       doc.text(address, pageWidth / 2, 22, { align: "center" });
+      }
+      
       if (this.companyProfile.phone1 || this.companyProfile.phone2) {
-        const phones = [this.companyProfile.phone1, this.companyProfile.phone2]
+        const phones = [this.companyProfile.phone, this.companyProfile.phone2]
           .filter(Boolean)
           .join(", ");
         doc.text(phones, pageWidth / 2, 27, { align: "center" });
       }
+
 
       if (this.companyProfile.email) {
         doc.text(`For Accounts inquiry, contact ${this.companyProfile.email}`, pageWidth / 2, 32, {

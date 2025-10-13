@@ -69,43 +69,73 @@ export class PosLayoutComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // Ensure the barcode input is focused so scans go straight here
-    setTimeout(() => this.barcodeScanInput?.nativeElement?.focus(), 0);
+    // Barcode scanning now works in background without focus requirement
   }
 
   // onBarcodeInput removed to prevent double-trigger with global listener
 
-  // Global listener to capture barcode scans even if input loses focus
+  // Global listener to capture barcode scans in background
   @HostListener('document:keydown', ['$event'])
   handleDocumentKeydown(event: KeyboardEvent) {
+    // Ignore modifier key combinations
     if (event.ctrlKey || event.altKey || event.metaKey) {
       return;
     }
 
+    // Check if user is actively typing in an input field
+    const activeElement = document.activeElement as HTMLElement;
+    const isTypingInInput = activeElement && 
+      (activeElement.tagName === 'INPUT' || 
+       activeElement.tagName === 'TEXTAREA' || 
+       activeElement.tagName === 'SELECT' ||
+       activeElement.isContentEditable);
+    
+    // If typing in any input fields, don't capture for barcode scanning
+    // Exception: Allow if rapid keypresses (barcode scanner speed)
     const now = Date.now();
+    const delta = now - this.lastKeyTime;
+    const isRapidInput = delta < 50; // Barcode scanners type faster than humans
+    
+    if (isTypingInInput && !isRapidInput) {
+      // User is manually typing, clear any buffer and exit
+      this.scanBuffer = "";
+      if (this.scanTimeout) {
+        clearTimeout(this.scanTimeout);
+        this.scanTimeout = null;
+      }
+      return;
+    }
+
+    this.lastKeyTime = now;
 
     if (event.key === 'Enter') {
-      if (this.scanBuffer) {
+      if (this.scanBuffer && this.scanBuffer.length > 3) {
+        // Likely a barcode scan (has substantial content)
         if (this.scanTimeout) {
           clearTimeout(this.scanTimeout);
           this.scanTimeout = null;
         }
         this.sidebarService.emitBarcodeScan(this.scanBuffer);
         this.scanBuffer = "";
+        // Update the barcode input display but don't force focus
         if (this.barcodeScanInput?.nativeElement) {
           this.barcodeScanInput.nativeElement.value = "";
-          this.barcodeScanInput.nativeElement.focus();
         }
         event.preventDefault();
+      } else {
+        // Short buffer, likely not a barcode - clear it
+        this.scanBuffer = "";
       }
       return;
     }
 
     if (event.key && event.key.length === 1) {
-      const delta = now - this.lastKeyTime;
-      this.lastKeyTime = now;
-
       this.scanBuffer += event.key;
+
+      // Update the barcode input display
+      if (this.barcodeScanInput?.nativeElement) {
+        this.barcodeScanInput.nativeElement.value = this.scanBuffer;
+      }
 
       if (this.scanTimeout) {
         clearTimeout(this.scanTimeout);
@@ -113,13 +143,14 @@ export class PosLayoutComponent implements AfterViewInit {
 
       this.scanTimeout = setTimeout(() => {
         const code = this.scanBuffer.trim();
-        if (code) {
+        if (code && code.length > 3) {
+          // Only process if it looks like a barcode
           this.sidebarService.emitBarcodeScan(code);
         }
         this.scanBuffer = "";
+        // Clear the display but don't force focus
         if (this.barcodeScanInput?.nativeElement) {
           this.barcodeScanInput.nativeElement.value = "";
-          this.barcodeScanInput.nativeElement.focus();
         }
       }, 120);
     }

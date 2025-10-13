@@ -47,18 +47,18 @@
       </div>
     </div>
   </nav>
-  <div class="row" style="height: 100%">
-    <!-- Product Grid -->
-    <div class="col-12 col-md-6">
-      <app-pos-items class="d-block w-100"></app-pos-items>
-    </div>
-
-    <!-- Cart Sidebar -->
-    <div class="col-12 col-md-6">
+  <div class="d-flex" style="height: 100%">
+    <!-- Cart Sidebar (Left - 80%) -->
+    <div style="width: 80%">
       <app-pos-cart-sidebar
         class="d-block w-100"
         style="height: 90vh"
       ></app-pos-cart-sidebar>
+    </div>
+
+    <!-- Product Grid (Right - 20%) -->
+    <div style="width: 20%">
+      <app-pos-items class="d-block w-100"></app-pos-items>
     </div>
   </div>
 </div>
