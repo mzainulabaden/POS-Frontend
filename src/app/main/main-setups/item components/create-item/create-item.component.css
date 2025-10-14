@@ -27,3 +27,36 @@
 .suggestions li:hover {
   background: #f0f0f0;
 }
+
+/* Barcode Generator Styles */
+.barcode-generator-container {
+  padding: 20px;
+  min-height: 300px;
+}
+
+.barcode-display {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #dee2e6;
+}
+
+#barcodeCanvas {
+  background: white;
+  padding: 15px;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+}
+
+.row-btn-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.font-mono {
+  font-family: 'Courier New', monospace;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+}

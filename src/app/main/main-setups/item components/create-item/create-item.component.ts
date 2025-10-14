@@ -17,6 +17,7 @@ import * as XLSX from "xlsx";
 import { ViewChild, ElementRef } from "@angular/core";
 import { saveAs } from "file-saver";
 import * as ExcelJS from "exceljs";
+import * as JsBarcode from "jsbarcode";
 
 @Component({
   selector: "app-create-item",
@@ -955,6 +956,11 @@ export class CreateItemComponent implements OnInit {
   categoryModalVisible = false;
   newCategory: any = { name: "" };
 
+  // Barcode Generation
+  barcodeModalVisible = false;
+  generatedBarcode: string = "";
+  barcodePreviewUrl: string = "";
+
   openCategoryModal() {
     this.newCategory = { name: "" }; // reset form data
     this.categoryModalVisible = true;
@@ -974,5 +980,149 @@ export class CreateItemComponent implements OnInit {
   onSaveCategory(data: any) {
     this._hrmService.triggerSave(data);
     this.displayCategoryModal = false;
+  }
+
+  // Barcode Generation Functions
+  generateBarcode() {
+    const timestamp = Date.now();
+    const randomNum = Math.floor(Math.random() * 10000);
+    this.generatedBarcode = `${timestamp}${randomNum}`.substring(0, 13); // Generate EAN-13 compatible barcode
+    
+    // Generate barcode image
+    this.generateBarcodeImage(this.generatedBarcode);
+    
+    this.msgService.add({
+      severity: "success",
+      summary: "Success",
+      detail: "Barcode generated successfully!",
+      life: 2000,
+    });
+  }
+
+  generateBarcodeImage(barcodeValue: string) {
+    setTimeout(() => {
+      const canvas = document.getElementById("barcodeCanvas") as HTMLCanvasElement;
+      if (canvas) {
+        try {
+          JsBarcode(canvas, barcodeValue, {
+            format: "CODE128",
+            width: 2,
+            height: 100,
+            displayValue: true,
+          });
+          this.barcodePreviewUrl = canvas.toDataURL("image/png");
+        } catch (error) {
+          console.error("Barcode generation error:", error);
+          this.msgService.add({
+            severity: "error",
+            summary: "Error",
+            detail: "Failed to generate barcode image",
+            life: 2000,
+          });
+        }
+      }
+    }, 100);
+  }
+
+  openBarcodeModal() {
+    this.barcodeModalVisible = true;
+    this.generatedBarcode = "";
+    this.barcodePreviewUrl = "";
+  }
+
+  applyBarcodeToGrid() {
+    if (!this.generatedBarcode) {
+      this.msgService.add({
+        severity: "warn",
+        summary: "Warning",
+        detail: "Please generate a barcode first",
+        life: 2000,
+      });
+      return;
+    }
+
+    const selectedNodes = this.gridApi.getSelectedNodes();
+    
+    if (selectedNodes.length === 0) {
+      this.msgService.add({
+        severity: "warn",
+        summary: "Warning",
+        detail: "Please select at least one row to apply the barcode",
+        life: 2000,
+      });
+      return;
+    }
+
+    selectedNodes.forEach((node) => {
+      node.data.barcode = this.generatedBarcode;
+    });
+
+    this.gridApi.refreshCells({ force: true });
+    this.barcodeModalVisible = false;
+    
+    this.msgService.add({
+      severity: "success",
+      summary: "Success",
+      detail: "Barcode applied to selected rows",
+      life: 2000,
+    });
+  }
+
+  downloadBarcodeImage() {
+    if (!this.barcodePreviewUrl) {
+      this.msgService.add({
+        severity: "warn",
+        summary: "Warning",
+        detail: "Please generate a barcode first",
+        life: 2000,
+      });
+      return;
+    }
+
+    const link = document.createElement("a");
+    link.href = this.barcodePreviewUrl;
+    link.download = `barcode_${this.generatedBarcode}.png`;
+    link.click();
+  }
+
+  printBarcode() {
+    if (!this.barcodePreviewUrl) {
+      this.msgService.add({
+        severity: "warn",
+        summary: "Warning",
+        detail: "Please generate a barcode first",
+        life: 2000,
+      });
+      return;
+    }
+
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Print Barcode</title>
+            <style>
+              body { 
+                display: flex; 
+                justify-content: center; 
+                align-items: center; 
+                height: 100vh; 
+                margin: 0;
+              }
+              img { 
+                max-width: 100%; 
+                height: auto; 
+              }
+            </style>
+          </head>
+          <body>
+            <img src="${this.barcodePreviewUrl}" />
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
   }
 }
