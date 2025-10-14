@@ -5,6 +5,7 @@ import { MessageService } from "primeng/api";
 import { finalize, catchError, throwError } from "rxjs";
 import * as moment from "moment";
 import { PosService } from "pos/core/services/pos.service";
+import { ThermalPrinterService, ReceiptData } from "pos/core/services/thermal-printer.service";
 
 @Component({
   selector: "app-pos-cart-sidebar",
@@ -42,7 +43,8 @@ export class PosCartSidebarComponent {
     private purchaseService: PurchaseService,
     private cdr: ChangeDetectorRef,
     private msgService: MessageService,
-    private posService: PosService
+    private posService: PosService,
+    private thermalPrinter: ThermalPrinterService
   ) {
     this.purchaseForm = this.fb.group({
       id: [0],
@@ -331,13 +333,16 @@ export class PosCartSidebarComponent {
         })
       )
       .subscribe({
-        next: () => {
+        next: (response: any) => {
           this.msgService.add({
             severity: "success",
             summary: "Confirmed",
             detail: "Saved Successfully",
             life: 2000,
           });
+
+          // Print receipt after successful save
+          this.printReceipt(response);
 
           this.purchaseForm.reset();
           this.salesInvoiceDetails.clear();
@@ -381,5 +386,76 @@ export class PosCartSidebarComponent {
 
     this.receivedAmount = 0;
     this.RemainingAmount = 0;
+  }
+
+  printReceipt(response?: any) {
+    // Get customer name
+    const selectedCustomer = this.customer.find(
+      (c) => c.id === this.purchaseForm.value.customerCOALevel04Id
+    );
+    
+    // Get payment mode name
+    const selectedPayment = this.paymentTerms.find(
+      (p) => p.id === this.purchaseForm.value.paymentModeId
+    );
+
+    // Get warehouse name
+    const selectedWarehouse = this.wareHouse.find(
+      (w) => w.id === this.purchaseForm.value.selectedWarehouseId
+    );
+
+    // Calculate bill discount
+    const billDiscountAmt = this.purchaseForm.get("discountAmount")?.value || 0;
+    const billDiscountPct = this.purchaseForm.get("discountPercentage")?.value || 0;
+    const billDiscountFromPct = +(this.subtotal * (billDiscountPct / 100)).toFixed(2);
+    const totalBillDiscount = billDiscountAmt + billDiscountFromPct;
+
+    // Prepare receipt data
+    const receiptData: ReceiptData = {
+      invoiceNumber: response?.result?.id?.toString() || 'N/A',
+      date: moment().format('DD/MM/YYYY HH:mm'),
+      customer: selectedCustomer?.name || 'Walk-in Customer',
+      paymentMode: selectedPayment?.name || 'Cash',
+      warehouse: selectedWarehouse?.name || '',
+      items: this.salesInvoiceDetails.controls.map((ctrl) => {
+        const qty = ctrl.get('invoiceQty')?.value || 0;
+        const rate = ctrl.get('rate')?.value || 0;
+        const discount = ctrl.get('discount')?.value || 0;
+        const lineTotal = ctrl.get('lineTotal')?.value || 0;
+        
+        return {
+          name: ctrl.get('itemName')?.value || '',
+          quantity: qty,
+          price: rate,
+          discount: discount,
+          total: lineTotal - discount
+        };
+      }),
+      subtotal: this.subtotal,
+      discount: totalBillDiscount,
+      tax: 0, // Tax if applicable
+      total: this.payableAmount,
+      received: this.receivedAmount,
+      change: selectedPayment?.name.toLowerCase() === 'cash' && this.receivedAmount > this.payableAmount
+        ? this.receivedAmount - this.payableAmount
+        : 0
+    };
+
+    // Print using thermal printer service
+    this.thermalPrinter.printReceipt(receiptData);
+  }
+
+  // Method to manually trigger print (can be called from a button)
+  manualPrint() {
+    if (this.salesInvoiceDetails.length === 0) {
+      this.msgService.add({
+        severity: "warn",
+        summary: "Warning",
+        detail: "No items to print",
+        life: 2000,
+      });
+      return;
+    }
+    this.printReceipt();
   }
 }

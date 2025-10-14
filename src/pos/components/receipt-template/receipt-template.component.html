@@ -1,0 +1,98 @@
+<div class="receipt-container print-only" *ngIf="receiptData">
+  <div class="receipt">
+    <!-- Store Header -->
+    <div class="receipt-header">
+      <h2 class="store-name">YOUR STORE NAME</h2>
+      <p>Address Line 1</p>
+      <p>City, Country</p>
+      <p>Tel: +1234567890</p>
+    </div>
+
+    <!-- Invoice Details -->
+    <div class="receipt-info">
+      <div class="info-row">
+        <span>Invoice:</span>
+        <span>{{ receiptData.invoiceNumber }}</span>
+      </div>
+      <div class="info-row">
+        <span>Date:</span>
+        <span>{{ receiptData.date }}</span>
+      </div>
+      <div class="info-row">
+        <span>Customer:</span>
+        <span>{{ receiptData.customer }}</span>
+      </div>
+      <div class="info-row" *ngIf="receiptData.warehouse">
+        <span>Warehouse:</span>
+        <span>{{ receiptData.warehouse }}</span>
+      </div>
+      <div class="info-row">
+        <span>Payment:</span>
+        <span>{{ receiptData.paymentMode }}</span>
+      </div>
+    </div>
+
+    <!-- Items Table -->
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th style="text-align: left;">Item</th>
+          <th style="text-align: right;">Qty</th>
+          <th style="text-align: right;">Price</th>
+          <th style="text-align: right;">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let item of receiptData.items">
+          <tr>
+            <td>{{ item.name }}</td>
+            <td style="text-align: right;">{{ item.quantity | number:'1.2-2' }}</td>
+            <td style="text-align: right;">{{ item.price | number:'1.2-2' }}</td>
+            <td style="text-align: right;">{{ item.total | number:'1.2-2' }}</td>
+          </tr>
+          <tr *ngIf="item.discount > 0">
+            <td colspan="4" style="text-align: right; font-size: 10px; padding: 0;">
+              Discount: -{{ item.discount | number:'1.2-2' }}
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+
+    <!-- Totals -->
+    <div class="receipt-totals">
+      <div class="total-row">
+        <span>Subtotal:</span>
+        <span>{{ receiptData.subtotal | number:'1.2-2' }}</span>
+      </div>
+      <div class="total-row" *ngIf="receiptData.discount > 0">
+        <span>Discount:</span>
+        <span>-{{ receiptData.discount | number:'1.2-2' }}</span>
+      </div>
+      <div class="total-row" *ngIf="receiptData.tax > 0">
+        <span>Tax:</span>
+        <span>{{ receiptData.tax | number:'1.2-2' }}</span>
+      </div>
+      <div class="total-row grand-total">
+        <span>TOTAL:</span>
+        <span>PKR {{ receiptData.total | number:'1.2-2' }}</span>
+      </div>
+      <div class="total-row" *ngIf="receiptData.received && receiptData.received > 0">
+        <span>Received:</span>
+        <span>{{ receiptData.received | number:'1.2-2' }}</span>
+      </div>
+      <div class="total-row" *ngIf="receiptData.change && receiptData.change > 0">
+        <span>Change:</span>
+        <span>{{ receiptData.change | number:'1.2-2' }}</span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="receipt-footer">
+      <p>Thank You for Your Business!</p>
+      <p>Please Come Again</p>
+    </div>
+  </div>
+</div>
+
+

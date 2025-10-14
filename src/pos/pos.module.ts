@@ -4,6 +4,7 @@ import { PosRoutingModule } from "./pos-routing.module";
 import { PosLayoutComponent } from "./components/pos-layout/pos-layout.component";
 import { PosItemsComponent } from "./components/pos-items/pos-items.component";
 import { PosCartSidebarComponent } from "./components/pos-cart-sidebar/pos-cart-sidebar.component";
+import { ReceiptTemplateComponent } from "./components/receipt-template/receipt-template.component";
 import { SharedModule } from "../shared/shared.module";
 
 @NgModule({
@@ -11,6 +12,7 @@ import { SharedModule } from "../shared/shared.module";
     PosLayoutComponent,
     PosItemsComponent,
     PosCartSidebarComponent,
+    ReceiptTemplateComponent,
   ],
   imports: [CommonModule, PosRoutingModule, SharedModule],
 })
