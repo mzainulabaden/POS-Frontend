@@ -90,6 +90,21 @@ export class PosLayoutComponent implements AfterViewInit {
        activeElement.tagName === 'SELECT' ||
        activeElement.isContentEditable);
     
+    // If user presses Enter while in an input field (except barcode scan field), don't process it
+    if (event.key === 'Enter' && isTypingInInput) {
+      const isBarcodeField = activeElement === this.barcodeScanInput?.nativeElement;
+      if (!isBarcodeField) {
+        // User pressed Enter in a regular input field (qty, price, discount, etc.)
+        // Clear scan buffer and don't process this Enter key
+        this.scanBuffer = "";
+        if (this.scanTimeout) {
+          clearTimeout(this.scanTimeout);
+          this.scanTimeout = null;
+        }
+        return; // Let the input field handle Enter naturally (or be prevented by the field itself)
+      }
+    }
+    
     // If typing in any input fields, don't capture for barcode scanning
     // Exception: Allow if rapid keypresses (barcode scanner speed)
     const now = Date.now();
