@@ -223,7 +223,7 @@ export class CreateItemComponent implements OnInit {
       headerClass: "ag-header-name",
     },
     {
-      headerName: "Unit Price Per KG",
+      headerName: "Unit Price ",
       field: "unitPrice",
       editable: true,
       resizable: true,
