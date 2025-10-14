@@ -62,6 +62,9 @@
         <th style="min-width: 180px" pSortableColumn="name">
           Name <p-sortIcon field="name" />
         </th>
+        <th style="min-width: 180px" pSortableColumn="sku">
+          SKU <p-sortIcon field="sku" />
+        </th>
         <th style="min-width: 180px" pSortableColumn="image">Image</th>
         <th style="min-width: 180px" pSortableColumn="description">
           Description <p-sortIcon field="description" />
@@ -90,6 +93,7 @@
           </a>
         </td>
         <td>{{ item.name }}</td>
+        <td>{{ item.sku }}</td>
         <td>
           <img
             [src]="baseurl + item.imageUrl"
@@ -173,6 +177,18 @@
             pInputText
             formControlName="description"
             id="description"
+            autocomplete="off"
+          />
+        </div>
+      </div>
+      <div class="row col-md-12 mt-2">
+        <div id="inputField" class="col-md-6 p-field flex flex-column">
+          <label class="label-text" for="sku">SKU</label>
+          <input
+            type="text"
+            pInputText
+            formControlName="sku"
+            id="sku"
             autocomplete="off"
           />
         </div>

@@ -73,6 +73,7 @@ export class CreateItemComponent implements OnInit {
     this.itemForm = this.fb.group({
       name: ["", [Validators.required]],
       description: [""],
+      sku: [""],
       discountAmount: [0],
       discountPercentage: [0],
       itemCategoryId: [""],
@@ -399,6 +400,7 @@ export class CreateItemComponent implements OnInit {
             this.itemForm.patchValue({
               name: this.dataForEdit.name,
               description: this.dataForEdit.description,
+              sku: this.dataForEdit.sku,
               itemCategoryId: this.dataForEdit.itemCategoryId,
               salesCOALevel04Id: this.dataForEdit.salesCOALevel04Id,
               purchaseCOALevel04Id: this.dataForEdit.purchaseCOALevel04Id,
@@ -639,6 +641,7 @@ export class CreateItemComponent implements OnInit {
   headerMap: { [key: string]: string } = {
     Name: "name",
     Description: "description",
+    SKU: "sku",
     "Item Category Name": "itemCategoryName",
     "Is Discountable": "isDiscountable",
     "Discount Amount": "discountAmount",
@@ -749,6 +752,7 @@ export class CreateItemComponent implements OnInit {
       return {
         name: (mapped.name || "").trim(),
         description: (mapped.description || "").trim(),
+        sku: (mapped.sku || "").trim(),
         itemCategoryName: (mapped.itemCategoryName || "").trim(),
         isDiscountable:
           mapped.isDiscountable === true || mapped.isDiscountable === "TRUE",
