@@ -1,92 +1,137 @@
-﻿<div [@routerTransition]>
-  <h4 class="text-center mb-3">{{ "LogIn" | localize }}</h4>
-  <form novalidate autocomplete="off" #loginForm="ngForm" (ngSubmit)="login()">
-    <div class="form-group">
-      <div class="input-group">
-        <input
-          type="text"
-          class="form-control"
-          name="userNameOrEmailAddress"
-          [(ngModel)]="authService.authenticateModel.userNameOrEmailAddress"
-          [placeholder]="'UserNameOrEmail' | localize"
-          required
-          maxlength="256"
-          #userNameOrEmailAddressModel="ngModel"
-          #userNameOrEmailAddressEl
-        />
-        <div class="input-group-append">
-          <div class="input-group-text">
-            <span class="fas fa-user"></span>
-          </div>
+﻿<div [@routerTransition] class="login-container">
+  <div class="login-wrapper">
+    <!-- Left Side - Branding -->
+    <div class="login-brand">
+      <!-- <div class="brand-logo">
+        <img src="assets/img/logo.png" alt="Logo" />
+      </div> -->
+      <h1 class="brand-title">POS</h1>
+      <p class="brand-subtitle">
+        Enterprise Point of Sale Solution for Modern Businesses
+      </p>
+      
+      <div class="brand-features">
+        <div class="brand-feature">
+          <i class="fas fa-check"></i>
+          <span>Secure & Reliable</span>
+        </div>
+        <div class="brand-feature">
+          <i class="fas fa-check"></i>
+          <span>Real-time Analytics</span>
+        </div>
+        <div class="brand-feature">
+          <i class="fas fa-check"></i>
+          <span>Multi-tenant Support</span>
         </div>
       </div>
-      <abp-validation-summary
-        [control]="userNameOrEmailAddressModel"
-        [controlEl]="userNameOrEmailAddressEl"
-      ></abp-validation-summary>
     </div>
-    <div class="form-group">
-      <div class="input-group">
-        <input
-          [type]="passwordVisible ? 'text' : 'password'"
-          class="form-control"
-          name="password"
-          [(ngModel)]="authService.authenticateModel.password"
-          [placeholder]="'Password' | localize"
-          required
-          maxlength="32"
-          #passwordModel="ngModel"
-          #passwordEl
-        />
-        <div class="input-group-append">
-          <div
-            class="input-group-text"
-            style="cursor: pointer"
-            (click)="passwordVisible = !passwordVisible"
-          >
+
+    <!-- Right Side - Login Form -->
+    <div class="login-form-section">
+      <!-- <div class="login-header">
+        <h2 class="login-title">Welcome Back</h2>
+        <p class="login-description">Sign in to your account to continue</p>
+      </div> -->
+
+      <form novalidate autocomplete="off" #loginForm="ngForm" (ngSubmit)="login()">
+        <!-- Tenant Selection -->
+        <div class="tenant-info-box" *ngIf="isMultiTenancyEnabled">
+          <div class="tenant-info-content">
+            <span class="tenant-label">{{ "CurrentTenant" | localize }}</span>
+            <span class="tenant-value" *ngIf="tenancyName; else noTenant">
+              {{ tenancyName }}
+            </span>
+            <ng-template #noTenant>
+              <span class="tenant-value" style="color: #9ca3af;">{{ "NotSelected" | localize }}</span>
+            </ng-template>
+          </div>
+          <button type="button" class="tenant-change-btn" (click)="showChangeModal()">
+            {{ "Change" | localize }}
+          </button>
+        </div>
+
+        <!-- Username/Email Field -->
+        <div class="form-group">
+          <label class="form-label">{{ "UserNameOrEmail" | localize }}</label>
+          <div class="input-wrapper">
+            <input
+              type="text"
+              class="form-input"
+              [ngClass]="{ 'invalid': userNameOrEmailAddressModel.invalid && userNameOrEmailAddressModel.touched }"
+              name="userNameOrEmailAddress"
+              [(ngModel)]="authService.authenticateModel.userNameOrEmailAddress"
+              [placeholder]="'Enter your username or email'"
+              required
+              maxlength="256"
+              #userNameOrEmailAddressModel="ngModel"
+              #userNameOrEmailAddressEl
+            />
+            <span class="input-icon user-icon">
+              <i class="fas fa-user"></i>
+            </span>
+          </div>
+          <abp-validation-summary
+            [control]="userNameOrEmailAddressModel"
+            [controlEl]="userNameOrEmailAddressEl"
+          ></abp-validation-summary>
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-group">
+          <label class="form-label">{{ "Password" | localize }}</label>
+          <div class="input-wrapper">
+            <input
+              [type]="passwordVisible ? 'text' : 'password'"
+              class="form-input"
+              [ngClass]="{ 'invalid': passwordModel.invalid && passwordModel.touched }"
+              name="password"
+              [(ngModel)]="authService.authenticateModel.password"
+              [placeholder]="'Enter your password'"
+              required
+              maxlength="32"
+              #passwordModel="ngModel"
+              #passwordEl
+            />
             <span
-              class="fas"
-              [ngClass]="passwordVisible ? 'fa-eye-slash' : 'fa-eye'"
-            ></span>
+              class="input-icon"
+              (click)="passwordVisible = !passwordVisible"
+            >
+              <i
+                class="fas"
+                [ngClass]="passwordVisible ? 'fa-eye-slash' : 'fa-eye'"
+              ></i>
+            </span>
           </div>
+          <abp-validation-summary
+            [control]="passwordModel"
+            [controlEl]="passwordEl"
+          ></abp-validation-summary>
         </div>
-      </div>
-      <abp-validation-summary
-        [control]="passwordModel"
-        [controlEl]="passwordEl"
-      ></abp-validation-summary>
-    </div>
-    <div class="form-group row">
-      <div class="col-md-8 mt-3">
-        <!-- <div class="custom-control custom-checkbox">
-          <input
-            type="checkbox"
-            class="custom-control-input"
-            id="rememberMe"
-            name="rememberMe"
-            [(ngModel)]="authService.rememberMe"
-          />
-          <label for="rememberMe" class="custom-control-label">
-            {{ "RememberMe" | localize }}
+
+        <!-- Remember Me & Forgot Password -->
+        <div class="form-options">
+          <label class="remember-me">
+            <input
+              type="checkbox"
+              id="rememberMe"
+              name="rememberMe"
+              [(ngModel)]="authService.rememberMe"
+            />
+            <span>{{ "RememberMe" | localize }}</span>
           </label>
-        </div> -->
-      </div>
-      <div class="col-md-4">
+          <!-- <a href="#" class="forgot-password">Forgot Password?</a> -->
+        </div>
+
+        <!-- Login Button -->
         <button
           type="submit"
-          class="btn btn-primary btn-block"
+          class="btn-login"
+          [ngClass]="{ 'loading': submitting }"
           [disabled]="!loginForm.form.valid || submitting"
         >
-          {{ "Login" | localize }}
+          <span *ngIf="!submitting">{{ "Login" | localize }}</span>
         </button>
-      </div>
+      </form>
     </div>
-  </form>
-  <!-- @if (isSelfRegistrationAllowed) {
-          <p class="mb-1">
-            <a [routerLink]="['../register']">
-              <i class="fa fa-plus-circle"></i> {{ "Register" | localize }}
-            </a>
-          </p>
-        } -->
+  </div>
 </div>

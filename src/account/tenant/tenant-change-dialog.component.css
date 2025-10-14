@@ -1,0 +1,99 @@
+/* Professional Tenant Change Modal */
+
+:host ::ng-deep .modal-dialog {
+  max-width: 480px;
+}
+
+:host ::ng-deep .modal-content {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 
+    0 0 0 1px rgba(0, 0, 0, 0.05),
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+:host ::ng-deep .modal-header {
+  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+  color: white;
+  border-radius: 16px 16px 0 0;
+  padding: 20px 24px;
+  border-bottom: none;
+}
+
+:host ::ng-deep .modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+:host ::ng-deep .modal-body {
+  padding: 28px 24px;
+}
+
+:host ::ng-deep .modal-footer {
+  padding: 20px 24px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 0 0 16px 16px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 9px;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 13px 16px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 12px;
+  font-size: 15px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: #ffffff;
+  color: #111827;
+  font-weight: 400;
+}
+
+.form-control:hover {
+  border-color: #9ca3af;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.08);
+}
+
+.form-control::placeholder {
+  color: #9ca3af;
+}
+
+/* Info box */
+span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  color: #1e40af;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+span i {
+  font-size: 16px;
+  color: #3b82f6;
+}
+
