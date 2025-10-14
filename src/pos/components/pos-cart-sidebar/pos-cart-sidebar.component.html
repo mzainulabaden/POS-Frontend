@@ -1,13 +1,12 @@
 <form
   [formGroup]="purchaseForm"
   *ngIf="purchaseForm"
-  class="d-flex flex-column h-100 bg-white border-start shadow-sm p-3"
+  class="d-flex flex-column h-100 bg-white border-start shadow-sm compact-form"
 >
   <!-- Header -->
-  <div class="row g-2 mb-3 flex-wrap">
+  <div class="compact-header mb-2">
     <!-- Customer -->
-    <div class="col-12 col-xl-4 d-flex flex-column">
-      <!-- <label class="label-text" for="customer">Customer</label> -->
+    <div class="compact-dropdown-wrapper">
       <p-dropdown
         [options]="customer"
         optionLabel="name"
@@ -15,8 +14,8 @@
         [showClear]="true"
         formControlName="customerCOALevel04Id"
         id="customer"
-        [placeholder]="'Select Customer Mode'"
-        [style]="{ width: '100%' }"
+        [placeholder]="'Customer'"
+        styleClass="compact-dropdown"
         [filter]="true"
         filterBy="name"
         appendTo="body"
@@ -24,8 +23,7 @@
     </div>
 
     <!-- Payment Terms -->
-    <div class="col-12 col-xl-4 d-flex flex-column">
-      <!-- <label class="label-text" for="paymentModeId">Payment Terms</label> -->
+    <div class="compact-dropdown-wrapper">
       <p-dropdown
         [options]="paymentTerms"
         optionLabel="name"
@@ -33,8 +31,8 @@
         [showClear]="true"
         formControlName="paymentModeId"
         id="paymentModeId"
-        [placeholder]="'Select Payment Mode'"
-        [style]="{ width: '100%' }"
+        [placeholder]="'Payment'"
+        styleClass="compact-dropdown"
         [filter]="true"
         filterBy="name"
         appendTo="body"
@@ -42,8 +40,7 @@
     </div>
 
     <!-- Warehouse -->
-    <div class="col-12 col-xl-4 d-flex flex-column">
-      <!-- <label class="label-text" for="warehouse">Warehouse</label> -->
+    <div class="compact-dropdown-wrapper">
       <p-dropdown
         [options]="wareHouse"
         optionLabel="name"
@@ -51,8 +48,8 @@
         [showClear]="true"
         formControlName="selectedWarehouseId"
         id="warehouse"
-        [placeholder]="'Select Warehouse'"
-        [style]="{ width: '100%' }"
+        [placeholder]="'Warehouse'"
+        styleClass="compact-dropdown"
         [filter]="true"
         filterBy="name"
         appendTo="body"
@@ -93,21 +90,19 @@
         <div
           *ngFor="let item of salesInvoiceDetails.controls; let i = index"
           [formGroupName]="i"
-          class="card border-0 shadow-sm mb-2 rounded-3"
+          class="compact-cart-item mb-1"
         >
-          <div
-            class="card-body py-2 d-flex align-items-center justify-content-between"
-          >
+          <div class="compact-card-body">
             <!-- Item name -->
-            <div class="flex-grow-1">{{ item.get("itemName")?.value }}</div>
+            <div class="item-name-compact">{{ item.get("itemName")?.value }}</div>
 
             <!-- Quantity + Discount -->
-            <div class="d-flex align-items-center gap-3">
-              <div class="d-flex flex-column" style="width: 90px">
-                <label class="form-label small mb-1">Qty</label>
+            <div class="d-flex align-items-center gap-2">
+              <div class="d-flex flex-column compact-input-group">
+                <label class="compact-label">Qty</label>
                 <input
                   type="number"
-                  class="form-control form-control-sm"
+                  class="form-control compact-input"
                   formControlName="invoiceQty"
                   min="0.001"
                   step="0.001"
@@ -115,11 +110,11 @@
                 />
               </div>
 
-              <div class="d-flex flex-column" style="width: 120px">
-                <label class="form-label small mb-1">Price</label>
+              <div class="d-flex flex-column compact-input-group">
+                <label class="compact-label">Price</label>
                 <input
                   type="number"
-                  class="form-control form-control-sm"
+                  class="form-control compact-input"
                   formControlName="lineTotal"
                   min="0"
                   step="0.01"
@@ -127,11 +122,11 @@
                 />
               </div>
 
-              <div class="d-flex flex-column" style="width: 100px">
-                <label class="form-label small mb-1">Discount</label>
+              <div class="d-flex flex-column compact-input-group">
+                <label class="compact-label">Disc</label>
                 <input
                   type="number"
-                  class="form-control form-control-sm"
+                  class="form-control compact-input"
                   formControlName="discount"
                   min="0"
                   step="0.01"
@@ -139,11 +134,11 @@
                 />
               </div>
 
-              <div class="d-flex flex-column" style="width: 100px">
-                <label class="form-label small mb-1">Disc %</label>
+              <div class="d-flex flex-column compact-input-group">
+                <label class="compact-label">D%</label>
                 <input
                   type="number"
-                  class="form-control form-control-sm"
+                  class="form-control compact-input"
                   formControlName="discountPercentage"
                   min="0"
                   max="100"
@@ -152,7 +147,7 @@
                 />
               </div>
 
-              <button class="btn btn-sm btn-danger" (click)="removeFromList(i)">
+              <button class="btn-compact-delete" (click)="removeFromList(i)">
                 ✕
               </button>
             </div>
@@ -167,29 +162,27 @@
   </div>
 
   <!-- Bottom Section -->
-  <div class="mt-auto border-top pt-3">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <div class="d-flex align-items-center gap-2">
-        <span>Bill Discount</span>
+  <div class="mt-auto border-top pt-2">
+    <div class="compact-discount-section mb-2">
+      <div class="d-flex align-items-center gap-1">
+        <span class="compact-text">Disc</span>
         <input
           type="number"
           pInputText
           formControlName="discountAmount"
-          class="text-end"
-          style="width: 120px"
+          class="compact-bottom-input"
           min="0"
           step="0.01"
           (keydown.enter)="$event.preventDefault()"
         />
       </div>
-      <div class="d-flex align-items-center gap-2">
-        <span>%</span>
+      <div class="d-flex align-items-center gap-1">
+        <span class="compact-text">%</span>
         <input
           type="number"
           pInputText
           formControlName="discountPercentage"
-          class="text-end"
-          style="width: 80px"
+          class="compact-bottom-input"
           min="0"
           max="100"
           step="0.01"
@@ -198,33 +191,29 @@
       </div>
     </div>
 
-    <div class="d-flex justify-content-between mb-1">
-      <span>Subtotal</span>
-      <span>{{ subtotal | currency : "PKR" : "symbol" }}</span>
-    </div>
-    <!-- <div class="d-flex justify-content-between mb-1">
-      <span>Tax</span>
-      <span>{{ tax | currency : "PKR" : "symbol" }}</span>
-    </div> -->
-    <div class="d-flex justify-content-between fw-bold fs-5 mt-2">
-      <span>Payable Amount</span>
-      <span>{{ payableAmount | currency : "PKR" : "symbol" }}</span>
+    <div class="compact-totals mb-1">
+      <div class="d-flex justify-content-between">
+        <span class="compact-text">Subtotal</span>
+        <span class="compact-text">{{ subtotal | currency : "PKR" : "symbol" }}</span>
+      </div>
+      <div class="d-flex justify-content-between fw-bold">
+        <span>Payable</span>
+        <span>{{ payableAmount | currency : "PKR" : "symbol" }}</span>
+      </div>
     </div>
 
     <!-- Buttons -->
-    <div class="d-flex flex-column mt-3 gap-2">
-      <div class="d-flex gap-2">
-        <button class="btn btn-outline-primary flex-fill">Hold Order</button>
-        <button class="btn btn-primary flex-fill" (click)="displayModal = true">
-          Proceed
-        </button>
-      </div>
+    <div class="compact-buttons-section">
+      <button class="compact-btn compact-btn-hold">Hold</button>
+      <button class="compact-btn compact-btn-proceed" (click)="displayModal = true">
+        Proceed
+      </button>
       <button 
-        class="btn btn-outline-secondary w-100" 
+        class="compact-btn compact-btn-print" 
         (click)="manualPrint()"
         [disabled]="cartItems.length === 0"
       >
-        <i class="pi pi-print me-2"></i>Print Receipt
+        <i class="pi pi-print me-1"></i>Print
       </button>
     </div>
   </div>
