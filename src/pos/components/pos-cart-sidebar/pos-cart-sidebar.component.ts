@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input } from "@angular/core";
+import { ChangeDetectorRef, Component, Input, HostListener } from "@angular/core";
 import { PurchaseService } from "@app/main/purchase/shared/services/purchase.service";
 import { FormArray, FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { MessageService } from "primeng/api";
@@ -457,5 +457,29 @@ export class PosCartSidebarComponent {
       return;
     }
     this.printReceipt();
+  }
+
+  // Listen for Enter key press to trigger print receipt
+  @HostListener('window:keydown.enter', ['$event'])
+  handleEnterKey(event: KeyboardEvent) {
+    // Check if user is actively typing in an input field
+    const activeElement = document.activeElement as HTMLElement;
+    const isTypingInInput = activeElement && 
+      (activeElement.tagName === 'INPUT' || 
+       activeElement.tagName === 'TEXTAREA' || 
+       activeElement.tagName === 'SELECT' ||
+       activeElement.isContentEditable);
+    
+    // Check if the modal is open
+    const isModalOpen = this.displayModal;
+    
+    // Only trigger print if:
+    // 1. User is NOT typing in an input field
+    // 2. Modal is NOT open
+    // 3. There are items in the cart
+    if (!isTypingInInput && !isModalOpen && this.cartItems.length > 0) {
+      event.preventDefault();
+      this.manualPrint();
+    }
   }
 }
