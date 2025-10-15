@@ -473,6 +473,7 @@ export class PosCartSidebarComponent {
 
   // Method to manually trigger print (can be called from a button)
   manualPrint() {
+    // Validate cart has items
     if (this.salesInvoiceDetails.length === 0) {
       this.msgService.add({
         severity: "warn",
@@ -482,7 +483,76 @@ export class PosCartSidebarComponent {
       });
       return;
     }
-    this.printReceipt();
+
+    // Validate form
+    if (!this.purchaseForm.valid) {
+      this.msgService.add({
+        severity: "error",
+        summary: "Error",
+        detail: "Please fill all required fields",
+        life: 2000,
+      });
+      return;
+    }
+
+    // Set default received amount to payable amount for direct print
+    this.receivedAmount = this.payableAmount;
+    this.calculatePending();
+
+    // Prepare form data
+    this.purchaseForm.patchValue({
+      salesInvoiceDetails: this.salesInvoiceDetails.value,
+      issueDate: moment(this.purchaseForm.value.issueDate).format("YYYY-MM-DD"),
+      viAmount: 0,
+      commissionAmount: this.purchaseForm.value.commissionAmount || 0,
+      netTotal: this.nettotal,
+      grandTotal: this.payableAmount,
+    });
+
+    // Call CreatePos API
+    this.posService
+      .create({ ...this.purchaseForm.value }, "SalesInvoice")
+      .pipe(
+        finalize(() => {}),
+        catchError((error) => {
+          this.msgService.add({
+            severity: "error",
+            summary: "Error",
+            detail: error.error?.error?.message || "Failed to create sales invoice",
+            life: 3000,
+          });
+          return throwError(() => error);
+        })
+      )
+      .subscribe({
+        next: (response: any) => {
+          // Check if response is successful
+          if (response) {
+            this.msgService.add({
+              severity: "success",
+              summary: "Success",
+              detail: "Sales invoice created successfully",
+              life: 2000,
+            });
+
+            // Print receipt only if API response is successful
+            this.printReceipt(response);
+
+            // Reset form and cart
+            this.purchaseForm.reset();
+            this.salesInvoiceDetails.clear();
+            this.posService.clearCart();
+            this.trigger();
+          } else {
+            this.msgService.add({
+              severity: "error",
+              summary: "Error",
+              detail: "Failed to create sales invoice",
+              life: 2000,
+            });
+          }
+        },
+      });
   }
 
   // Listen for Enter key press to trigger print receipt
