@@ -33,8 +33,8 @@
         <tr *ngFor="let item of receiptData.items">
           <td class="item-name">{{ item.name }}</td>
           <td class="item-qty">{{ item.quantity }}</td>
-          <td class="item-price">{{ item.price | number:'1.2-2' }}</td>
-          <td class="item-amt">{{ item.total | number:'1.2-2' }}</td>
+          <td class="item-price">{{ item.price | number:'1.0-0' }}</td>
+          <td class="item-amt">{{ item.total | number:'1.0-0' }}</td>
         </tr>
       </tbody>
     </table>
@@ -45,13 +45,13 @@
     <div class="summary">
       <div class="summary-row">
         <span>SubTotal</span>
-        <span class="summary-value">Rs. {{ receiptData.subtotal | number:'1.2-2' }}</span>
+        <span class="summary-value">Rs. {{ receiptData.subtotal | number:'1.0-0' }}</span>
       </div>
       
       <!-- Discount (Only show if discount > 0) -->
       <div class="summary-row" *ngIf="receiptData.discount > 0">
         <span>Discount</span>
-        <span class="summary-value discount-value">- Rs. {{ receiptData.discount | number:'1.2-2' }}</span>
+        <span class="summary-value discount-value">- Rs. {{ receiptData.discount | number:'1.0-0' }}</span>
       </div>
     </div>
 
@@ -61,7 +61,7 @@
     <div class="total-section">
       <div class="total-row">
         <span class="total-label">PAYABLE</span>
-        <span class="total-value">Rs. {{ receiptData.total | number:'1.2-2' }}</span>
+        <span class="total-value">Rs. {{ receiptData.total | number:'1.0-0' }}</span>
       </div>
     </div>
 
