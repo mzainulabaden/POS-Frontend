@@ -13,6 +13,7 @@ export class ReceiptTemplateComponent implements OnInit {
 
   ngOnInit(): void {
     this.printerService.receiptData$.subscribe(data => {
+      console.log('Receipt template received data:', data);
       this.receiptData = data;
     });
   }

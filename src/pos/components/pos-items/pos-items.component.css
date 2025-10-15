@@ -81,3 +81,11 @@ aside .dropdown-content a:hover {
   color: #0d6efd;
   border-radius: 0.75rem;
 }
+
+/* Hide items list when printing */
+@media print {
+  :host,
+  :host * {
+    display: none !important;
+  }
+}

@@ -1,0 +1,8 @@
+/* Hide POS layout navigation when printing */
+@media print {
+  .container-fluid > nav,
+  .navbar {
+    display: none !important;
+  }
+}
+

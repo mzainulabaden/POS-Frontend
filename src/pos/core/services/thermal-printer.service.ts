@@ -10,7 +10,7 @@ export interface ReceiptData {
   subtotal: number;
   discount: number;
   tax: number;
-  total: number;
+  total: number;  
   received?: number;
   change?: number;
   warehouse?: string;
@@ -38,12 +38,14 @@ export class ThermalPrinterService {
    * This works with thermal printers that have proper drivers installed
    */
   printReceipt(data: ReceiptData): void {
+    console.log('Printing receipt with data:', data);
     this.receiptData.next(data);
     
-    // Small delay to ensure the receipt template is rendered
+    // Delay to ensure the receipt template is fully rendered
     setTimeout(() => {
+      console.log('Opening print dialog...');
       window.print();
-    }, 100);
+    }, 500);
   }
 
   /**
@@ -63,87 +65,61 @@ export class ThermalPrinterService {
     // Set alignment center
     commands += ESC + 'a' + '1';
     
-    // Store name (bold, double size)
+    // Store name (bold)
     commands += ESC + 'E' + '1'; // Bold on
-    commands += GS + '!' + '\x11'; // Double height and width
-    commands += 'YOUR STORE NAME' + LF;
-    commands += GS + '!' + '\x00'; // Normal size
+    commands += 'SANTA PVT LTD' + LF;
     commands += ESC + 'E' + '0'; // Bold off
     
     // Store info
-    commands += 'Address Line 1' + LF;
-    commands += 'City, Country' + LF;
-    commands += 'Tel: +1234567890' + LF;
+    commands += '143 SOUTH CAR STREET,' + LF;
+    commands += 'MADURAI, TAMIL NADU.' + LF;
+    commands += 'PHONE : 04522585258' + LF;
+    commands += 'GSTIN : 33AACPD8885F1ZH' + LF;
     commands += LF;
     
     // Set alignment left
     commands += ESC + 'a' + '0';
     
-    // Receipt header
-    commands += '================================' + LF;
-    commands += `Invoice: ${data.invoiceNumber}` + LF;
-    commands += `Date: ${data.date}` + LF;
-    commands += `Customer: ${data.customer}` + LF;
-    if (data.warehouse) {
-      commands += `Warehouse: ${data.warehouse}` + LF;
-    }
-    commands += `Payment: ${data.paymentMode}` + LF;
-    commands += '================================' + LF;
-    commands += LF;
+    // Bill info
+    commands += `Bill No : ${data.invoiceNumber.padEnd(10)} Date : ${data.date}` + LF;
+    commands += '--------------------------------' + LF;
     
     // Items header
-    commands += 'Item             Qty  Price  Total' + LF;
-    commands += '--------------------------------' + LF;
+    commands += 'Item        Qty   Price     Amt' + LF;
     
     // Items
     data.items.forEach(item => {
-      const name = item.name.substring(0, 16).padEnd(16);
-      const qty = item.quantity.toFixed(2).padStart(4);
-      const price = item.price.toFixed(2).padStart(6);
-      const total = item.total.toFixed(2).padStart(7);
+      const name = item.name.substring(0, 12).padEnd(12);
+      const qty = item.quantity.toString().padStart(3);
+      const price = item.price.toFixed(2).padStart(8);
+      const total = item.total.toFixed(2).padStart(8);
       
-      commands += `${name} ${qty} ${price} ${total}` + LF;
-      
-      if (item.discount > 0) {
-        commands += `  Discount: -${item.discount.toFixed(2)}` + LF;
-      }
+      commands += `${name}${qty} ${price} ${total}` + LF;
     });
     
     commands += '--------------------------------' + LF;
     
-    // Totals
-    commands += `Subtotal:        ${data.subtotal.toFixed(2).padStart(15)}` + LF;
+    // Subtotal
+    commands += `SubTotal                ${data.subtotal.toFixed(2).padStart(10)}` + LF;
     
-    if (data.discount > 0) {
-      commands += `Discount:        ${data.discount.toFixed(2).padStart(15)}` + LF;
-    }
+    commands += '--------------------------------' + LF;
     
-    if (data.tax > 0) {
-      commands += `Tax:             ${data.tax.toFixed(2).padStart(15)}` + LF;
-    }
-    
-    // Total (bold, double size)
+    // Total (bold)
     commands += ESC + 'E' + '1'; // Bold on
-    commands += GS + '!' + '\x10'; // Double height
-    commands += `TOTAL:           ${data.total.toFixed(2).padStart(15)}` + LF;
-    commands += GS + '!' + '\x00'; // Normal size
+    commands += `TOTAL            Rs. ${data.total.toFixed(2).padStart(10)}` + LF;
     commands += ESC + 'E' + '0'; // Bold off
     
-    if (data.received !== undefined && data.received > 0) {
-      commands += `Received:        ${data.received.toFixed(2).padStart(15)}` + LF;
-    }
+    commands += '--------------------------------' + LF;
     
-    if (data.change !== undefined && data.change > 0) {
-      commands += `Change:          ${data.change.toFixed(2).padStart(15)}` + LF;
-    }
+    // E & O E
+    commands += ESC + 'a' + '2'; // Right align
+    commands += 'E & O E' + LF;
     
     commands += LF;
     
     // Footer
     commands += ESC + 'a' + '1'; // Center align
-    commands += '================================' + LF;
-    commands += 'Thank You for Your Business!' + LF;
-    commands += 'Please Come Again' + LF;
+    commands += 'Thank You' + LF;
     commands += LF;
     commands += LF;
     
@@ -189,82 +165,69 @@ export class ThermalPrinterService {
    */
   generateReceiptHTML(data: ReceiptData): string {
     return `
-      <div style="width: 80mm; font-family: 'Courier New', monospace; font-size: 12px;">
-        <div style="text-align: center; margin-bottom: 10px;">
-          <div style="font-size: 20px; font-weight: bold;">YOUR STORE NAME</div>
-          <div>Address Line 1</div>
-          <div>City, Country</div>
-          <div>Tel: +1234567890</div>
+      <div style="width: 80mm; font-family: 'Courier New', monospace; font-size: 10px; padding: 5mm;">
+        <div style="text-align: center; margin-bottom: 12px;">
+          <div style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">SANTA PVT LTD</div>
+          <div style="font-size: 9px; line-height: 1.4; margin: 2px 0;">143 SOUTH CAR STREET,</div>
+          <div style="font-size: 9px; line-height: 1.4; margin: 2px 0;">MADURAI, TAMIL NADU.</div>
+          <div style="font-size: 9px; line-height: 1.4; margin: 2px 0;">PHONE : 04522585258</div>
+          <div style="font-size: 9px; line-height: 1.4; margin: 2px 0;">GSTIN : 33AACPD8885F1ZH</div>
         </div>
         
-        <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 5px 0; margin: 10px 0;">
-          <div>Invoice: ${data.invoiceNumber}</div>
-          <div>Date: ${data.date}</div>
-          <div>Customer: ${data.customer}</div>
-          ${data.warehouse ? `<div>Warehouse: ${data.warehouse}</div>` : ''}
-          <div>Payment: ${data.paymentMode}</div>
+        <div style="margin: 10px 0;">
+          <div style="display: flex; justify-content: space-between; font-size: 9px;">
+            <span>Bill No : ${data.invoiceNumber}</span>
+            <span>Date : ${data.date}</span>
+          </div>
         </div>
         
-        <table style="width: 100%; font-size: 11px;">
+        <div style="border-bottom: 1px dashed #000; margin: 5px 0;"></div>
+        
+        <table style="width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 9px;">
           <thead>
-            <tr style="border-bottom: 1px dashed #000;">
-              <th style="text-align: left;">Item</th>
-              <th style="text-align: right;">Qty</th>
-              <th style="text-align: right;">Price</th>
-              <th style="text-align: right;">Total</th>
+            <tr>
+              <th style="text-align: left; padding: 4px 2px; font-weight: normal;">Item</th>
+              <th style="text-align: center; padding: 4px 2px; font-weight: normal;">Qty</th>
+              <th style="text-align: right; padding: 4px 2px; font-weight: normal;">Price</th>
+              <th style="text-align: right; padding: 4px 2px; font-weight: normal;">Amt</th>
             </tr>
           </thead>
           <tbody>
             ${data.items.map(item => `
               <tr>
-                <td>${item.name}</td>
-                <td style="text-align: right;">${item.quantity.toFixed(2)}</td>
-                <td style="text-align: right;">${item.price.toFixed(2)}</td>
-                <td style="text-align: right;">${item.total.toFixed(2)}</td>
+                <td style="padding: 6px 2px; vertical-align: top;">${item.name}</td>
+                <td style="text-align: center; padding: 6px 2px; vertical-align: top;">${item.quantity}</td>
+                <td style="text-align: right; padding: 6px 2px; vertical-align: top;">${item.price.toFixed(2)}</td>
+                <td style="text-align: right; padding: 6px 2px; vertical-align: top;">${item.total.toFixed(2)}</td>
               </tr>
-              ${item.discount > 0 ? `<tr><td colspan="4" style="text-align: right; font-size: 10px;">Discount: -${item.discount.toFixed(2)}</td></tr>` : ''}
             `).join('')}
           </tbody>
         </table>
         
-        <div style="border-top: 1px dashed #000; margin-top: 10px; padding-top: 5px;">
-          <div style="display: flex; justify-content: space-between;">
-            <span>Subtotal:</span>
+        <div style="border-bottom: 1px dashed #000; margin: 5px 0;"></div>
+        
+        <div style="margin: 8px 0;">
+          <div style="display: flex; justify-content: space-between; font-size: 9px; margin: 4px 0;">
+            <span>SubTotal</span>
             <span>${data.subtotal.toFixed(2)}</span>
           </div>
-          ${data.discount > 0 ? `
-            <div style="display: flex; justify-content: space-between;">
-              <span>Discount:</span>
-              <span>-${data.discount.toFixed(2)}</span>
-            </div>
-          ` : ''}
-          ${data.tax > 0 ? `
-            <div style="display: flex; justify-content: space-between;">
-              <span>Tax:</span>
-              <span>${data.tax.toFixed(2)}</span>
-            </div>
-          ` : ''}
-          <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: bold; margin-top: 5px;">
-            <span>TOTAL:</span>
-            <span>PKR ${data.total.toFixed(2)}</span>
-          </div>
-          ${data.received !== undefined && data.received > 0 ? `
-            <div style="display: flex; justify-content: space-between;">
-              <span>Received:</span>
-              <span>${data.received.toFixed(2)}</span>
-            </div>
-          ` : ''}
-          ${data.change !== undefined && data.change > 0 ? `
-            <div style="display: flex; justify-content: space-between;">
-              <span>Change:</span>
-              <span>${data.change.toFixed(2)}</span>
-            </div>
-          ` : ''}
         </div>
         
-        <div style="text-align: center; margin-top: 15px; border-top: 1px dashed #000; padding-top: 10px;">
-          <div>Thank You for Your Business!</div>
-          <div>Please Come Again</div>
+        <div style="border-bottom: 1px dashed #000; margin: 5px 0;"></div>
+        
+        <div style="margin: 8px 0;">
+          <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 10px;">
+            <span>TOTAL</span>
+            <span>Rs. ${data.total.toFixed(2)}</span>
+          </div>
+        </div>
+        
+        <div style="border-bottom: 1px dashed #000; margin: 5px 0;"></div>
+        
+        <div style="text-align: right; font-size: 8px; margin: 8px 0;">E & O E</div>
+        
+        <div style="text-align: center; margin-top: 15px; font-size: 10px;">
+          <div>Thank You</div>
         </div>
       </div>
     `;

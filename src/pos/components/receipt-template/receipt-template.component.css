@@ -1,137 +1,272 @@
-/* Hide receipt on screen, show only when printing */
+/* Hide receipt on screen */
 .receipt-container {
   display: none;
 }
 
 /* Print styles */
 @media print {
-  /* Hide everything except the receipt */
+  /* Hide everything on the page */
   body * {
-    visibility: hidden;
+    display: none !important;
   }
 
+  /* Remove all headers, footers, and margins */
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 80mm !important;
+    height: auto !important;
+  }
+
+  /* Show only receipt */
   .receipt-container,
-  .receipt-container * {
-    visibility: visible;
+  .receipt-container *,
+  .receipt,
+  .receipt * {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  /* Table elements */
+  .receipt-container table {
+    display: table !important;
+  }
+
+  .receipt-container thead {
+    display: table-header-group !important;
+  }
+
+  .receipt-container tbody {
+    display: table-row-group !important;
+  }
+
+  .receipt-container tr {
+    display: table-row !important;
+  }
+
+  .receipt-container th,
+  .receipt-container td {
+    display: table-cell !important;
+  }
+
+  /* Flex elements */
+  .receipt-container .bill-row,
+  .receipt-container .summary-row,
+  .receipt-container .total-row {
+    display: flex !important;
   }
 
   .receipt-container {
-    display: block;
     position: absolute;
-    left: 0;
-    top: 0;
-    width: 80mm; /* Standard thermal printer width */
-    margin: 0;
-    padding: 0;
+    left: 50%;
+    top: -5mm;
+    transform: translateX(-50%);
+    width: 100mm;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden;
+  }
+
+  html {
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   .receipt {
     width: 100%;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 11px;
+    font-family: 'Arial', sans-serif;
+    font-size: 18px;
     color: #000;
     background: #fff;
-    padding: 5mm;
+    padding: 0 6mm;
+    padding-bottom: 5mm;
+    margin: 0 !important;
   }
 
-  .receipt-header {
+  /* Header */
+  .header {
     text-align: center;
     margin-bottom: 8px;
     padding-bottom: 8px;
-    border-bottom: 1px dashed #000;
+    border-bottom: 2px solid #000;
   }
 
-  .store-name {
-    font-size: 18px;
+  .company-name {
+    font-size: 30px;
     font-weight: bold;
-    margin: 0 0 5px 0;
+    margin-bottom: 4px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
   }
 
-  .receipt-header p {
-    margin: 2px 0;
-    font-size: 10px;
+  .address-line {
+    font-size: 16px;
+    line-height: 1.4;
+    margin: 1px 0;
+    color: #333;
   }
 
-  .receipt-info {
-    margin: 8px 0;
-    padding: 8px 0;
-    border-top: 1px dashed #000;
-    border-bottom: 1px dashed #000;
-    font-size: 10px;
+  /* Bill Details */
+  .bill-details {
+    margin: 6px 0;
+    padding: 8px;
+    background: #f9f9f9;
+    border-radius: 4px;
   }
 
-  .info-row {
+  .bill-row {
     display: flex;
     justify-content: space-between;
-    margin: 3px 0;
+    font-size: 17px;
+    font-weight: 600;
+    color: #333;
   }
 
-  .items-table {
+  /* Divider */
+  .divider {
+    border-bottom: 1px dashed #666;
+    margin: 6px 0;
+  }
+
+  /* Items Table */
+  .items {
     width: 100%;
     border-collapse: collapse;
-    margin: 8px 0;
-    font-size: 10px;
+    margin: 6px 0;
+    font-size: 17px;
   }
 
-  .items-table th {
-    padding: 4px 2px;
-    border-bottom: 1px dashed #000;
+  .items th {
+    padding: 6px 4px;
+    text-align: left;
     font-weight: bold;
+    font-size: 17px;
+    background: #f0f0f0;
+    border-bottom: 2px solid #333;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
-  .items-table td {
-    padding: 4px 2px;
+  .items td {
+    padding: 6px 4px;
+    vertical-align: top;
+    border-bottom: 1px solid #e0e0e0;
   }
 
-  .receipt-totals {
-    margin: 8px 0;
-    padding-top: 8px;
-    border-top: 1px dashed #000;
-    font-size: 11px;
+  .items tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .items tbody tr:hover {
+    background: #f9f9f9;
+  }
+
+  .item-name {
+    text-align: left;
+    width: 50%;
+    font-weight: 500;
+  }
+
+  .item-qty {
+    text-align: center;
+    width: 10%;
+    font-weight: 600;
+  }
+
+  .item-price {
+    text-align: right;
+    width: 20%;
+  }
+
+  .item-amt {
+    text-align: right;
+    width: 20%;
+    font-weight: 600;
+  }
+
+  /* Summary */
+  .summary {
+    margin: 6px 0;
+    padding: 8px;
+    background: #f9f9f9;
+    border-radius: 4px;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 18px;
+    margin: 4px 0;
+    font-weight: 500;
+  }
+
+  .summary-value {
+    text-align: right;
+    font-weight: 600;
+  }
+
+  /* Total */
+  .total-section {
+    margin: 6px 0;
+    padding: 10px;
+    background: #000;
+    color: #fff;
+    border-radius: 4px;
   }
 
   .total-row {
     display: flex;
     justify-content: space-between;
-    margin: 3px 0;
-  }
-
-  .grand-total {
-    font-size: 14px;
     font-weight: bold;
-    margin-top: 5px;
-    padding-top: 5px;
-    border-top: 1px dashed #000;
+    font-size: 26px;
+    letter-spacing: 1.5px;
   }
 
-  .receipt-footer {
+  .total-label {
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .total-value {
+    text-align: right;
+  }
+
+  /* E & O E */
+  .eoe {
     text-align: center;
-    margin-top: 10px;
-    padding-top: 8px;
-    border-top: 1px dashed #000;
-    font-size: 10px;
+    font-size: 14px;
+    margin: 6px 0;
+    color: #666;
+    font-style: italic;
   }
 
-  .receipt-footer p {
-    margin: 3px 0;
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 8px;
+    padding-top: 10px;
+    border-top: 2px solid #000;
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
   }
 
-  /* Remove page margins */
+  /* Page settings - Remove all browser headers/footers */
   @page {
     margin: 0;
     size: 80mm auto;
   }
-}
 
-/* Screen preview (optional) */
-.receipt-preview {
-  width: 80mm;
-  margin: 20px auto;
-  padding: 10px;
-  border: 1px solid #ddd;
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 11px;
-  background: white;
+  /* Hide browser print headers and footers */
+  header, footer, nav, aside, .no-print {
+    display: none !important;
+  }
 }
 
 

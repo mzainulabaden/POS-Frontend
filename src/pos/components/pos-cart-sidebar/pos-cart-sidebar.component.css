@@ -265,3 +265,10 @@ input[type="number"] {
     justify-content: space-between;
   }
 }
+
+/* Hide cart sidebar form when printing, but not the receipt template */
+@media print {
+  form {
+    display: none !important;
+  }
+}
