@@ -205,7 +205,11 @@
     <!-- Buttons -->
     <div class="compact-buttons-section">
       <button class="compact-btn compact-btn-hold">Hold</button>
-      <button class="compact-btn compact-btn-proceed" (click)="displayModal = true">
+      <button 
+        *ngIf="isPaymentModeCredit"
+        class="compact-btn compact-btn-proceed" 
+        (click)="displayModal = true"
+      >
         Proceed
       </button>
       <button 

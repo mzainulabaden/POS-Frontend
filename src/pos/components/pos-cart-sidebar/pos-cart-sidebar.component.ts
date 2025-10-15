@@ -147,15 +147,27 @@ export class PosCartSidebarComponent {
         case "Warehouse":
           debugger;
           this.wareHouse = mappedData.reverse();
-          if (
-            this.wareHouse.length > 0 &&
-            this.salesInvoiceDetails.length > 0
-          ) {
-            this.salesInvoiceDetails.controls.forEach((ctrl) => {
-              if (ctrl.get("warehouseId")) {
-                ctrl.patchValue({ warehouseId: this.wareHouse[0].id });
-              }
+          
+          // Find "dukkan" warehouse or fallback to first
+          const dukkanWarehouse = this.wareHouse.find(
+            (w) => w.name.toLowerCase().includes('dukkan')
+          );
+          const defaultWarehouse = dukkanWarehouse || this.wareHouse[0];
+          
+          if (this.wareHouse.length > 0) {
+            // Set default warehouse in form
+            this.purchaseForm.patchValue({
+              selectedWarehouseId: defaultWarehouse?.id
             });
+            
+            // Update existing items
+            if (this.salesInvoiceDetails.length > 0) {
+              this.salesInvoiceDetails.controls.forEach((ctrl) => {
+                if (ctrl.get("warehouseId")) {
+                  ctrl.patchValue({ warehouseId: defaultWarehouse?.id });
+                }
+              });
+            }
             debugger;
           }
           break;
@@ -167,9 +179,15 @@ export class PosCartSidebarComponent {
 
   // -------- Cart Helpers --------
   addItemToForm(product: any) {
-    const defaultId =
-      this.purchaseForm.get("selectedWarehouseId")?.value ||
-      (this.wareHouse.length > 0 ? this.wareHouse[0].id : 0);
+    // Get selected warehouse or find dukkan warehouse as default
+    let defaultId = this.purchaseForm.get("selectedWarehouseId")?.value;
+    
+    if (!defaultId && this.wareHouse.length > 0) {
+      const dukkanWarehouse = this.wareHouse.find(
+        (w) => w.name.toLowerCase().includes('dukkan')
+      );
+      defaultId = dukkanWarehouse?.id || this.wareHouse[0].id;
+    }
 
     const itemForm = this.fb.group({
       id: [0],
@@ -294,6 +312,14 @@ export class PosCartSidebarComponent {
 
   formatPrice(value: number): string {
     return `PKR ${value.toFixed(2)}`;
+  }
+
+  // Check if payment mode is credit
+  get isPaymentModeCredit(): boolean {
+    const selectedMode = this.paymentTerms.find(
+      (p) => p.id === this.purchaseForm.value.paymentModeId
+    );
+    return selectedMode?.name.toLowerCase() === 'credit';
   }
 
   // -------- Save --------
