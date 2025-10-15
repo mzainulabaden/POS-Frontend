@@ -1,7 +1,6 @@
 import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReportsRoutingModule } from "./reports-routing.module";
-import { GenerateReportsComponent } from "./generate-reports/generate-reports.component";
 import { NewReportsComponent } from "./new-reports/new-reports.component";
 import { InventoryReportComponent } from "./new-reports/inventory-report/inventory-report.component";
 import { ItemTrackingModalComponent } from "./new-reports/item-tracking-modal/item-tracking-modal.component";
@@ -19,7 +18,6 @@ import { MessageService } from 'primeng/api';
 
 @NgModule({
   declarations: [
-    GenerateReportsComponent,
     NewReportsComponent,
     InventoryReportComponent,
     ItemTrackingModalComponent,

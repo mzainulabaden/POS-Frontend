@@ -76,10 +76,10 @@ export class ItemTrackingModalComponent implements OnInit {
         console.error("❌ Error loading company profile:", err);
         // Use default values if profile fails to load
         this.companyProfile = {
-          companyName: 'DefenceRice',
-          address: 'Ghazi Road, Lahore',
-          phone1: '0423-5800530, 0423-5800540',
-          phone2: 'For Accounts inquiry, contact 0310-defence',
+          companyName: 'Usama Sweets & Bakers',
+          address: 'AL-HAMD milk center, Noor colony, Wandala',
+          phone1: '0300 2042172',
+          phone2: '',
           email: ''
         };
       },

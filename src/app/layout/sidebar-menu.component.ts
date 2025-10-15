@@ -358,12 +358,6 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
 
       new MenuItem(this.l("Reports"), "", "fas fa-file", "", [
         new MenuItem(
-          this.l("SSRS Reports"),
-          "main/reports/ssrs-reports",
-          "fas fa-file",
-          ""
-        ),
-        new MenuItem(
           this.l("New Reports"),
           "main/reports/new-reports",
           "fas fa-file-alt",
