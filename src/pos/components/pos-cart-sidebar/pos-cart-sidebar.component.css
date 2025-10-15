@@ -120,6 +120,16 @@ input[type="number"] {
   line-height: 1.6;
 }
 
+.discount-text {
+  color: #d32f2f;
+  font-weight: 600;
+}
+
+.discount-amount {
+  color: #d32f2f;
+  font-weight: 700;
+}
+
 .compact-buttons-section {
   display: flex;
   gap: 6px;

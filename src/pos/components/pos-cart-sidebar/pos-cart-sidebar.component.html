@@ -196,7 +196,11 @@
         <span class="compact-text">Subtotal</span>
         <span class="compact-text">{{ subtotal | currency : "PKR" : "symbol" }}</span>
       </div>
-      <div class="d-flex justify-content-between fw-bold">
+      <div class="d-flex justify-content-between" *ngIf="(purchaseForm.get('discountAmount')?.value > 0) || (purchaseForm.get('discountPercentage')?.value > 0)">
+        <span class="compact-text discount-text">Discount</span>
+        <span class="compact-text discount-amount">- {{ (purchaseForm.get('discountAmount')?.value || 0) + (subtotal * ((purchaseForm.get('discountPercentage')?.value || 0) / 100)) | currency : "PKR" : "symbol" }}</span>
+      </div>
+      <div class="d-flex justify-content-between fw-bold mt-1">
         <span>Payable</span>
         <span>{{ payableAmount | currency : "PKR" : "symbol" }}</span>
       </div>

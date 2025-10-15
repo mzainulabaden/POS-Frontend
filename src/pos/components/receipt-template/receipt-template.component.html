@@ -41,20 +41,26 @@
 
     <div class="divider"></div>
 
-    <!-- Subtotal -->
+    <!-- Subtotal (Original Amount) -->
     <div class="summary">
       <div class="summary-row">
         <span>SubTotal</span>
-        <span class="summary-value">{{ receiptData.subtotal | number:'1.2-2' }}</span>
+        <span class="summary-value">Rs. {{ receiptData.subtotal | number:'1.2-2' }}</span>
+      </div>
+      
+      <!-- Discount (Only show if discount > 0) -->
+      <div class="summary-row" *ngIf="receiptData.discount > 0">
+        <span>Discount</span>
+        <span class="summary-value discount-value">- Rs. {{ receiptData.discount | number:'1.2-2' }}</span>
       </div>
     </div>
 
     <div class="divider"></div>
 
-    <!-- Total -->
+    <!-- Total Payable Amount -->
     <div class="total-section">
       <div class="total-row">
-        <span class="total-label">TOTAL</span>
+        <span class="total-label">PAYABLE</span>
         <span class="total-value">Rs. {{ receiptData.total | number:'1.2-2' }}</span>
       </div>
     </div>

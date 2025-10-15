@@ -210,11 +210,16 @@
     font-weight: 600;
   }
 
+  .discount-value {
+    color: #d32f2f;
+    font-weight: 700;
+  }
+
   /* Total */
   .total-section {
     margin: 6px 0;
     padding: 10px;
-    background: #000;
+    background: #1976d2;
     color: #fff;
     border-radius: 4px;
   }
