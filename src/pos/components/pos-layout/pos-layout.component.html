@@ -32,6 +32,12 @@
 
       <!-- Right Side Menu -->
       <div class="d-flex align-items-center gap-3">
+        <!-- Hold Orders Button -->
+        <button (click)="showHoldOrders()" class="btn btn-outline-primary">
+          <i class="fa-solid fa-clock-rotate-left me-1"></i>
+          Hold Orders
+        </button>
+
         <!-- Full Screen Button -->
         <button (click)="toggleFullScreen()" class="btn btn-link text-success">
           <i *ngIf="!isFullScreen" class="fa-solid fa-maximize"></i>

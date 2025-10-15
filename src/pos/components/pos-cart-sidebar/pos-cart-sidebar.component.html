@@ -204,7 +204,13 @@
 
     <!-- Buttons -->
     <div class="compact-buttons-section">
-      <button class="compact-btn compact-btn-hold">Hold</button>
+      <button 
+        class="compact-btn compact-btn-hold"
+        (click)="holdCurrentOrder()"
+        [disabled]="cartItems.length === 0"
+      >
+        <i class="pi pi-pause me-1"></i>Hold
+      </button>
       <button 
         *ngIf="isPaymentModeCredit"
         class="compact-btn compact-btn-proceed" 
@@ -291,3 +297,44 @@
 
 <!-- Receipt Template Component (hidden, used for printing) -->
 <app-receipt-template></app-receipt-template>
+
+<!-- Hold Orders Dialog -->
+<p-dialog
+  header="Hold Orders"
+  [(visible)]="displayHoldOrdersDialog"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{width: '50vw'}"
+>
+  <div class="hold-orders-container">
+    <div *ngIf="holdOrders.length === 0" class="text-center py-4">
+      <p>No hold orders available</p>
+    </div>
+    
+    <div *ngIf="holdOrders.length > 0" class="hold-orders-list">
+      <div 
+        *ngFor="let order of holdOrders; let i = index"
+        class="hold-order-item p-3 mb-2 border rounded"
+        (click)="loadHoldOrder(i)"
+        style="cursor: pointer;"
+      >
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="mb-1">Order #{{ i + 1 }}</h6>
+            <p class="mb-1"><strong>Customer:</strong> {{ getCustomerName(order.customerCOALevel04Id) }}</p>
+            <p class="mb-1"><strong>Items:</strong> {{ order.salesInvoiceDetails.length }}</p>
+            <p class="mb-0"><strong>Total:</strong> {{ order.grandTotal | currency:'PKR':'symbol' }}</p>
+          </div>
+          <div>
+            <button 
+              class="btn btn-sm btn-danger"
+              (click)="deleteHoldOrder(i, $event)"
+            >
+              <i class="pi pi-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</p-dialog>

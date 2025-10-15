@@ -59,7 +59,7 @@
   .receipt-container {
     position: absolute;
     left: 50%;
-    top: -5mm;
+    top: 0mm;
     transform: translateX(-50%);
     width: 100mm;
     margin: 0 !important;
@@ -97,7 +97,7 @@
   }
 
   .company-name {
-    font-size: 30px;
+    font-size: 25px;
     font-weight: bold;
     margin-bottom: 4px;
     letter-spacing: 2px;

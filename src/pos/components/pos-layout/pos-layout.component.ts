@@ -1,6 +1,7 @@
 import { Component, Renderer2, ViewChild, ElementRef, AfterViewInit, HostListener } from "@angular/core";
 import { Router } from "@node_modules/@angular/router";
 import { PosService } from "../../core/services/pos.service";
+import { PosCartSidebarComponent } from "../pos-cart-sidebar/pos-cart-sidebar.component";
 
 @Component({
   selector: "app-pos-layout",
@@ -14,6 +15,7 @@ export class PosLayoutComponent implements AfterViewInit {
   barcodeInput: string = "";
   private barcodeTimer: any;
   @ViewChild("barcodeScan") barcodeScanInput!: ElementRef<HTMLInputElement>;
+  @ViewChild(PosCartSidebarComponent) cartSidebar!: PosCartSidebarComponent;
   private scanBuffer: string = "";
   private scanTimeout: any;
   private lastKeyTime = 0;
@@ -66,6 +68,12 @@ export class PosLayoutComponent implements AfterViewInit {
 
   onSearchChange() {
     this.sidebarService.setSearchTerm(this.searchItems);
+  }
+
+  showHoldOrders() {
+    if (this.cartSidebar) {
+      this.cartSidebar.showHoldOrdersDialog();
+    }
   }
 
   ngAfterViewInit() {

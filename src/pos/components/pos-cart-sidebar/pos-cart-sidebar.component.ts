@@ -19,7 +19,9 @@ export class PosCartSidebarComponent {
   wareHouse: { id: any; name: string }[] = [];
   private _cartItems: any[] = [];
   displayModal = false;
+  displayHoldOrdersDialog = false;
   pendingLabel = "";
+  holdOrders: any[] = [];
 
   receivedAmount: number = 0;
   RemainingAmount: number = 0;
@@ -75,6 +77,8 @@ export class PosCartSidebarComponent {
   ngOnInit() {
     console.log("Cart Sidebar Loaded");
     this.trigger();
+    this.loadHoldOrdersFromStorage();
+
     // Subscribe to shared cart
     this.posService.cartItems$.subscribe((items) => {
       this.cartItems = items;
@@ -618,5 +622,152 @@ export class PosCartSidebarComponent {
       event.preventDefault();
       this.manualPrint();
     }
+  }
+
+  // -------- Hold Orders Functionality --------
+  
+  loadHoldOrdersFromStorage() {
+    const storedOrders = localStorage.getItem('pos_hold_orders');
+    if (storedOrders) {
+      this.holdOrders = JSON.parse(storedOrders);
+    }
+  }
+
+  saveHoldOrdersToStorage() {
+    localStorage.setItem('pos_hold_orders', JSON.stringify(this.holdOrders));
+  }
+
+  holdCurrentOrder() {
+    if (this.salesInvoiceDetails.length === 0) {
+      this.msgService.add({
+        severity: "warn",
+        summary: "Warning",
+        detail: "No items to hold",
+        life: 2000,
+      });
+      return;
+    }
+
+    // Save current order to hold orders
+    const orderData = {
+      ...this.purchaseForm.value,
+      salesInvoiceDetails: this.salesInvoiceDetails.value,
+      timestamp: new Date().toISOString(),
+      cartItems: this._cartItems
+    };
+
+    this.holdOrders.push(orderData);
+    this.saveHoldOrdersToStorage();
+
+    this.msgService.add({
+      severity: "success",
+      summary: "Success",
+      detail: "Order held successfully",
+      life: 2000,
+    });
+
+    // Clear current cart and form
+    this.salesInvoiceDetails.clear();
+    this.posService.clearCart();
+    this.purchaseForm.patchValue({
+      id: 0,
+      issueDate: new Date().toISOString(),
+      remarks: "",
+      referenceNumber: "",
+      paymentModeId: this.paymentTerms.length > 0 ? this.paymentTerms[0].id : null,
+      customerCOALevel04Id: this.customer.length > 0 ? this.customer[0].id : null,
+      advanceAmountBankCOALevl04Id: null,
+      taxCOALevel04Id: 0,
+      employeeName: "",
+      commissionAmount: 0,
+      grandTotal: 0,
+      advanceAmount: 0,
+      discountPercentage: 0,
+      discountAmount: 0,
+      freightAmount: 0,
+      taxAmount: 0,
+      selectedWarehouseId: this.wareHouse.length > 0 
+        ? (this.wareHouse.find(w => w.name.toLowerCase().includes('dukkan'))?.id || this.wareHouse[0].id)
+        : null,
+    });
+    this.receivedAmount = 0;
+    this.RemainingAmount = 0;
+    this.cdr.detectChanges();
+  }
+
+  showHoldOrdersDialog() {
+    this.loadHoldOrdersFromStorage();
+    this.displayHoldOrdersDialog = true;
+  }
+
+  loadHoldOrder(index: number) {
+    const order = this.holdOrders[index];
+    if (!order) return;
+
+    // Clear current cart
+    this.salesInvoiceDetails.clear();
+    this.posService.clearCart();
+
+    // Load the held order into form
+    this.purchaseForm.patchValue({
+      id: order.id || 0,
+      issueDate: order.issueDate,
+      remarks: order.remarks || "",
+      referenceNumber: order.referenceNumber || "",
+      paymentModeId: order.paymentModeId,
+      customerCOALevel04Id: order.customerCOALevel04Id,
+      advanceAmountBankCOALevl04Id: order.advanceAmountBankCOALevl04Id,
+      taxCOALevel04Id: order.taxCOALevel04Id || 0,
+      employeeName: order.employeeName || "",
+      commissionAmount: order.commissionAmount || 0,
+      grandTotal: order.grandTotal || 0,
+      advanceAmount: order.advanceAmount || 0,
+      discountPercentage: order.discountPercentage || 0,
+      discountAmount: order.discountAmount || 0,
+      freightAmount: order.freightAmount || 0,
+      taxAmount: order.taxAmount || 0,
+      selectedWarehouseId: order.selectedWarehouseId,
+    });
+
+    // Restore cart items
+    if (order.cartItems && order.cartItems.length > 0) {
+      order.cartItems.forEach((item: any) => {
+        this.posService.addToCart(item);
+      });
+    }
+
+    // Remove from hold orders
+    this.holdOrders.splice(index, 1);
+    this.saveHoldOrdersToStorage();
+
+    this.displayHoldOrdersDialog = false;
+
+    this.msgService.add({
+      severity: "success",
+      summary: "Success",
+      detail: "Order loaded successfully",
+      life: 2000,
+    });
+
+    this.cdr.detectChanges();
+  }
+
+  deleteHoldOrder(index: number, event: Event) {
+    event.stopPropagation();
+    
+    this.holdOrders.splice(index, 1);
+    this.saveHoldOrdersToStorage();
+
+    this.msgService.add({
+      severity: "success",
+      summary: "Success",
+      detail: "Hold order deleted",
+      life: 2000,
+    });
+  }
+
+  getCustomerName(customerId: any): string {
+    const customer = this.customer.find(c => c.id === customerId);
+    return customer ? customer.name : 'Unknown';
   }
 }
