@@ -45,15 +45,21 @@ export class PosItemsComponent {
     });
   }
 
-  // Optimized filter method
+  // Optimized filter method - searches by name, SKU, or barcode
   private filterProducts(term: string): void {
     if (!term) {
       this.filteredProducts = this.products;
     } else {
       const lowerTerm = term.toLowerCase();
-      this.filteredProducts = this.products.filter((p) =>
-        p.name.toLowerCase().includes(lowerTerm)
-      );
+      this.filteredProducts = this.products.filter((p) => {
+        const name = (p.name || '').toLowerCase();
+        const sku = (p.sku || p.SKU || '').toString().toLowerCase();
+        const barcode = (p.barcode || p.Barcode || '').toString().toLowerCase();
+        
+        return name.includes(lowerTerm) || 
+               sku.includes(lowerTerm) || 
+               barcode.includes(lowerTerm);
+      });
     }
   }
 

@@ -197,6 +197,7 @@ export class PosCartSidebarComponent {
       id: [0],
       itemId: [product.id],
       itemName: [product.name],
+      itemSKU: [product.barcode || product.Barcode || product.sku || product.SKU || ''],
       rate: [product.unitPrice || 0],
       invoiceQty: [product.qty || 1],
       discount: [product.discount || 0], // amount

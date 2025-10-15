@@ -9,6 +9,9 @@
         style="cursor: pointer"
       >
         <div class="card-body text-center p-2">
+          <div *ngIf="product.barcode || product.Barcode || product.sku || product.SKU" class="text-muted small mb-1" style="font-size: 0.7rem;">
+            {{ product.barcode || product.Barcode || product.sku || product.SKU }}
+          </div>
           <h6 class="card-title mb-1 small text-truncate" [title]="product.name">{{ product.name }}</h6>
           <p class="fw-bold text-primary mb-0 small">
             {{ product.unitPrice }}

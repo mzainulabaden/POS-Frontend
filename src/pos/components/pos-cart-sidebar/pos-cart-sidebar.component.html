@@ -93,8 +93,11 @@
           class="compact-cart-item mb-1"
         >
           <div class="compact-card-body">
-            <!-- Item name -->
-            <div class="item-name-compact">{{ item.get("itemName")?.value }}</div>
+            <!-- Item name with SKU -->
+            <div class="item-name-compact">
+              <span class="item-sku" *ngIf="item.get('itemSKU')?.value">{{ item.get('itemSKU')?.value }} - </span>
+              <span>{{ item.get("itemName")?.value }}</span>
+            </div>
 
             <!-- Quantity + Discount -->
             <div class="d-flex align-items-center gap-2">
