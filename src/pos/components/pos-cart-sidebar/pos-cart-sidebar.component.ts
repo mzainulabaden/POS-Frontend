@@ -370,11 +370,39 @@ export class PosCartSidebarComponent {
           // Print receipt after successful save
           this.printReceipt(response);
 
-          this.purchaseForm.reset();
+          // Clear cart items and form array
           this.salesInvoiceDetails.clear();
           this.posService.clearCart();
+          
+          // Reset form with default values
+          this.purchaseForm.patchValue({
+            id: 0,
+            issueDate: new Date().toISOString(),
+            remarks: "",
+            referenceNumber: "",
+            paymentModeId: this.paymentTerms.length > 0 ? this.paymentTerms[0].id : null,
+            customerCOALevel04Id: this.customer.length > 0 ? this.customer[0].id : null,
+            advanceAmountBankCOALevl04Id: null,
+            taxCOALevel04Id: 0,
+            employeeName: "",
+            commissionAmount: 0,
+            grandTotal: 0,
+            advanceAmount: 0,
+            discountPercentage: 0,
+            discountAmount: 0,
+            freightAmount: 0,
+            taxAmount: 0,
+            selectedWarehouseId: this.wareHouse.length > 0 
+              ? (this.wareHouse.find(w => w.name.toLowerCase().includes('dukkan'))?.id || this.wareHouse[0].id)
+              : null,
+          });
+
+          // Reset payment modal values
+          this.receivedAmount = 0;
+          this.RemainingAmount = 0;
           this.displayModal = false;
-          this.trigger();
+          
+          this.cdr.detectChanges();
         },
       });
   }
@@ -538,11 +566,38 @@ export class PosCartSidebarComponent {
             // Print receipt only if API response is successful
             this.printReceipt(response);
 
-            // Reset form and cart
-            this.purchaseForm.reset();
+            // Clear cart items and form array
             this.salesInvoiceDetails.clear();
             this.posService.clearCart();
-            this.trigger();
+            
+            // Reset form with default values
+            this.purchaseForm.patchValue({
+              id: 0,
+              issueDate: new Date().toISOString(),
+              remarks: "",
+              referenceNumber: "",
+              paymentModeId: this.paymentTerms.length > 0 ? this.paymentTerms[0].id : null,
+              customerCOALevel04Id: this.customer.length > 0 ? this.customer[0].id : null,
+              advanceAmountBankCOALevl04Id: null,
+              taxCOALevel04Id: 0,
+              employeeName: "",
+              commissionAmount: 0,
+              grandTotal: 0,
+              advanceAmount: 0,
+              discountPercentage: 0,
+              discountAmount: 0,
+              freightAmount: 0,
+              taxAmount: 0,
+              selectedWarehouseId: this.wareHouse.length > 0 
+                ? (this.wareHouse.find(w => w.name.toLowerCase().includes('dukkan'))?.id || this.wareHouse[0].id)
+                : null,
+            });
+
+            // Reset payment modal values
+            this.receivedAmount = 0;
+            this.RemainingAmount = 0;
+            
+            this.cdr.detectChanges();
           } else {
             this.msgService.add({
               severity: "error",
