@@ -360,13 +360,6 @@ export class PosCartSidebarComponent {
       )
       .subscribe({
         next: (response: any) => {
-          this.msgService.add({
-            severity: "success",
-            summary: "Confirmed",
-            detail: "Saved Successfully",
-            life: 2000,
-          });
-
           // Print receipt after successful save
           this.printReceipt(response);
 
@@ -556,13 +549,6 @@ export class PosCartSidebarComponent {
         next: (response: any) => {
           // Check if response is successful
           if (response) {
-            this.msgService.add({
-              severity: "success",
-              summary: "Success",
-              detail: "Sales invoice created successfully",
-              life: 2000,
-            });
-
             // Print receipt only if API response is successful
             this.printReceipt(response);
 
