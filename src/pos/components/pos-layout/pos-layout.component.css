@@ -6,3 +6,48 @@
   }
 }
 
+/* Search Dropdown Styles */
+.search-dropdown {
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid #e1e5e9 !important;
+  margin-top: 4px;
+}
+
+.search-result-item {
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid #f0f0f0 !important;
+}
+
+.search-result-item:last-child {
+  border-bottom: none !important;
+}
+
+.search-result-item:hover {
+  background-color: #f8f9fa !important;
+}
+
+.search-result-item.selected {
+  background-color: #e3f2fd !important;
+}
+
+.search-result-item:active {
+  background-color: #bbdefb !important;
+}
+
+/* Smooth animations */
+.search-dropdown {
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

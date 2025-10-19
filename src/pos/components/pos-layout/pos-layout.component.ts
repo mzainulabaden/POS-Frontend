@@ -2,6 +2,7 @@ import { Component, Renderer2, ViewChild, ElementRef, AfterViewInit, HostListene
 import { Router } from "@node_modules/@angular/router";
 import { PosService } from "../../core/services/pos.service";
 import { PosCartSidebarComponent } from "../pos-cart-sidebar/pos-cart-sidebar.component";
+import { debounceTime, distinctUntilChanged } from "rxjs/operators";
 
 @Component({
   selector: "app-pos-layout",
@@ -20,7 +21,17 @@ export class PosLayoutComponent implements AfterViewInit {
   private scanTimeout: any;
   private lastKeyTime = 0;
 
-  constructor(private sidebarService: PosService, private router: Router) {}
+  // Search dropdown properties
+  searchResults: any[] = [];
+  showSearchDropdown = false;
+  selectedSearchIndex = -1;
+  allProducts: any[] = [];
+  @ViewChild("searchInput") searchInput!: ElementRef<HTMLInputElement>;
+
+  constructor(private sidebarService: PosService, private router: Router) {
+    // Load all products for search
+    this.loadAllProducts();
+  }
 
   // Toggle Sidebar
   toggleSidebar() {
@@ -68,6 +79,92 @@ export class PosLayoutComponent implements AfterViewInit {
 
   onSearchChange() {
     this.sidebarService.setSearchTerm(this.searchItems);
+    this.performSearch(this.searchItems);
+  }
+
+  // Load all products for search functionality
+  loadAllProducts() {
+    this.sidebarService.getAll("Item").subscribe({
+      next: (response) => {
+        this.allProducts = response.items || [];
+      },
+      error: (error) => {
+        console.error('Error loading products:', error);
+      }
+    });
+  }
+
+  // Perform search and show dropdown
+  performSearch(term: string) {
+    if (!term || term.trim().length < 2) {
+      this.showSearchDropdown = false;
+      this.searchResults = [];
+      return;
+    }
+
+    const lowerTerm = term.toLowerCase().trim();
+    this.searchResults = this.allProducts.filter((product) => {
+      const name = (product.name || '').toLowerCase();
+      const sku = (product.sku || product.SKU || '').toString().toLowerCase();
+      const barcode = (product.barcode || product.Barcode || '').toString().toLowerCase();
+      
+      return name.includes(lowerTerm) || 
+             sku.includes(lowerTerm) || 
+             barcode.includes(lowerTerm);
+    }).slice(0, 8); // Limit to 8 results like Google
+
+    this.showSearchDropdown = this.searchResults.length > 0;
+    this.selectedSearchIndex = -1;
+  }
+
+  // Handle search result selection
+  selectSearchResult(product: any, index: number) {
+    this.searchItems = product.name;
+    this.showSearchDropdown = false;
+    this.sidebarService.addToCart(product);
+    this.searchInput.nativeElement.focus();
+  }
+
+  // Handle keyboard navigation in search dropdown
+  onSearchKeyDown(event: KeyboardEvent) {
+    if (!this.showSearchDropdown) return;
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        this.selectedSearchIndex = Math.min(this.selectedSearchIndex + 1, this.searchResults.length - 1);
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        this.selectedSearchIndex = Math.max(this.selectedSearchIndex - 1, -1);
+        break;
+      case 'Enter':
+        event.preventDefault();
+        if (this.selectedSearchIndex >= 0 && this.selectedSearchIndex < this.searchResults.length) {
+          this.selectSearchResult(this.searchResults[this.selectedSearchIndex], this.selectedSearchIndex);
+        }
+        break;
+      case 'Escape':
+        this.showSearchDropdown = false;
+        this.selectedSearchIndex = -1;
+        break;
+    }
+  }
+
+  // Hide dropdown when clicking outside
+  onSearchBlur() {
+    // Delay to allow click on dropdown items
+    setTimeout(() => {
+      this.showSearchDropdown = false;
+      this.selectedSearchIndex = -1;
+    }, 200);
+  }
+
+  // Show dropdown when focusing on search input
+  onSearchFocus() {
+    if (this.searchItems && this.searchItems.trim().length >= 2) {
+      this.performSearch(this.searchItems);
+    }
   }
 
   showHoldOrders() {
