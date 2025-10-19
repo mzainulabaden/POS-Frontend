@@ -26,6 +26,7 @@
           <th class="item-name">Item</th>
           <th class="item-qty">Qty</th>
           <th class="item-price">Price</th>
+          <th class="item-discount">Disc</th>
           <th class="item-amt">Amt</th>
         </tr>
       </thead>
@@ -34,6 +35,7 @@
           <td class="item-name">{{ item.name }}</td>
           <td class="item-qty">{{ item.quantity }}</td>
           <td class="item-price">{{ item.price | number:'1.0-0' }}</td>
+          <td class="item-discount">{{ item.discount | number:'1.0-0' }}</td>
           <td class="item-amt">{{ item.total | number:'1.0-0' }}</td>
         </tr>
       </tbody>

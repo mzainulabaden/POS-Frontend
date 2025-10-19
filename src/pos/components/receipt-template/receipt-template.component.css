@@ -180,7 +180,14 @@
 
   .item-price {
     text-align: right;
-    width: 20%;
+    width: 15%;
+  }
+
+  .item-discount {
+    text-align: right;
+    width: 15%;
+    color: #d32f2f;
+    font-weight: 600;
   }
 
   .item-amt {

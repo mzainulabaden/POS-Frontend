@@ -85,16 +85,17 @@ export class ThermalPrinterService {
     commands += '--------------------------------' + LF;
     
     // Items header
-    commands += 'Item        Qty   Price     Amt' + LF;
+    commands += 'Item        Qty   Price   Disc    Amt' + LF;
     
     // Items
     data.items.forEach(item => {
       const name = item.name.substring(0, 12).padEnd(12);
       const qty = item.quantity.toString().padStart(3);
-      const price = item.price.toFixed(2).padStart(8);
+      const price = item.price.toFixed(2).padStart(6);
+      const discount = item.discount.toFixed(2).padStart(6);
       const total = item.total.toFixed(2).padStart(8);
       
-      commands += `${name}${qty} ${price} ${total}` + LF;
+      commands += `${name}${qty} ${price} ${discount} ${total}` + LF;
     });
     
     commands += '--------------------------------' + LF;
@@ -189,6 +190,7 @@ export class ThermalPrinterService {
               <th style="text-align: left; padding: 4px 2px; font-weight: normal;">Item</th>
               <th style="text-align: center; padding: 4px 2px; font-weight: normal;">Qty</th>
               <th style="text-align: right; padding: 4px 2px; font-weight: normal;">Price</th>
+              <th style="text-align: right; padding: 4px 2px; font-weight: normal;">Disc</th>
               <th style="text-align: right; padding: 4px 2px; font-weight: normal;">Amt</th>
             </tr>
           </thead>
@@ -198,6 +200,7 @@ export class ThermalPrinterService {
                 <td style="padding: 6px 2px; vertical-align: top;">${item.name}</td>
                 <td style="text-align: center; padding: 6px 2px; vertical-align: top;">${item.quantity}</td>
                 <td style="text-align: right; padding: 6px 2px; vertical-align: top;">${item.price.toFixed(2)}</td>
+                <td style="text-align: right; padding: 6px 2px; vertical-align: top; color: #d32f2f;">${item.discount.toFixed(2)}</td>
                 <td style="text-align: right; padding: 6px 2px; vertical-align: top;">${item.total.toFixed(2)}</td>
               </tr>
             `).join('')}

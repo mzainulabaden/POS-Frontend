@@ -470,17 +470,23 @@ export class PosCartSidebarComponent {
       paymentMode: selectedPayment?.name || 'Cash',
       warehouse: selectedWarehouse?.name || '',
       items: this.salesInvoiceDetails.controls.map((ctrl) => {
-        const qty = ctrl.get('invoiceQty')?.value || 0;
-        const rate = ctrl.get('rate')?.value || 0;
-        const discount = ctrl.get('discount')?.value || 0;
-        const lineTotal = ctrl.get('lineTotal')?.value || 0;
-        
+        const qty = Number(ctrl.get('invoiceQty')?.value) || 0;
+        // Prefer unit price from lineTotal (used as price input in UI), fallback to rate
+        const unitPrice = (Number(ctrl.get('lineTotal')?.value) || 0) || (Number(ctrl.get('rate')?.value) || 0);
+        const discountAmount = Number(ctrl.get('discount')?.value) || 0;
+        const discountPercentage = Number(ctrl.get('discountPercentage')?.value) || 0;
+
+        const lineGross = unitPrice * qty;
+        const percentageDiscountAmount = +(lineGross * (discountPercentage / 100)).toFixed(2);
+        const lineDiscountTotal = +(discountAmount + percentageDiscountAmount).toFixed(2);
+        const lineNetTotal = +(lineGross - lineDiscountTotal).toFixed(2);
+
         return {
           name: ctrl.get('itemName')?.value || '',
           quantity: qty,
-          price: rate,
-          discount: discount,
-          total: lineTotal - discount
+          price: unitPrice,
+          discount: lineDiscountTotal,
+          total: lineNetTotal
         };
       }),
       subtotal: this.subtotal,
