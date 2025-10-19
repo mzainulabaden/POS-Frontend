@@ -601,9 +601,9 @@ export class PosCartSidebarComponent {
       });
   }
 
-  // Listen for Enter key press to trigger print receipt
-  @HostListener('window:keydown.enter', ['$event'])
-  handleEnterKey(event: KeyboardEvent) {
+  // Listen for Shift key press to trigger print receipt
+  @HostListener('window:keydown.shift', ['$event'])
+  handleShiftKey(event: KeyboardEvent) {
     // Check if user is actively typing in an input field
     const activeElement = document.activeElement as HTMLElement;
     const isTypingInInput = activeElement && 

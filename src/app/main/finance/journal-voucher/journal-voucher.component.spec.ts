@@ -21,3 +21,4 @@ describe('JournalVoucherComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+  
