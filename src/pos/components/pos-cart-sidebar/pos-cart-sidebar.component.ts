@@ -333,6 +333,13 @@ export class PosCartSidebarComponent {
     return total < 0 ? 0 : total; // prevent negative totals
   }
 
+  getTotalItemDiscounts(): number {
+    return this.salesInvoiceDetails.controls.reduce((acc, ctrl) => {
+      const discount = ctrl.get("discount")?.value || 0;
+      return acc + discount;
+    }, 0);
+  }
+
   formatPrice(value: number): string {
     return `PKR ${value.toFixed(2)}`;
   }
