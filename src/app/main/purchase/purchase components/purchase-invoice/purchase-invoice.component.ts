@@ -599,10 +599,6 @@ export class PurchaseInvoiceComponent {
             life: 2000,
           });
 
-          debugger;
-          if (response && response.success && response.result?.id) {
-            this.approve(response.result.id, false);
-          }
           this.getAll();
           this.saving = false;
           this.displayModal = false;
