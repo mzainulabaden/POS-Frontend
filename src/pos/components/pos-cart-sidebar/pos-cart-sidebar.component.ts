@@ -274,6 +274,24 @@ export class PosCartSidebarComponent {
       isUpdating = false;
     });
 
+    // When discount amount changes: recompute discount percentage
+    discAmtCtrl?.valueChanges.subscribe((amt) => {
+      if (isUpdating) return;
+      isUpdating = true;
+      const discountAmount = +amt || 0;
+      const quantity = +(qtyCtrl?.value as any) || 0;
+      const unitRate = +(rateCtrl?.value as any) || 0;
+      const gross = quantity * unitRate;
+      
+      if (gross > 0) {
+        const percentage = +((discountAmount / gross) * 100).toFixed(2);
+        discPctCtrl?.setValue(percentage, { emitEvent: false });
+      } else {
+        discPctCtrl?.setValue(0, { emitEvent: false });
+      }
+      isUpdating = false;
+    });
+
     this.salesInvoiceDetails.push(itemForm);
   }
 
@@ -471,22 +489,19 @@ export class PosCartSidebarComponent {
       warehouse: selectedWarehouse?.name || '',
       items: this.salesInvoiceDetails.controls.map((ctrl) => {
         const qty = Number(ctrl.get('invoiceQty')?.value) || 0;
-        // Prefer unit price from lineTotal (used as price input in UI), fallback to rate
-        const unitPrice = (Number(ctrl.get('lineTotal')?.value) || 0) || (Number(ctrl.get('rate')?.value) || 0);
+        // Use rate as unit price (this is the actual unit price)
+        const unitPrice = Number(ctrl.get('rate')?.value) || 0;
+        // Use the already calculated discount amount from the form (no double calculation)
         const discountAmount = Number(ctrl.get('discount')?.value) || 0;
-        const discountPercentage = Number(ctrl.get('discountPercentage')?.value) || 0;
-
-        const lineGross = unitPrice * qty;
-        const percentageDiscountAmount = +(lineGross * (discountPercentage / 100)).toFixed(2);
-        const lineDiscountTotal = +(discountAmount + percentageDiscountAmount).toFixed(2);
-        const lineNetTotal = +(lineGross - lineDiscountTotal).toFixed(2);
+        // Use the lineTotal which already has the discount applied
+        const lineTotal = Number(ctrl.get('lineTotal')?.value) || 0;
 
         return {
           name: ctrl.get('itemName')?.value || '',
           quantity: qty,
           price: unitPrice,
-          discount: lineDiscountTotal,
-          total: lineNetTotal
+          discount: discountAmount,
+          total: lineTotal
         };
       }),
       subtotal: this.subtotal,
