@@ -27,6 +27,14 @@
     visibility: visible !important;
   }
 
+  /* Force all text to print in solid black */
+  .receipt,
+  .receipt * {
+    color: #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
   /* Table elements */
   .receipt-container table {
     display: table !important;
