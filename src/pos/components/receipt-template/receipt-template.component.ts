@@ -17,6 +17,15 @@ export class ReceiptTemplateComponent implements OnInit {
       this.receiptData = data;
     });
   }
+
+  getTotalItemDiscounts(): number {
+    if (!this.receiptData || !this.receiptData.items) {
+      return 0;
+    }
+    return this.receiptData.items.reduce((acc, item) => {
+      return acc + (item.discount || 0);
+    }, 0);
+  }
 }
 
 

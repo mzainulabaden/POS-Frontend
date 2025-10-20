@@ -138,22 +138,22 @@
     width: 100%;
     border-collapse: collapse;
     margin: 6px 0;
-    font-size: 17px;
+    font-size: 14px;
   }
 
   .items th {
-    padding: 6px 4px;
+    padding: 4px 2px;
     text-align: left;
     font-weight: bold;
-    font-size: 17px;
+    font-size: 14px;
     background: #f0f0f0;
     border-bottom: 2px solid #333;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
   }
 
   .items td {
-    padding: 6px 4px;
+    padding: 4px 2px;
     vertical-align: top;
     border-bottom: 1px solid #e0e0e0;
   }
@@ -168,31 +168,31 @@
 
   .item-name {
     text-align: left;
-    width: 50%;
+    width: 40%;
     font-weight: 500;
   }
 
   .item-qty {
     text-align: center;
-    width: 10%;
+    width: 12%;
     font-weight: 600;
   }
 
   .item-price {
     text-align: right;
-    width: 15%;
+    width: 16%;
   }
 
   .item-discount {
     text-align: right;
-    width: 15%;
+    width: 16%;
     color: #d32f2f;
     font-weight: 600;
   }
 
   .item-amt {
     text-align: right;
-    width: 20%;
+    width: 16%;
     font-weight: 600;
   }
 

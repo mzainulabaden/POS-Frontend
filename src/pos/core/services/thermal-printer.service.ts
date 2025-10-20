@@ -91,15 +91,15 @@ export class ThermalPrinterService {
     commands += '--------------------------------' + LF;
     
     // Items header
-    commands += 'Item        Qty   Price   Disc    Amt' + LF;
+    commands += 'Item      Qty Price Disc  Amt' + LF;
     
     // Items
     data.items.forEach(item => {
-      const name = item.name.substring(0, 12).padEnd(12);
+      const name = item.name.substring(0, 10).padEnd(10);
       const qty = item.quantity.toString().padStart(3);
-      const price = item.price.toFixed(2).padStart(6);
-      const discount = item.discount.toFixed(2).padStart(6);
-      const total = item.total.toFixed(2).padStart(8);
+      const price = item.price.toFixed(2).padStart(5);
+      const discount = item.discount.toFixed(2).padStart(4);
+      const total = item.total.toFixed(2).padStart(6);
       
       commands += `${name}${qty} ${price} ${discount} ${total}` + LF;
     });
@@ -108,6 +108,12 @@ export class ThermalPrinterService {
     
     // Subtotal
     commands += `SubTotal                ${data.subtotal.toFixed(2).padStart(10)}` + LF;
+    
+    // Item Discounts
+    const totalItemDiscounts = data.items.reduce((acc, item) => acc + (item.discount || 0), 0);
+    if (totalItemDiscounts > 0) {
+      commands += `Item Discounts          -${totalItemDiscounts.toFixed(2).padStart(8)}` + LF;
+    }
     
     commands += '--------------------------------' + LF;
     
@@ -192,24 +198,24 @@ export class ThermalPrinterService {
         
         <div style="border-bottom: 1px dashed #000; margin: 5px 0;"></div>
         
-        <table style="width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 9px;">
+        <table style="width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 8px;">
           <thead>
             <tr>
-              <th style="text-align: left; padding: 4px 2px; font-weight: normal;">Item</th>
-              <th style="text-align: center; padding: 4px 2px; font-weight: normal;">Qty</th>
-              <th style="text-align: right; padding: 4px 2px; font-weight: normal;">Price</th>
-              <th style="text-align: right; padding: 4px 2px; font-weight: normal;">Disc</th>
-              <th style="text-align: right; padding: 4px 2px; font-weight: normal;">Amt</th>
+              <th style="text-align: left; padding: 3px 1px; font-weight: normal; font-size: 8px;">Item</th>
+              <th style="text-align: center; padding: 3px 1px; font-weight: normal; font-size: 8px;">Qty</th>
+              <th style="text-align: right; padding: 3px 1px; font-weight: normal; font-size: 8px;">Price</th>
+              <th style="text-align: right; padding: 3px 1px; font-weight: normal; font-size: 8px;">Disc</th>
+              <th style="text-align: right; padding: 3px 1px; font-weight: normal; font-size: 8px;">Amt</th>
             </tr>
           </thead>
           <tbody>
             ${data.items.map(item => `
               <tr>
-                <td style="padding: 6px 2px; vertical-align: top;">${item.name}</td>
-                <td style="text-align: center; padding: 6px 2px; vertical-align: top;">${item.quantity}</td>
-                <td style="text-align: right; padding: 6px 2px; vertical-align: top;">${item.price.toFixed(2)}</td>
-                <td style="text-align: right; padding: 6px 2px; vertical-align: top; color: #d32f2f;">${item.discount.toFixed(2)}</td>
-                <td style="text-align: right; padding: 6px 2px; vertical-align: top;">${item.total.toFixed(2)}</td>
+                <td style="padding: 4px 1px; vertical-align: top; font-size: 8px;">${item.name}</td>
+                <td style="text-align: center; padding: 4px 1px; vertical-align: top; font-size: 8px;">${item.quantity}</td>
+                <td style="text-align: right; padding: 4px 1px; vertical-align: top; font-size: 8px;">${item.price.toFixed(2)}</td>
+                <td style="text-align: right; padding: 4px 1px; vertical-align: top; color: #d32f2f; font-size: 8px;">${item.discount.toFixed(2)}</td>
+                <td style="text-align: right; padding: 4px 1px; vertical-align: top; font-size: 8px;">${item.total.toFixed(2)}</td>
               </tr>
             `).join('')}
           </tbody>
@@ -222,6 +228,15 @@ export class ThermalPrinterService {
             <span>SubTotal</span>
             <span>${data.subtotal.toFixed(2)}</span>
           </div>
+          ${(() => {
+            const totalItemDiscounts = data.items.reduce((acc, item) => acc + (item.discount || 0), 0);
+            return totalItemDiscounts > 0 ? `
+              <div style="display: flex; justify-content: space-between; font-size: 9px; margin: 4px 0; color: #d32f2f;">
+                <span>Item Discounts</span>
+                <span>-${totalItemDiscounts.toFixed(2)}</span>
+              </div>
+            ` : '';
+          })()}
         </div>
         
         <div style="border-bottom: 1px dashed #000; margin: 5px 0;"></div>

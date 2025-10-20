@@ -56,9 +56,15 @@
         <span class="summary-value">Rs. {{ receiptData.subtotal | number:'1.0-0' }}</span>
       </div>
       
-      <!-- Discount (Only show if discount > 0) -->
+      <!-- Item Discounts (Only show if there are item discounts) -->
+      <div class="summary-row" *ngIf="getTotalItemDiscounts() > 0">
+        <span>Item Discounts</span>
+        <span class="summary-value discount-value">- Rs. {{ getTotalItemDiscounts() | number:'1.0-0' }}</span>
+      </div>
+      
+      <!-- Bill Discount (Only show if discount > 0) -->
       <div class="summary-row" *ngIf="receiptData.discount > 0">
-        <span>Discount</span>
+        <span>Bill Discount</span>
         <span class="summary-value discount-value">- Rs. {{ receiptData.discount | number:'1.0-0' }}</span>
       </div>
     </div>
