@@ -109,6 +109,7 @@
                   formControlName="invoiceQty"
                   min="0.001"
                   step="0.001"
+                  clearZeroOnFocus
                   (keydown.enter)="$event.preventDefault()"
                 />
               </div>
@@ -121,6 +122,7 @@
                   formControlName="lineTotal"
                   min="0"
                   step="0.01"
+                  clearZeroOnFocus
                   (keydown.enter)="$event.preventDefault()"
                 />
               </div>
@@ -133,6 +135,7 @@
                   formControlName="discount"
                   min="0"
                   step="0.01"
+                  clearZeroOnFocus
                   (keydown.enter)="$event.preventDefault()"
                 />
               </div>
@@ -146,6 +149,7 @@
                   min="0"
                   max="100"
                   step="0.01"
+                  clearZeroOnFocus
                   (keydown.enter)="$event.preventDefault()"
                 />
               </div>
@@ -176,6 +180,7 @@
           class="compact-bottom-input"
           min="0"
           step="0.01"
+          clearZeroOnFocus
           (keydown.enter)="$event.preventDefault()"
         />
       </div>
@@ -189,6 +194,7 @@
           min="0"
           max="100"
           step="0.01"
+          clearZeroOnFocus
           (keydown.enter)="$event.preventDefault()"
         />
       </div>
@@ -226,6 +232,13 @@
         [disabled]="cartItems.length === 0"
       >
         <i class="pi pi-pause me-1"></i>Hold
+      </button>
+      <button 
+        class="compact-btn compact-btn-proceed" 
+        (click)="saveWithoutPrint()"
+        [disabled]="cartItems.length === 0"
+      >
+        Sale
       </button>
       <button 
         *ngIf="isPaymentModeCredit"
@@ -301,6 +314,12 @@
       (click)="displayModal = false"
       [outlined]="true"
       severity="warning"
+    ></p-button>
+    <p-button
+      label="Save"
+      (click)="saveWithoutPrint()"
+      [outlined]="true"
+      severity="success"
     ></p-button>
     <p-button
       label="Save & Print"

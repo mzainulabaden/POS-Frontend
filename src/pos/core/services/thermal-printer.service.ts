@@ -40,12 +40,38 @@ export class ThermalPrinterService {
   printReceipt(data: ReceiptData): void {
     console.log('Printing receipt with data:', data);
     this.receiptData.next(data);
+    try {
+      const freeze = (window as any).FreezeUI;
+      if (typeof freeze === 'function') {
+        freeze({ text: 'Printing...' });
+      }
+    } catch (_) {}
     
-    // Delay to ensure the receipt template is fully rendered
-    setTimeout(() => {
+    // Render next frame to ensure template update, then print ASAP
+    const unfreezeIfAny = () => {
+      try {
+        const unfreeze = (window as any).UnFreezeUI;
+        if (typeof unfreeze === 'function') {
+          unfreeze({});
+        }
+      } catch (_) {}
+    };
+
+    const doPrint = () => {
       console.log('Opening print dialog...');
+      unfreezeIfAny();
       window.print();
-    }, 500);
+    };
+
+    try {
+      // Double rAF ensures DOM paint before print
+      requestAnimationFrame(() => requestAnimationFrame(doPrint));
+      // Safety fallback after ~120ms in case rAF is throttled
+      setTimeout(doPrint, 120);
+    } catch (_) {
+      // Fallback minimal delay
+      setTimeout(doPrint, 120);
+    }
   }
 
   /**

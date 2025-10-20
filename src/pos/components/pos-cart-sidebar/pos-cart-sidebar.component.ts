@@ -374,10 +374,33 @@ export class PosCartSidebarComponent {
 
     debugger;
 
+    try {
+      const freeze = (window as any).abp?.ui?.setBusy || (window as any).FreezeUI;
+      if (typeof freeze === 'function') {
+        // Prefer ABP busy if available
+        if ((window as any).abp?.ui?.setBusy) {
+          (window as any).abp.ui.setBusy(undefined, 'Saving...', 0);
+        } else {
+          (window as any).FreezeUI({ text: 'Saving...' });
+        }
+      }
+    } catch (_) {}
+
     this.posService
       .create({ ...this.purchaseForm.value }, "SalesInvoice")
       .pipe(
-        finalize(() => {}),
+        finalize(() => {
+          try {
+            const clear = (window as any).abp?.ui?.clearBusy || (window as any).UnFreezeUI;
+            if (typeof clear === 'function') {
+              if ((window as any).abp?.ui?.clearBusy) {
+                (window as any).abp.ui.clearBusy(undefined, 0);
+              } else {
+                (window as any).UnFreezeUI({});
+              }
+            }
+          } catch (_) {}
+        }),
         catchError((error) => {
           this.msgService.add({
             severity: "error",
@@ -425,6 +448,108 @@ export class PosCartSidebarComponent {
           this.RemainingAmount = 0;
           this.displayModal = false;
           
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  // Save the sale but do not print
+  saveWithoutPrint() {
+    if (!this.purchaseForm.valid) {
+      this.msgService.add({
+        severity: "error",
+        detail: "Please fill all required fields",
+        life: 2000,
+      });
+      return;
+    }
+
+    this.purchaseForm.patchValue({
+      salesInvoiceDetails: this.salesInvoiceDetails.value,
+      issueDate: moment(this.purchaseForm.value.issueDate).format("YYYY-MM-DD"),
+      viAmount: 0,
+      commissionAmount: this.purchaseForm.value.commissionAmount || 0,
+      netTotal: this.nettotal,
+      grandTotal: this.payableAmount,
+    });
+
+    try {
+      const freeze = (window as any).abp?.ui?.setBusy || (window as any).FreezeUI;
+      if (typeof freeze === 'function') {
+        if ((window as any).abp?.ui?.setBusy) {
+          (window as any).abp.ui.setBusy(undefined, 'Saving...', 0);
+        } else {
+          (window as any).FreezeUI({ text: 'Saving...' });
+        }
+      }
+    } catch (_) {}
+
+    this.posService
+      .create({ ...this.purchaseForm.value }, "SalesInvoice")
+      .pipe(
+        finalize(() => {
+          try {
+            const clear = (window as any).abp?.ui?.clearBusy || (window as any).UnFreezeUI;
+            if (typeof clear === 'function') {
+              if ((window as any).abp?.ui?.clearBusy) {
+                (window as any).abp.ui.clearBusy(undefined, 0);
+              } else {
+                (window as any).UnFreezeUI({});
+              }
+            }
+          } catch (_) {}
+        }),
+        catchError((error) => {
+          this.msgService.add({
+            severity: "error",
+            summary: "Error",
+            detail: error.error?.error?.message,
+            life: 2000,
+          });
+          return throwError(() => error.error?.error?.message || error);
+        })
+      )
+      .subscribe({
+        next: () => {
+          // Clear cart items and form array
+          this.salesInvoiceDetails.clear();
+          this.posService.clearCart();
+
+          // Reset form with default values
+          this.purchaseForm.patchValue({
+            id: 0,
+            issueDate: new Date().toISOString(),
+            remarks: "",
+            referenceNumber: "",
+            paymentModeId: this.paymentTerms.length > 0 ? this.paymentTerms[0].id : null,
+            customerCOALevel04Id: this.customer.length > 0 ? this.customer[0].id : null,
+            advanceAmountBankCOALevl04Id: null,
+            taxCOALevel04Id: 0,
+            employeeName: "",
+            commissionAmount: 0,
+            grandTotal: 0,
+            advanceAmount: 0,
+            discountPercentage: 0,
+            discountAmount: 0,
+            freightAmount: 0,
+            taxAmount: 0,
+            selectedWarehouseId: this.wareHouse.length > 0 
+              ? (this.wareHouse.find(w => w.name.toLowerCase().includes('dukkan'))?.id || this.wareHouse[0].id)
+              : null,
+          });
+
+          // Reset payment modal values
+          this.receivedAmount = 0;
+          this.RemainingAmount = 0;
+          this.displayModal = false;
+
+          this.msgService.add({
+            severity: 'success',
+            summary: 'Saved',
+            detail: 'Sale saved successfully',
+            life: 1500,
+          });
+
           this.cdr.detectChanges();
         },
       });
@@ -564,10 +689,32 @@ export class PosCartSidebarComponent {
     });
 
     // Call CreatePos API
+    try {
+      const freeze = (window as any).abp?.ui?.setBusy || (window as any).FreezeUI;
+      if (typeof freeze === 'function') {
+        if ((window as any).abp?.ui?.setBusy) {
+          (window as any).abp.ui.setBusy(undefined, 'Processing...', 0);
+        } else {
+          (window as any).FreezeUI({ text: 'Processing...' });
+        }
+      }
+    } catch (_) {}
+
     this.posService
       .create({ ...this.purchaseForm.value }, "SalesInvoice")
       .pipe(
-        finalize(() => {}),
+        finalize(() => {
+          try {
+            const clear = (window as any).abp?.ui?.clearBusy || (window as any).UnFreezeUI;
+            if (typeof clear === 'function') {
+              if ((window as any).abp?.ui?.clearBusy) {
+                (window as any).abp.ui.clearBusy(undefined, 0);
+              } else {
+                (window as any).UnFreezeUI({});
+              }
+            }
+          } catch (_) {}
+        }),
         catchError((error) => {
           this.msgService.add({
             severity: "error",
@@ -629,25 +776,14 @@ export class PosCartSidebarComponent {
       });
   }
 
-  // Listen for Shift key press to trigger print receipt
+  // Listen for Shift key press to trigger print receipt from anywhere
   @HostListener('window:keydown.shift', ['$event'])
   handleShiftKey(event: KeyboardEvent) {
-    // Check if user is actively typing in an input field
-    const activeElement = document.activeElement as HTMLElement;
-    const isTypingInInput = activeElement && 
-      (activeElement.tagName === 'INPUT' || 
-       activeElement.tagName === 'TEXTAREA' || 
-       activeElement.tagName === 'SELECT' ||
-       activeElement.isContentEditable);
-    
-    // Check if the modal is open
-    const isModalOpen = this.displayModal;
-    
-    // Only trigger print if:
-    // 1. User is NOT typing in an input field
-    // 2. Modal is NOT open
-    // 3. There are items in the cart
-    if (!isTypingInInput && !isModalOpen && this.cartItems.length > 0) {
+    // If payment modal is open, do not auto-print
+    if (this.displayModal) { return; }
+
+    // Proceed even if focus is in an input; prevent browser side effects
+    if (this.cartItems.length > 0) {
       event.preventDefault();
       this.manualPrint();
     }

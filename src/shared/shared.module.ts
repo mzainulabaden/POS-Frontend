@@ -18,6 +18,7 @@ import { AbpModalFooterComponent } from "./components/modal/abp-modal-footer.com
 import { LayoutStoreService } from "./layout/layout-store.service";
 import { BusyDirective } from "./directives/busy.directive";
 import { EqualValidator } from "./directives/equal-validator.directive";
+import { ClearZeroOnFocusDirective } from "./directives/clear-zero-on-focus.directive";
 import { ModalModule } from "ngx-bootstrap/modal";
 import { BsDropdownModule } from "ngx-bootstrap/dropdown";
 import { CollapseModule } from "ngx-bootstrap/collapse";
@@ -87,6 +88,7 @@ import { AccordionModule } from "primeng/accordion";
     LocalizePipe,
     BusyDirective,
     EqualValidator,
+    ClearZeroOnFocusDirective,
     CreateBrokerModalComponent,
     CreateVendorModalComponent,
   ],
@@ -98,6 +100,7 @@ import { AccordionModule } from "primeng/accordion";
     LocalizePipe,
     BusyDirective,
     EqualValidator,
+    ClearZeroOnFocusDirective,
     InputNumberModule,
     FormsModule,
     AgGridModule,

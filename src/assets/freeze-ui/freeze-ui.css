@@ -54,3 +54,10 @@
   will-change: transform;
   animation: spin 0.75s infinite ease-in-out;
 }
+
+/* Do not include loader in print output */
+@media print {
+  .freeze-ui {
+    display: none !important;
+  }
+}
