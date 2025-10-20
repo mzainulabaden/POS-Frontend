@@ -82,6 +82,12 @@ export class ThermalPrinterService {
     
     // Bill info
     commands += `Bill No : ${data.invoiceNumber.padEnd(10)} Date : ${data.date}` + LF;
+    if (data.customer) {
+      commands += `Customer : ${data.customer}` + LF;
+    }
+    if (data.paymentMode) {
+      commands += `Payment : ${data.paymentMode}` + LF;
+    }
     commands += '--------------------------------' + LF;
     
     // Items header
@@ -180,6 +186,8 @@ export class ThermalPrinterService {
             <span>Bill No : ${data.invoiceNumber}</span>
             <span>Date : ${data.date}</span>
           </div>
+          ${data.customer ? `<div style="font-size: 9px; margin: 4px 0;">Customer : ${data.customer}</div>` : ''}
+          ${data.paymentMode ? `<div style="font-size: 9px; margin: 4px 0;">Payment : ${data.paymentMode}</div>` : ''}
         </div>
         
         <div style="border-bottom: 1px dashed #000; margin: 5px 0;"></div>

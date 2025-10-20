@@ -15,6 +15,12 @@
         <span>Bill No : {{ receiptData.invoiceNumber }}</span>
         <span>Date : {{ receiptData.date }}</span>
       </div>
+      <div class="bill-row" *ngIf="receiptData.customer">
+        <span>Customer : {{ receiptData.customer }}</span>
+      </div>
+      <div class="bill-row" *ngIf="receiptData.paymentMode">
+        <span>Payment : {{ receiptData.paymentMode }}</span>
+      </div>
     </div>
 
     <div class="divider"></div>
