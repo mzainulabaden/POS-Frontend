@@ -1,6 +1,6 @@
 {
   "remoteServiceBaseUrl": "http://localhost:44311",
-  "appBaseUrl": "http://173.249.23.108:6064",
+  "appBaseUrl": "http://ec2-16-171-113-162.eu-north-1.compute.amazonaws.com:8081",
   "localeMappings": [
     {
       "from": "pt-BR",

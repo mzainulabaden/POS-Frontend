@@ -167,7 +167,7 @@ export class BulkUploaderComponent {
             life: 3000,
           });
 
-          const BASE_URL = "http://173.249.23.108:6063";
+          const BASE_URL = "http://ec2-16-171-113-162.eu-north-1.compute.amazonaws.com:8081";
           if (result.errorFilePath) {
             const fullPath = result.errorFilePath.startsWith("http")
               ? result.errorFilePath

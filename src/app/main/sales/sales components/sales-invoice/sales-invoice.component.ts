@@ -26,7 +26,7 @@ import { DatePipe } from "@angular/common";
 })
 export class SalesInvoiceComponent {
   loading: boolean;
-  baseurl: string = "http://173.249.23.108:6063";
+  baseurl: string = "http://ec2-16-171-113-162.eu-north-1.compute.amazonaws.com:8081";
   tableData: any;
   saving: boolean;
   currentPage: number = 1;

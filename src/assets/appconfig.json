@@ -1,6 +1,6 @@
 {
-  "remoteServiceBaseUrl": "http://173.249.23.108:6063",
-  "appBaseUrl": "http://173.249.23.108:6064",
+  "remoteServiceBaseUrl": "http://ec2-16-171-113-162.eu-north-1.compute.amazonaws.com:8081",
+  "appBaseUrl": "http://ec2-16-171-113-162.eu-north-1.compute.amazonaws.com:8081",
   "localeMappings": [
     {
       "from": "pt-BR",
