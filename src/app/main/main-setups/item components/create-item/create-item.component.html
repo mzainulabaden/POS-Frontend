@@ -475,24 +475,34 @@
       <ng-template pTemplate="header">
         <tr>
           <th>Name</th>
+          <th>SKU</th>
+          <th>Description</th>
           <th>Category</th>
-          <th>Sales COA</th>
-          <th>Purchase COA</th>
+          <th>Is Discountable</th>
+          <th>Discount Amount</th>
+          <th>Discount %</th>
           <th>Unit</th>
           <th>Unit Price</th>
+          <th>Barcode</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-item>
         <tr>
           <td>{{ item.name }}</td>
-          <td>{{ item.itemCategoryName }}</td>
-          <td>{{ item.salesCOALevel04Name }}</td>
-          <td>{{ item.purchaseCOALevel04Name }}</td>
+          <td>{{ item.sku || "-" }}</td>
+          <td>{{ item.description || "-" }}</td>
+          <td>{{ item.itemCategoryName || "-" }}</td>
+          <td>{{ item.isDiscountable ? 'Yes' : 'No' }}</td>
+          <td>{{ item.discountAmount || 0 }}</td>
+          <td>{{ item.discountPercentage || 0 }}%</td>
           <td>
             {{ item.itemDetails?.length ? item.itemDetails[0].unitName : "-" }}
           </td>
           <td>
             {{ item.itemDetails?.length ? item.itemDetails[0].unitPrice : "-" }}
+          </td>
+          <td>
+            {{ item.itemDetails?.length ? item.itemDetails[0].barcode : "-" }}
           </td>
         </tr>
       </ng-template>

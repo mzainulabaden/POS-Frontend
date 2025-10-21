@@ -642,19 +642,14 @@ export class CreateItemComponent implements OnInit {
 
   headerMap: { [key: string]: string } = {
     Name: "name",
-    Description: "description",
     SKU: "sku",
+    Description: "description",
     "Item Category Name": "itemCategoryName",
     "Is Discountable": "isDiscountable",
     "Discount Amount": "discountAmount",
     "Discount Percentage": "discountPercentage",
-    "Sales COA Level 4 Name": "salesCOALevel04Name",
-    "Purchase COA Level 4 Name": "purchaseCOALevel04Name",
     "Unit Name": "unitName",
     "Unit Price": "unitPrice",
-    "Min Sale Price": "minSalePrice",
-    "Max Sale Price": "maxSalePrice",
-    "Min Stock Level": "minStockLevel",
     Barcode: "barcode",
   };
 
@@ -753,22 +748,17 @@ export class CreateItemComponent implements OnInit {
 
       return {
         name: (mapped.name || "").trim(),
-        description: (mapped.description || "").trim(),
         sku: (mapped.sku || "").trim(),
+        description: (mapped.description || "").trim(),
         itemCategoryName: (mapped.itemCategoryName || "").trim(),
         isDiscountable:
           mapped.isDiscountable === true || mapped.isDiscountable === "TRUE",
         discountAmount: Number(mapped.discountAmount || 0),
         discountPercentage: Number(mapped.discountPercentage || 0),
-        salesCOALevel04Name: (mapped.salesCOALevel04Name || "").trim(),
-        purchaseCOALevel04Name: (mapped.purchaseCOALevel04Name || "").trim(),
         itemDetails: [
           {
             unitName: (mapped.unitName || "").trim(),
             unitPrice: Number(mapped.unitPrice || 0),
-            minSalePrice: Number(mapped.minSalePrice || 0),
-            maxSalePrice: Number(mapped.maxSalePrice || 0),
-            minStockLevel: Number(mapped.minStockLevel || 0),
             barcode: (mapped.barcode || "").trim(),
           },
         ],
