@@ -55,16 +55,19 @@
           Voucher Number<p-sortIcon field="voucherNumber" />
           <p-columnFilter type="text" field="voucherNumber" display="menu" />
         </th>
-        <th pSortableColumn="referenceNumber">
+        <!-- Hidden column - Reference Number -->
+        <!-- <th pSortableColumn="referenceNumber">
           Reference Number<p-sortIcon field="referenceNumber" />
           <p-columnFilter type="text" field="referenceNumber" display="menu" />
-        </th>
-        <th pSortableColumn="taxCOALevel04Name">
+        </th> -->
+        <!-- Hidden column - Tax -->
+        <!-- <th pSortableColumn="taxCOALevel04Name">
           Tax<p-sortIcon field="taxCOALevel04Name" />
-        </th>
-        <th pSortableColumn="brokerCOALevel04Name">
+        </th> -->
+        <!-- Hidden column - Broker -->
+        <!-- <th pSortableColumn="brokerCOALevel04Name">
           Broker<p-sortIcon field="brokerCOALevel04Name" />
-        </th>
+        </th> -->
         <th pSortableColumn="attachedDocuments">
           Attachments<p-sortIcon field="attachedDocuments" />
         </th>
@@ -102,13 +105,14 @@
           >
             <i class="fa-solid fa-eye"></i>
           </a>
-          <a
+          <!-- Removed unapprove button -->
+          <!-- <a
             *ngIf="item.status == 'APPROVED'"
             class="dropdown-item view"
             (click)="unApprove(item.id)"
           >
             <i class="fa-solid fa-arrow-rotate-left"></i>
-          </a>
+          </a> -->
           <a
             class="dropdown-item delete"
             (click)="downloadReport(item.id); $event.stopPropagation()"
@@ -125,7 +129,8 @@
         <td>
           {{ item?.voucherNumber }}
         </td>
-        <td>
+        <!-- Hidden data cells - Reference Number, Tax, Broker -->
+        <!-- <td>
           {{ item?.referenceNumber }}
         </td>
         <td>
@@ -133,7 +138,7 @@
         </td>
         <td>
           {{ item?.brokerCOALevel04Name }}
-        </td>
+        </td> -->
         <td>
           <div
             *ngIf="item.attachedDocuments?.length > 0"
@@ -283,7 +288,8 @@
         </div>
       </div>
       <div class="row col-lg-12 col-md-12 col-sm-12 mt-3">
-        <div id="inputField" class="col-md-3 flex flex-column">
+        <!-- Removed reference number field -->
+        <!-- <div id="inputField" class="col-md-3 flex flex-column">
           <label class="label-text" for="referenceNumber">Reference No </label>
           <input
             type="text"
@@ -294,7 +300,7 @@
             [style]="{ width: '100%' }"
             autocomplete="off"
           />
-        </div>
+        </div> -->
         <div class="col-md-3 flex flex-column">
           <label class="label-text" for="brokerCOALevel04Id">Broker</label>
           <p-dropdown
@@ -533,7 +539,8 @@
           </div>
         </div>
       </div>
-      <div class="row col-md-12 mt-4">
+      <!-- Hidden discount fields -->
+      <!-- <div class="row col-md-12 mt-4">
         <div id="inputField" class="col-md-6 flex flex-column">
           <label class="label-text" for="discountPercentage"
             >Discount Percent</label
@@ -562,8 +569,9 @@
             This field is required
           </div>
         </div>
-      </div>
-      <div class="row col-md-12 mt-4">
+      </div> -->
+      <!-- Hidden expense fields -->
+      <!-- <div class="row col-md-12 mt-4">
         <div id="inputField" class="col-md-6 flex flex-column">
           <label class="label-text" for="localExpense">Local Expense</label>
           <input
@@ -590,8 +598,9 @@
             This field is required
           </div>
         </div>
-      </div>
-      <div class="row col-md-12 mt-4">
+      </div> -->
+      <!-- Hidden vendor expense fields -->
+      <!-- <div class="row col-md-12 mt-4">
         <div id="inputField" class="col-md-6 flex flex-column">
           <label class="label-text" for="veAmount">Vendor Expenses</label>
           <input
@@ -614,10 +623,11 @@
             autocomplete="off"
           />
         </div>
-        <div
-          *ngIf="PurchaseInvoiceForm.get('brokerCOALevel04Id')?.value"
-          class="row col-md-12 mt-4"
-        >
+      </div> -->
+      <div
+        *ngIf="PurchaseInvoiceForm.get('brokerCOALevel04Id')?.value"
+        class="row col-md-12 mt-4"
+      >
           <div id="inputField" class="col-md-6 flex flex-column">
             <label class="label-text" for="brokerPercentage"
               >Broker Percentage</label
@@ -763,7 +773,6 @@
             </div>
           </div>
         </div>
-      </div>
 
       <div class="flex gap-1 justify-content-end mt-4">
         <p-button

@@ -118,7 +118,7 @@ export class PurchaseInvoiceComponent {
       field: "unitId",
       editable: true,
       resizable: true,
-      width: 200,
+      width: 120,
       cellEditor: "agSelectCellEditor",
       cellEditorParams: (params) => {
         return {
@@ -148,6 +148,13 @@ export class PurchaseInvoiceComponent {
       editable: true,
       resizable: true,
       width: 120,
+    },
+    {
+      headerName: "Sale Price",
+      field: "costRate",
+      editable: true,
+      resizable: true,
+      width: 150,
     },
     // Hidden column - Price / 40Kg
     // {
@@ -185,13 +192,14 @@ export class PurchaseInvoiceComponent {
         return isNaN(newValue) ? null : newValue;
       },
     },
-    {
-      headerName: "Total Quantity (KG)",
-      field: "actualQuantity",
-      editable: true,
-      resizable: true,
-      width: 150,
-    },
+    // Hidden column - Total Quantity (KG)
+    // {
+    //   headerName: "Total Quantity (KG)",
+    //   field: "actualQuantity",
+    //   editable: true,
+    //   resizable: true,
+    //   width: 150,
+    // },
     // Hidden column - Adjustment
     // {
     //   headerName: "Adjustment",
@@ -204,13 +212,6 @@ export class PurchaseInvoiceComponent {
       headerName: "Total Price",
       field: "grandTotal",
       editable: true,
-      resizable: true,
-      width: 150,
-    },
-    {
-      headerName: "Unit Cost",
-      field: "costRate",
-      editable: false,
       resizable: true,
       width: 150,
     },
@@ -227,7 +228,7 @@ export class PurchaseInvoiceComponent {
     this.PurchaseInvoiceForm = this.fb.group({
       issueDate: [new Date(), [Validators.required]],
       remarks: "",
-      referenceNumber: "",
+      // referenceNumber: "", // Removed reference number field
       voucherNumber: "",
       paymentModeId: "",
       supplierCOALevel04Id: ["", [Validators.required]],
@@ -1204,29 +1205,30 @@ export class PurchaseInvoiceComponent {
     }
   }
 
-  unApprove(id: number) {
-    if (id) {
-      this._purchaseService.unApprove(id, this.target).subscribe({
-        next: () => {
-          this.msgService.add({
-            severity: "success",
-            summary: "Confirmed",
-            detail: "Purchase invoice un-approved.",
-            life: 2000,
-          });
-          this.getAll();
-        },
-        error: (err) => {
-          this.msgService.add({
-            severity: "error",
-            summary: "Error",
-            detail: err?.message || "Error occurred while un-approving",
-            life: 2000,
-          });
-        },
-      });
-    }
-  }
+  // Removed unApprove method
+  // unApprove(id: number) {
+  //   if (id) {
+  //     this._purchaseService.unApprove(id, this.target).subscribe({
+  //       next: () => {
+  //         this.msgService.add({
+  //           severity: "success",
+  //           summary: "Confirmed",
+  //           detail: "Purchase invoice un-approved.",
+  //           life: 2000,
+  //         });
+  //         this.getAll();
+  //       },
+  //       error: (err) => {
+  //         this.msgService.add({
+  //           severity: "error",
+  //           summary: "Error",
+  //           detail: err?.message || "Error occurred while un-approving",
+  //           life: 2000,
+  //         });
+  //       },
+  //     });
+  //   }
+  // }
 
   getUnitConversionMultiplier(fromUnitId: number, toUnitId: number): number {
     const fromUnit = this.units.find((u) => u.id === fromUnitId);
