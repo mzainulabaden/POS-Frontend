@@ -149,13 +149,14 @@ export class PurchaseInvoiceComponent {
       resizable: true,
       width: 120,
     },
-    {
-      headerName: "Price / 40Kg",
-      field: "pricePerBag40Kg",
-      editable: true,
-      resizable: true,
-      width: 150,
-    },
+    // Hidden column - Price / 40Kg
+    // {
+    //   headerName: "Price / 40Kg",
+    //   field: "pricePerBag40Kg",
+    //   editable: true,
+    //   resizable: true,
+    //   width: 150,
+    // },
     {
       headerName: "Price per Bag",
       field: "pricePerBag",
@@ -164,13 +165,14 @@ export class PurchaseInvoiceComponent {
       width: 150,
     },
 
-    {
-      headerName: "Last Purchase Rate",
-      field: "lastPurchaseRate",
-      editable: false,
-      valueFormatter: (params) => params.value ?? 0,
-      width: 140,
-    },
+    // Hidden column - Last Purchase Rate
+    // {
+    //   headerName: "Last Purchase Rate",
+    //   field: "lastPurchaseRate",
+    //   editable: false,
+    //   valueFormatter: (params) => params.value ?? 0,
+    //   width: 140,
+    // },
 
     {
       headerName: "Quantity (Bag)",
@@ -190,13 +192,14 @@ export class PurchaseInvoiceComponent {
       resizable: true,
       width: 150,
     },
-    {
-      headerName: "Adjustment",
-      field: "adjustment",
-      editable: true,
-      resizable: true,
-      width: 150,
-    },
+    // Hidden column - Adjustment
+    // {
+    //   headerName: "Adjustment",
+    //   field: "adjustment",
+    //   editable: true,
+    //   resizable: true,
+    //   width: 150,
+    // },
     {
       headerName: "Total Price",
       field: "grandTotal",

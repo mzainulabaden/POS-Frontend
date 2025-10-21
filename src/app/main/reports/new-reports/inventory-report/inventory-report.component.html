@@ -21,9 +21,23 @@
 
 <!-- Report Modal -->
 <app-item-tracking-modal
-  *ngIf="selectedReport && displayReportModal"
+  *ngIf="selectedReport && displayReportModal && selectedReport.id === 'item-tracking'"
   [visible]="displayReportModal"
   [reportName]="selectedReport.name"
   (onClose)="closeReportModal()"
 ></app-item-tracking-modal>
+
+<app-sales-customer-wise-modal
+  *ngIf="selectedReport && displayReportModal && selectedReport.id === 'sales-customer-wise'"
+  [visible]="displayReportModal"
+  [reportName]="selectedReport.name"
+  (onClose)="closeReportModal()"
+></app-sales-customer-wise-modal>
+
+<app-warehouse-stock-modal
+  *ngIf="selectedReport && displayReportModal && selectedReport.id === 'warehouse-stock'"
+  [visible]="displayReportModal"
+  [reportName]="selectedReport.name"
+  (onClose)="closeReportModal()"
+></app-warehouse-stock-modal>
 

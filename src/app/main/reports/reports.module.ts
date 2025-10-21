@@ -4,6 +4,8 @@ import { ReportsRoutingModule } from "./reports-routing.module";
 import { NewReportsComponent } from "./new-reports/new-reports.component";
 import { InventoryReportComponent } from "./new-reports/inventory-report/inventory-report.component";
 import { ItemTrackingModalComponent } from "./new-reports/item-tracking-modal/item-tracking-modal.component";
+import { SalesCustomerWiseModalComponent } from "./new-reports/sales-customer-wise-modal/sales-customer-wise-modal.component";
+import { WarehouseStockModalComponent } from "./new-reports/warehouse-stock-modal/warehouse-stock-modal.component";
 import { TabViewModule } from "primeng/tabview";
 import { ToastModule } from "primeng/toast";
 import { ConfirmDialogModule } from "primeng/confirmdialog";
@@ -21,6 +23,8 @@ import { MessageService } from 'primeng/api';
     NewReportsComponent,
     InventoryReportComponent,
     ItemTrackingModalComponent,
+    SalesCustomerWiseModalComponent,
+    WarehouseStockModalComponent,
   ],
   imports: [
     CommonModule,

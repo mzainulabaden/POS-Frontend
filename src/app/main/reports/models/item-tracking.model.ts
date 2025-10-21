@@ -35,3 +35,34 @@ export interface ReportItem {
   apiEndpoint: string;
 }
 
+export interface SalesCustomerWiseReport {
+  salesDate: string;
+  customerName: string;
+  invoiceId: number;
+  voucherNumber: string;
+  paymentModeName: string;
+  invoiceAmount: number;
+  dailyTotalAmount: number;
+  dailyInvoiceCount: number;
+}
+
+export interface SalesCustomerWiseParams {
+  fromDate?: string;
+  toDate?: string;
+}
+
+export interface WarehouseStockReport {
+  itemName: string;
+  warehouseName: string;
+  totalCredit: number;
+  totalDebit: number;
+  balance: number;
+}
+
+export interface WarehouseStockParams {
+  fromDate?: string;
+  toDate?: string;
+  warehouseId?: number;
+  itemId?: number;
+}
+

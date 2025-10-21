@@ -26,6 +26,20 @@ export class InventoryReportComponent implements OnInit {
         icon: "pi pi-chart-line",
         apiEndpoint: "ItemTracking/GetItemTracking",
       },
+      {
+        id: "sales-customer-wise",
+        name: "Sales Customer Wise Report",
+        description: "View sales data grouped by customer with daily totals and invoice counts",
+        icon: "pi pi-users",
+        apiEndpoint: "SalesCustomerWise/GetSalesCustomerWise",
+      },
+      {
+        id: "warehouse-stock",
+        name: "Warehouse Stock Report",
+        description: "View warehouse stock details with in/out quantities and total stock balance",
+        icon: "pi pi-box",
+        apiEndpoint: "salesCustomerWise/GetWarehouseStockLedgerDetails",
+      },
       // Add more reports here as needed
     ];
   }
