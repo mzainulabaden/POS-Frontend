@@ -67,7 +67,7 @@ export class PosService {
     this.searchTerm.next(term);
   }
 
-	//  ------------ Barcode Scan ---------------
+  //  ------------ Barcode Scan ---------------
 
 	private barcodeScanSubject = new Subject<string>();
 	barcodeScan$ = this.barcodeScanSubject.asObservable();
@@ -77,6 +77,70 @@ export class PosService {
 			this.barcodeScanSubject.next(code.trim());
 		}
 	}
+
+  //  ------------ Warehouse Management ---------------
+
+  private currentWarehouseId = new BehaviorSubject<number | null>(null);
+  currentWarehouseId$ = this.currentWarehouseId.asObservable();
+  private dukkanWarehouseId: number | null = null;
+
+  setCurrentWarehouseId(warehouseId: number | null) {
+    this.currentWarehouseId.next(warehouseId);
+  }
+
+
+  getCurrentWarehouseId() {
+    debugger;
+    const target = "Warehouse";
+     this.url = `${this.baseUrl}Suggestion/GetSuggestions?Target=${target}`;
+    return this.http.get(this.url).pipe(
+      map((response: any) => {
+        console.log(response);
+
+        return response.result.items[0].id;
+      })
+    );
+  }
+
+  setDukkanWarehouseId(warehouseId: number | null) {
+    this.dukkanWarehouseId = warehouseId;
+  }
+
+  getDukkanWarehouseId(): number | null {
+    return this.dukkanWarehouseId;
+  }
+
+  getEffectiveWarehouseId(): number | null {
+    debugger    // Return current warehouse if set, otherwise return dukkan warehouse as default
+    return this.currentWarehouseId.value || this.dukkanWarehouseId;
+  }
+
+  //  ------------ New API Methods ---------------
+
+  getItemsWithStockByWarehouse(warehouseId: number, itemId?: number) {
+    this.url = `${this.baseUrl}Item/GetItemsWithStockByWarehouse`;
+    const params = [`WarehouseId=${warehouseId}`];
+    
+    if (params.length > 0) {
+      this.url += `?${params.join("&")}`;
+    }
+
+    return this.http.get(this.url).pipe(
+      map((response: any) => {
+        console.log('GetItemsWithStockByWarehouse response:', response);
+        return response["result"] || response;
+      }),
+      catchError((error) => {
+        console.error('Error fetching items with stock by warehouse:', error);
+        return throwError(error);
+      })
+    );
+  }
+
+  // Get stock for a specific item in a warehouse
+  getItemStockByWarehouse(warehouseId: number, itemId: number) {
+    return this.getItemsWithStockByWarehouse(warehouseId, itemId);
+  }
 
   getAll(target: string, skipCount?: number, maxCount?: number) {
     this.url = `${this.baseUrl}${target}/GetAll`;

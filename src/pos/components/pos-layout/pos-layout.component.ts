@@ -84,14 +84,24 @@ export class PosLayoutComponent implements AfterViewInit {
 
   // Load all products for search functionality
   loadAllProducts() {
-    this.sidebarService.getAll("Item").subscribe({
-      next: (response) => {
-        this.allProducts = response.items || [];
-      },
-      error: (error) => {
-        console.error('Error loading products:', error);
-      }
-    });
+    // Get effective warehouse ID (current or dukkan as default)
+    const warehouseId:any = this.sidebarService.getCurrentWarehouseId();
+    
+    if (warehouseId) {
+      // Call the new API with warehouse parameter
+      this.sidebarService.getItemsWithStockByWarehouse(warehouseId).subscribe({
+        next: (response) => {
+          this.allProducts = response.items || response || [];
+        },
+        error: (error) => {
+          console.error('Error loading products with warehouse:', error);
+          this.allProducts = [];
+        }
+      });
+    } else {
+      // No warehouse available - clear products
+      this.allProducts = [];
+    }
   }
 
   // Perform search and show dropdown

@@ -109,6 +109,8 @@ export class PosCartSidebarComponent {
         this.salesInvoiceDetails.controls.forEach((ctrl) => {
           ctrl.patchValue({ warehouseId: id });
         });
+        // Update the warehouse ID in PosService
+        this.posService.setCurrentWarehouseId(id);
       });
   }
 
@@ -161,6 +163,10 @@ export class PosCartSidebarComponent {
             this.purchaseForm.patchValue({
               selectedWarehouseId: defaultWarehouse?.id
             });
+            // Update the warehouse ID in PosService
+            this.posService.setCurrentWarehouseId(defaultWarehouse?.id);
+            // Set dukkan warehouse ID in PosService for default usage
+            this.posService.setDukkanWarehouseId(defaultWarehouse?.id);
             // Update existing items
             if (this.salesInvoiceDetails.length > 0) {
               this.salesInvoiceDetails.controls.forEach((ctrl) => {
@@ -190,10 +196,15 @@ export class PosCartSidebarComponent {
       defaultId = dukkanWarehouse?.id || this.wareHouse[0].id;
     }
 
+    // Check stock for this specific item if warehouse is available
+    if (defaultId && product.id) {
+      this.checkItemStock(defaultId, product.id, product);
+    }
+
     const itemForm = this.fb.group({
       id: [0],
       itemId: [product.id],
-      itemName: [product.name],
+      itemName: [product.itemName],
       itemSKU: [product.barcode || product.Barcode || product.sku || product.SKU || ''],
       rate: [product.unitPrice || 0],
       invoiceQty: [product.qty || 1],
@@ -291,6 +302,25 @@ export class PosCartSidebarComponent {
     });
 
     this.salesInvoiceDetails.push(itemForm);
+  }
+
+  // Check stock for a specific item in warehouse
+  checkItemStock(warehouseId: number, itemId: number, product: any) {
+    this.posService.getItemStockByWarehouse(warehouseId, itemId).subscribe({
+      next: (response) => {
+        console.log(`Stock for item ${itemId} in warehouse ${warehouseId}:`, response);
+        // Update product with stock information if needed
+        if (response && response.length > 0) {
+          const stockInfo = response[0];
+          // You can update the product with stock information here
+          product.currentStock = stockInfo.currentStock || stockInfo.availableQty || 0;
+          product.stockLevel = stockInfo.stockLevel || 0;
+        }
+      },
+      error: (error) => {
+        console.error(`Error checking stock for item ${itemId}:`, error);
+      }
+    });
   }
 
   // Removed kg conversion; keeping qty as decimal units

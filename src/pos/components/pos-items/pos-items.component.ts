@@ -103,22 +103,47 @@ export class PosItemsComponent {
   //       },
   //     });
   // }
-
+ 
   getAllItem() {
-    this.sidebarService
-      .getAll("Item")
-      .pipe(
-        catchError((error) => {
-          return throwError(error.error.error.message);
-        })
-      )
-      .subscribe({
-        next: (response) => {
-          this.products = response.items;
-          this.filteredProducts = this.products;
+    debugger;
+    // Get warehouse ID from the API call
+    this.sidebarService.getCurrentWarehouseId().subscribe({
+      next: (warehouseId) => {
+        console.log('Getting items with warehouse ID:', warehouseId);
+        
+        if (warehouseId) {
+          // Call the new API with warehouse parameter
+          this.sidebarService
+            .getItemsWithStockByWarehouse(warehouseId)
+            .pipe(
+              catchError((error) => {
+                console.error('Error fetching items with warehouse:', error);
+                return throwError(error.error.error.message);
+              })
+            )
+            .subscribe({
+              next: (response) => {
+                console.log('Items loaded with warehouse stock:', response);
+                this.products = response.items || response;
+                this.filteredProducts = this.products;
+                this.cdr.markForCheck();
+              },
+            });
+        } else {
+          // No warehouse available - clear products
+          console.log('No warehouse ID available, clearing products');
+          this.products = [];
+          this.filteredProducts = [];
           this.cdr.markForCheck();
-        },
-      });
+        }
+      },
+      error: (error) => {
+        console.error('Error getting warehouse ID:', error);
+        this.products = [];
+        this.filteredProducts = [];
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   // Removed - not using category selection
