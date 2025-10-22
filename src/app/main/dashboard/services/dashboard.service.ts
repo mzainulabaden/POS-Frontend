@@ -2,17 +2,26 @@ import { Injectable } from "@angular/core";
 import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { catchError, map, throwError } from "rxjs";
 import { newBaseUrl } from "../../../../shared/AppBaseUrl/appBaseURL";
+import { EnhancedDataService } from "../../../../shared/services/enhanced-data.service";
+import { DataCacheService } from "../../../../shared/services/data-cache.service";
+import { DataRefreshErrorHandlerService } from "../../../../shared/services/data-refresh-error-handler.service";
+import { BackgroundSyncService } from "../../../../shared/services/background-sync.service";
 import * as moment from "moment";
 
 @Injectable({
   providedIn: "root",
 })
-export class DashboardService {
-  commonUrl: string = "api/services/app/";
-  baseUrl: string = newBaseUrl + this.commonUrl;
+export class DashboardService extends EnhancedDataService {
   url: string = "";
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    http: HttpClient,
+    cacheService: DataCacheService,
+    errorHandler: DataRefreshErrorHandlerService,
+    backgroundSync: BackgroundSyncService
+  ) {
+    super(http, cacheService, errorHandler, backgroundSync);
+  }
 
   getEmployeeAttendance(date: string) {
     this.url = `${this.baseUrl}Dashboard/GetEmployeeAttendance`;
@@ -104,29 +113,13 @@ export class DashboardService {
     maxCount?: number,
     name?: string
   ) {
-    this.url = `${this.baseUrl}${target}/GetAll`;
-    const params = [];
-
-    if (skipCount !== undefined) {
-      params.push(`SkipCount=${skipCount}`);
-    }
-
-    if (maxCount !== undefined) {
-      params.push(`MaxResultCount=${maxCount}`);
-    }
-    if (name !== undefined) {
-      params.push(`name=${name}`);
-    }
-    if (params.length > 0) {
-      this.url += `?${params.join("&")}`;
-    }
-    return this.http.get(this.url).pipe(
-      map((response: any) => {
-        console.log(response);
-
-        return response["result"];
-      })
-    );
+    return super.getAllData(target, skipCount, maxCount, name, {
+      enableCaching: true,
+      cacheKey: 'dashboard_data',
+      enableBackgroundSync: true,
+      enableErrorHandling: true,
+      maxRetries: 3
+    });
   }
 
   getAllSuggestion(target: string) {

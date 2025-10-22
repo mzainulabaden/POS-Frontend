@@ -1,0 +1,145 @@
+<div class="todo-list-container">
+  <!-- Enhanced Data Refresh Component -->
+  <app-data-refresh
+    [config]="refreshConfig"
+    [showControls]="true"
+    [showStatus]="true"
+    [showLoading]="true"
+    loadingText="Loading todo items..."
+    (dataRefreshed)="onDataRefreshed()"
+    (refreshError)="onRefreshError($event)"
+    (retryAttempted)="onRetryAttempted()"
+  ></app-data-refresh>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <p-button
+      label="Force Refresh"
+      icon="pi pi-refresh"
+      (onClick)="forceRefresh()"
+      [loading]="loading"
+      severity="secondary"
+    ></p-button>
+    
+    <p-button
+      label="Diff Update"
+      icon="pi pi-sync"
+      (onClick)="getDataWithDiff()"
+      [loading]="loading"
+      severity="info"
+    ></p-button>
+  </div>
+
+  <!-- Todo List Content -->
+  <div class="todo-content">
+    <div class="todo-header">
+      <h3>Todo List</h3>
+      <p-button
+        label="Add Todo"
+        icon="pi pi-plus"
+        (onClick)="show()"
+        severity="success"
+      ></p-button>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div *ngIf="loading" class="loading-container">
+      <p-progressSpinner></p-progressSpinner>
+      <p>Loading todo items...</p>
+    </div>
+
+    <!-- Todo Items Table -->
+    <div *ngIf="!loading && tableData" class="todo-table">
+      <p-table [value]="tableData" [paginator]="true" [rows]="maxCount" [totalRecords]="count">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+          <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.description }}</td>
+            <td>
+              <p-button
+                icon="pi pi-pencil"
+                (onClick)="show(item.id)"
+                severity="info"
+                size="small"
+                [pTooltip]="'Edit'"
+              ></p-button>
+              <p-button
+                icon="pi pi-trash"
+                (onClick)="delete(item.id)"
+                severity="danger"
+                size="small"
+                [pTooltip]="'Delete'"
+              ></p-button>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && (!tableData || tableData.length === 0)" class="empty-state">
+      <i class="pi pi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+      <p>No todo items found</p>
+    </div>
+  </div>
+
+  <!-- Todo Form Modal -->
+  <p-dialog
+    [(visible)]="displayModal"
+    [modal]="true"
+    [closable]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [style]="{ width: '400px' }"
+    header="{{ editMode ? 'Edit Todo' : 'Add Todo' }}"
+  >
+    <form [formGroup]="todoListForm" (ngSubmit)="save()">
+      <div class="form-group">
+        <label for="name">Name</label>
+        <input
+          id="name"
+          type="text"
+          pInputText
+          formControlName="name"
+          placeholder="Enter todo name"
+          class="w-full"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          pInputTextarea
+          formControlName="description"
+          placeholder="Enter todo description"
+          rows="3"
+          class="w-full"
+        ></textarea>
+      </div>
+
+      <div class="form-actions">
+        <p-button
+          label="Cancel"
+          icon="pi pi-times"
+          (onClick)="displayModal = false"
+          severity="secondary"
+        ></p-button>
+        <p-button
+          label="{{ editMode ? 'Update' : 'Create' }}"
+          icon="pi pi-check"
+          type="submit"
+          [loading]="saving"
+          severity="success"
+        ></p-button>
+      </div>
+    </form>
+  </p-dialog>
+</div>

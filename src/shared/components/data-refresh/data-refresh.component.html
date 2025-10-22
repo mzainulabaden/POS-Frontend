@@ -1,0 +1,85 @@
+<div class="data-refresh-container">
+  <!-- Refresh Controls -->
+  <div class="refresh-controls" *ngIf="showControls">
+    <p-button
+      [label]="isRefreshing ? 'Refreshing...' : 'Refresh'"
+      [icon]="isRefreshing ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
+      [loading]="isRefreshing"
+      [disabled]="isRefreshing"
+      (onClick)="manualRefresh()"
+      size="small"
+      severity="secondary"
+      [pTooltip]="getRefreshTooltip()"
+    ></p-button>
+
+    <p-button
+      *ngIf="config.enableAutoRefresh"
+      [label]="autoRefreshEnabled ? 'Stop Auto' : 'Start Auto'"
+      [icon]="autoRefreshEnabled ? 'pi pi-pause' : 'pi pi-play'"
+      (onClick)="toggleAutoRefresh()"
+      size="small"
+      severity="info"
+      [pTooltip]="autoRefreshEnabled ? 'Stop automatic refresh' : 'Start automatic refresh'"
+    ></p-button>
+  </div>
+
+  <!-- Status Information -->
+  <div class="refresh-status" *ngIf="showStatus">
+    <div class="status-item" *ngIf="config.showLastUpdated && lastUpdated">
+      <i class="pi pi-clock"></i>
+      <span>Last updated: {{ lastUpdated | date:'short' }}</span>
+    </div>
+
+    <div class="status-item" *ngIf="config.showSyncStatus">
+      <i class="pi pi-sync" [class.pi-spin]="syncStatus?.isRunning"></i>
+      <span>{{ getSyncStatusText() }}</span>
+    </div>
+
+    <div class="status-item" *ngIf="cacheStatus?.isCached">
+      <i class="pi pi-database"></i>
+      <span>Cached ({{ cacheStatus.cacheSize }} items)</span>
+    </div>
+  </div>
+
+  <!-- Error Display -->
+  <p-message
+    *ngIf="errorMessage"
+    severity="error"
+    [text]="errorMessage"
+    [closable]="true"
+    (onClose)="clearError()"
+  >
+    <ng-template pTemplate="content">
+      <div class="error-content">
+        <div class="error-message">{{ errorMessage }}</div>
+        <div class="error-actions" *ngIf="config.enableRetry">
+          <p-button
+            label="Retry"
+            icon="pi pi-refresh"
+            size="small"
+            severity="secondary"
+            (onClick)="retry()"
+            [loading]="isRetrying"
+          ></p-button>
+          <p-button
+            label="Use Cached Data"
+            icon="pi pi-database"
+            size="small"
+            severity="info"
+            (onClick)="useCachedData()"
+            *ngIf="cacheStatus?.isCached"
+          ></p-button>
+        </div>
+      </div>
+    </ng-template>
+  </p-message>
+
+  <!-- Loading Indicator -->
+  <div class="loading-indicator" *ngIf="isRefreshing && showLoading">
+    <p-progressSpinner
+      [style]="{ width: '20px', height: '20px' }"
+      strokeWidth="3"
+    ></p-progressSpinner>
+    <span>{{ loadingText }}</span>
+  </div>
+</div>
