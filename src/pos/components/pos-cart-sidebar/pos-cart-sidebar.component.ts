@@ -22,7 +22,6 @@ export class PosCartSidebarComponent {
   displayHoldOrdersDialog = false;
   pendingLabel = "";
   holdOrders: any[] = [];
-
   receivedAmount: number = 0;
   RemainingAmount: number = 0;
 
@@ -151,7 +150,6 @@ export class PosCartSidebarComponent {
         case "Warehouse":
           debugger;
           this.wareHouse = mappedData.reverse();
-          
           // Find "dukkan" warehouse or fallback to first
           const dukkanWarehouse = this.wareHouse.find(
             (w) => w.name.toLowerCase().includes('dukkan')
@@ -163,7 +161,6 @@ export class PosCartSidebarComponent {
             this.purchaseForm.patchValue({
               selectedWarehouseId: defaultWarehouse?.id
             });
-            
             // Update existing items
             if (this.salesInvoiceDetails.length > 0) {
               this.salesInvoiceDetails.controls.forEach((ctrl) => {
@@ -202,6 +199,7 @@ export class PosCartSidebarComponent {
       invoiceQty: [product.qty || 1],
       discount: [product.discount || 0], // amount
       discountPercentage: [0], // percent
+      
       unitId: [product.unitId || 0],
       warehouseId: [defaultId],
       lineTotal: [((product.qty || 1) * (product.unitPrice || 0)) || 0],
