@@ -16,6 +16,8 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
   cartItems: any[] = [];
   searchItems: string = "";
   barcodeInput: string = "";
+  // Disable any programmatic focusing in POS screen
+  private enableProgrammaticFocus = false;
   private barcodeTimer: any;
   @ViewChild("barcodeScan") barcodeScanInput!: ElementRef<HTMLInputElement>;
   @ViewChild(PosCartSidebarComponent) cartSidebar!: PosCartSidebarComponent;
@@ -166,7 +168,9 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
     this.searchItems = product.name;
     this.showSearchDropdown = false;
     this.sidebarService.addToCart(product);
-    this.searchInput.nativeElement.focus();
+    if (this.enableProgrammaticFocus && this.searchInput) {
+      this.searchInput.nativeElement.focus();
+    }
   }
 
   // Handle keyboard navigation in search dropdown
@@ -325,11 +329,7 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     // Barcode scanning now works in background without focus requirement
-    // Focus on search input by default
-    if (this.searchInput) {
-      this.searchInput.nativeElement.focus();
-      this.keyboardNavService.focusSearch();
-    }
+    // Do not auto-focus any inputs by default
   }
 
   ngOnDestroy() {
@@ -344,16 +344,18 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
     }
     
     // Handle focus changes based on navigation state
-    if (this.navigationState.isSearchFocused && this.searchInput) {
-      setTimeout(() => {
-        this.searchInput.nativeElement.focus();
-        if (this.debugMode) console.log('Focused on search input');
-      }, 0);
-    } else if (this.navigationState.isBarcodeFocused && this.barcodeScanInput) {
-      setTimeout(() => {
-        this.barcodeScanInput.nativeElement.focus();
-        if (this.debugMode) console.log('Focused on barcode input');
-      }, 0);
+    if (this.enableProgrammaticFocus) {
+      if (this.navigationState.isSearchFocused && this.searchInput) {
+        setTimeout(() => {
+          this.searchInput.nativeElement.focus();
+          if (this.debugMode) console.log('Focused on search input');
+        }, 0);
+      } else if (this.navigationState.isBarcodeFocused && this.barcodeScanInput) {
+        setTimeout(() => {
+          this.barcodeScanInput.nativeElement.focus();
+          if (this.debugMode) console.log('Focused on barcode input');
+        }, 0);
+      }
     }
     
     // Update visual indicators
@@ -434,7 +436,7 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
         this.keyboardNavService.navigateToSection('cart');
         return true;
       case 'F7':
-        this.keyboardNavService.navigateToSection('actions');
+        this.keyboardNavService.navigateToSection('header');
         return true;
       case 'F8':
         this.showHoldOrders();
@@ -544,6 +546,16 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
       case 'actions':
         this.keyboardNavService.navigateToSection('search');
         break;
+      case 'header':
+        // Move left within header dropdowns
+        {
+          const idx = (this.navigationState as any).selectedHeaderIndex ?? 0;
+          this.keyboardNavService.updateNavigationState({
+            selectedHeaderIndex: Math.max(0, idx - 1),
+            currentSection: 'header'
+          } as any);
+        }
+        break;
     }
   }
 
@@ -560,6 +572,16 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
         break;
       case 'actions':
         this.keyboardNavService.navigateToSection('search');
+        break;
+      case 'header':
+        // Move right within header dropdowns
+        {
+          const idx = (this.navigationState as any).selectedHeaderIndex ?? 0;
+          this.keyboardNavService.updateNavigationState({
+            selectedHeaderIndex: Math.min(2, idx + 1),
+            currentSection: 'header'
+          } as any);
+        }
         break;
     }
   }
@@ -594,11 +616,16 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
 
   private handleTab(event: KeyboardEvent) {
     event.preventDefault();
+    // When in cart, Tab cycles through fields within selected cart item
+    if (this.navigationState.currentSection === 'cart') {
+      if (this.cartSidebar) {
+        (this.cartSidebar as any).navigateCartFields(event.shiftKey ? 'prev' : 'next');
+      }
+      return;
+    }
     if (event.shiftKey) {
-      // Shift+Tab - navigate backwards
       this.handleArrowLeft();
     } else {
-      // Tab - navigate forwards
       this.handleArrowRight();
     }
   }

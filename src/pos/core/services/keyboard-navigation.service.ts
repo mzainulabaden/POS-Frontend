@@ -2,9 +2,10 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 
 export interface NavigationState {
-  currentSection: 'search' | 'products' | 'cart' | 'actions';
+  currentSection: 'search' | 'products' | 'cart' | 'actions' | 'header';
   selectedProductIndex: number;
   selectedCartItemIndex: number;
+  selectedHeaderIndex?: number;
   isSearchFocused: boolean;
   isBarcodeFocused: boolean;
   lastAction?: string;
@@ -18,6 +19,7 @@ export class KeyboardNavigationService {
     currentSection: 'search',
     selectedProductIndex: -1,
     selectedCartItemIndex: -1,
+    selectedHeaderIndex: -1,
     isSearchFocused: false,
     isBarcodeFocused: false,
     lastAction: undefined

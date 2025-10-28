@@ -16,11 +16,14 @@ import { Subject } from "rxjs";
 })
 export class PosCartSidebarComponent implements OnDestroy {
   purchaseForm: FormGroup;
+  // Disable programmatic focusing in cart by default
+  private enableProgrammaticFocus = false;
   paymentTerms: { id: any; name: string }[] = [];
   customer: { id: any; name: string }[] = [];
   wareHouse: { id: any; name: string }[] = [];
   private _cartItems: any[] = [];
   selectedCartItemIndex = -1;
+  selectedCartFieldIndex = -1; // 0: qty, 1: price(total), 2: discount amount, 3: discount %
   selectedActionIndex = -1;
   private destroy$ = new Subject<void>();
   navigationState: NavigationState = {
@@ -36,6 +39,10 @@ export class PosCartSidebarComponent implements OnDestroy {
   holdOrders: any[] = [];
   receivedAmount: number = 0;
   RemainingAmount: number = 0;
+  // Reference for first header dropdown (customer)
+  // We'll query it when header section is active
+  // Disable highlighting/focus for Actions section by default
+  private enableActionFocus = false;
 
   set cartItems(value: any[]) {
     this._cartItems = value || [];
@@ -145,10 +152,35 @@ export class PosCartSidebarComponent implements OnDestroy {
       if (state.selectedCartItemIndex >= 0 && state.selectedCartItemIndex < this.cartItems.length) {
         this.selectedCartItemIndex = state.selectedCartItemIndex;
         this.scrollToSelectedCartItem();
+        this.selectedCartFieldIndex = -1; // reset per-item field selection on change/entry
         this.cdr.markForCheck();
       }
     } else if (state.currentSection === 'actions') {
-      this.selectedActionIndex = 0; // Default to first action
+      // Do not set any focused action unless explicitly enabled
+      this.selectedActionIndex = this.enableActionFocus ? 0 : -1;
+      this.cdr.markForCheck();
+    } else if (state.currentSection === 'header') {
+      // Visually no selection indexes here; optionally focus first dropdown
+      const headerIds = ['customer', 'paymentModeId', 'warehouse'];
+      const index = (state.selectedHeaderIndex ?? 0);
+      const clampedIndex = Math.max(0, Math.min(headerIds.length - 1, index));
+
+      // Add a CSS class to indicate selection (visual highlight)
+      headerIds.forEach((id, i) => {
+        const host = document.getElementById(id)?.closest('.compact-dropdown-wrapper') as HTMLElement | null;
+        if (host) {
+          host.classList.toggle('keyboard-focus', i === clampedIndex);
+        }
+      });
+
+      if (this.enableProgrammaticFocus) {
+        setTimeout(() => {
+          const targetId = headerIds[clampedIndex];
+          const dropdownLabel = document.querySelector(`#${targetId} .p-dropdown-label`) as HTMLElement;
+          const fallback = document.getElementById(targetId) as HTMLElement | null;
+          (dropdownLabel || fallback)?.focus();
+        }, 0);
+      }
       this.cdr.markForCheck();
     } else {
       this.selectedCartItemIndex = -1;
@@ -195,12 +227,89 @@ export class PosCartSidebarComponent implements OnDestroy {
   focusCartItemQuantity() {
     if (this.selectedCartItemIndex >= 0 && this.selectedCartItemIndex < this.cartItems.length) {
       // Focus on the quantity input of the selected cart item
-      const quantityInput = document.querySelector(`input[formControlName="invoiceQty"]`) as HTMLInputElement;
-      if (quantityInput) {
-        quantityInput.focus();
-        quantityInput.select();
+      if (this.enableProgrammaticFocus) {
+        const quantityInput = document.querySelector(`input[formControlName="invoiceQty"]`) as HTMLInputElement;
+        if (quantityInput) {
+          quantityInput.focus();
+          quantityInput.select();
+        }
       }
     }
+  }
+
+  // Tab/Shift+Tab within cart item fields: Qty -> Price(lineTotal) -> Disc -> D%
+  navigateCartFields(direction: 'next' | 'prev') {
+    if (this.selectedCartItemIndex < 0 || this.selectedCartItemIndex >= this.cartItems.length) return;
+
+    const selectors = [
+      'input[formControlName="invoiceQty"]',
+      'input[formControlName="lineTotal"]',
+      'input[formControlName="discount"]',
+      'input[formControlName="discountPercentage"]'
+    ];
+
+    const currentContainer = document.querySelector(`[data-cart-item-index="${this.selectedCartItemIndex}"]`) as HTMLElement | null;
+    if (!currentContainer) return;
+
+    // remove previous highlight from current item
+    selectors.forEach(sel => {
+      const el = currentContainer.querySelector(sel) as HTMLElement | null;
+      const grp = el?.closest('.compact-input-group') as HTMLElement | null;
+      if (grp) grp.classList.remove('keyboard-focus');
+    });
+
+    // Compute tentative next field index
+    const lastFieldIndex = selectors.length - 1;
+    if (this.selectedCartFieldIndex === -1) {
+      this.selectedCartFieldIndex = direction === 'prev' ? lastFieldIndex : 0;
+    } else {
+      const delta = direction === 'next' ? 1 : -1;
+      this.selectedCartFieldIndex += delta;
+    }
+
+    // Handle wrap across items
+    if (this.selectedCartFieldIndex > lastFieldIndex && direction === 'next') {
+      // Move to next item, first field
+      if (this.selectedCartItemIndex < this.cartItems.length - 1) {
+        this.selectedCartItemIndex += 1;
+        this.selectedCartFieldIndex = 0;
+        this.keyboardNavService.updateNavigationState({
+          selectedCartItemIndex: this.selectedCartItemIndex,
+          currentSection: 'cart'
+        });
+        this.scrollToSelectedCartItem();
+      } else {
+        // Stay on last field of last item
+        this.selectedCartFieldIndex = lastFieldIndex;
+      }
+    } else if (this.selectedCartFieldIndex < 0 && direction === 'prev') {
+      // Move to previous item, last field
+      if (this.selectedCartItemIndex > 0) {
+        this.selectedCartItemIndex -= 1;
+        this.selectedCartFieldIndex = lastFieldIndex;
+        this.keyboardNavService.updateNavigationState({
+          selectedCartItemIndex: this.selectedCartItemIndex,
+          currentSection: 'cart'
+        });
+        this.scrollToSelectedCartItem();
+      } else {
+        // Stay on first field of first item
+        this.selectedCartFieldIndex = 0;
+      }
+    }
+
+    // Focus target in (possibly) new item container
+    const container = document.querySelector(`[data-cart-item-index="${this.selectedCartItemIndex}"]`) as HTMLElement | null;
+    if (!container) return;
+    const targetSel = selectors[this.selectedCartFieldIndex];
+    const target = container.querySelector(targetSel) as HTMLInputElement | null;
+    const grp = target?.closest('.compact-input-group') as HTMLElement | null;
+    if (grp) grp.classList.add('keyboard-focus');
+    if (target) {
+      target.focus();
+      target.select?.();
+    }
+    this.cdr.markForCheck();
   }
 
   isCartItemSelected(index: number): boolean {
@@ -208,6 +317,7 @@ export class PosCartSidebarComponent implements OnDestroy {
   }
 
   isActionFocused(action: string): boolean {
+    if (!this.enableActionFocus) return false;
     if (this.navigationState.currentSection !== 'actions') return false;
     
     switch (action) {
