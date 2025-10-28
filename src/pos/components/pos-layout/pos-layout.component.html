@@ -69,15 +69,17 @@
           </div>
         </div>
         
-        <input
-          type="text"
-          pInputText
-          placeholder="Scan barcode"
-          [(ngModel)]="barcodeInput"
-          #barcodeScan
-          autocomplete="off"
-          style="width: 260px"
-        />
+        <ng-container *ngIf="showBarcodeInput">
+          <input
+            type="text"
+            pInputText
+            placeholder="Scan barcode"
+            [(ngModel)]="barcodeInput"
+            #barcodeScan
+            autocomplete="off"
+            style="width: 260px"
+          />
+        </ng-container>
       </div>
 
       <!-- Right Side Menu -->

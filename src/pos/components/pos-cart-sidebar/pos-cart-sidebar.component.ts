@@ -204,6 +204,15 @@ export class PosCartSidebarComponent implements OnDestroy {
     }
   }
 
+  getSelectedCartItemName(): string {
+    if (this.selectedCartItemIndex < 0 || this.selectedCartItemIndex >= this.salesInvoiceDetails.length) {
+      return '';
+    }
+    const ctrl = this.salesInvoiceDetails.at(this.selectedCartItemIndex);
+    const name = (ctrl.get('itemName')?.value as string) || '';
+    return name;
+  }
+
   navigateCartItems(direction: 'up' | 'down') {
     if (this.cartItems.length === 0) return;
 

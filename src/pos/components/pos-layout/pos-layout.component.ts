@@ -16,6 +16,7 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
   cartItems: any[] = [];
   searchItems: string = "";
   barcodeInput: string = "";
+  showBarcodeInput = false;
   // Disable any programmatic focusing in POS screen
   private enableProgrammaticFocus = false;
   private barcodeTimer: any;
