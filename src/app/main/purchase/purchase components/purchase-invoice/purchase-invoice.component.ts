@@ -209,6 +209,23 @@ export class PurchaseInvoiceComponent {
     //   width: 150,
     // },
     {
+      headerName: "Expiry Date",
+      field: "expiryDate",
+      editable: true,
+      resizable: true,
+      width: 150,
+      cellEditor: "agDateCellEditor",
+      cellEditorParams: {
+        format: "dd/mm/yyyy",
+      },
+      valueFormatter: (params) => {
+        if (params.value) {
+          return moment(params.value).format("DD/MM/YYYY");
+        }
+        return "";
+      },
+    },
+    {
       headerName: "Total Price",
       field: "grandTotal",
       editable: true,
