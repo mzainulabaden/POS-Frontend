@@ -1,9 +1,10 @@
-import { Component, Renderer2, ViewChild, ElementRef, AfterViewInit, HostListener, OnDestroy } from "@angular/core";
+import { Component, ViewChild, ElementRef, AfterViewInit, HostListener, OnDestroy } from "@angular/core";
 import { Router } from "@node_modules/@angular/router";
 import { PosService } from "../../core/services/pos.service";
 import { PosCartSidebarComponent } from "../pos-cart-sidebar/pos-cart-sidebar.component";
 import { KeyboardNavigationService, NavigationState } from "../../core/services/keyboard-navigation.service";
-import { debounceTime, distinctUntilChanged, takeUntil } from "rxjs/operators";
+import { takeUntil } from "rxjs/operators";
+import { debounceTime, distinctUntilChanged } from "rxjs/operators";
 import { Subject } from "rxjs";
 
 @Component({
@@ -19,7 +20,6 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
   showBarcodeInput = false;
   // Disable any programmatic focusing in POS screen
   private enableProgrammaticFocus = false;
-  private barcodeTimer: any;
   @ViewChild("barcodeScan") barcodeScanInput!: ElementRef<HTMLInputElement>;
   @ViewChild(PosCartSidebarComponent) cartSidebar!: PosCartSidebarComponent;
   @ViewChild('posItems') posItemsComponent!: any;
@@ -33,6 +33,10 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
   selectedSearchIndex = -1;
   allProducts: any[] = [];
   @ViewChild("searchInput") searchInput!: ElementRef<HTMLInputElement>;
+  // Cache products per warehouse to avoid repeated API calls
+  private productsCache = new Map<any, any[]>();
+  // Debounced search stream
+  private searchInput$ = new Subject<string>();
 
   // Keyboard navigation properties
   private destroy$ = new Subject<void>();
@@ -44,7 +48,7 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
     isBarcodeFocused: false,
     lastAction: undefined
   };
-  private debugMode = true; // Set to false in production
+  private debugMode = false; // Set to false in production
 
   constructor(
     private sidebarService: PosService, 
@@ -67,6 +71,18 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(event => {
         this.handleKeyPress(event);
+      });
+
+    // Debounce search typing to reduce work
+    this.searchInput$
+      .pipe(
+        debounceTime(200),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((term) => {
+        this.sidebarService.setSearchTerm(term);
+        this.performSearch(term);
       });
   }
 
@@ -115,8 +131,7 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
   }
 
   onSearchChange() {
-    this.sidebarService.setSearchTerm(this.searchItems);
-    this.performSearch(this.searchItems);
+    this.searchInput$.next(this.searchItems);
   }
 
   // Load all products for search functionality
@@ -125,13 +140,20 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
     const warehouseId:any = this.sidebarService.getCurrentWarehouseId();
     
     if (warehouseId) {
-      // Call the new API with warehouse parameter
+      // Return cached products if available
+      const cached = this.productsCache.get(warehouseId);
+      if (cached) {
+        this.allProducts = cached;
+        return;
+      }
+      // Call the new API with warehouse parameter and cache
       this.sidebarService.getItemsWithStockByWarehouse(warehouseId).subscribe({
         next: (response) => {
-          this.allProducts = response.items || response || [];
+          const items = response.items || response || [];
+          this.productsCache.set(warehouseId, items);
+          this.allProducts = items;
         },
-        error: (error) => {
-          console.error('Error loading products with warehouse:', error);
+        error: () => {
           this.allProducts = [];
         }
       });
@@ -162,6 +184,10 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
 
     this.showSearchDropdown = this.searchResults.length > 0;
     this.selectedSearchIndex = -1;
+  }
+
+  trackByProduct(index: number, product: any) {
+    return product.id || product.sku || product.SKU || product.barcode || product.Barcode || index;
   }
 
   // Handle search result selection

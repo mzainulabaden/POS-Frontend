@@ -51,7 +51,7 @@ export class PosCartSidebarComponent implements OnDestroy {
     if (this._cartItems.length > 0) {
       this._cartItems.forEach((product) => this.addItemToForm(product));
     }
-    console.log("Cart sidebar items:", this._cartItems);
+    // items updated; form rebuilt accordingly
   }
 
   get cartItems() {
@@ -94,7 +94,6 @@ export class PosCartSidebarComponent implements OnDestroy {
   }
 
   ngOnInit() {
-    console.log("Cart Sidebar Loaded");
     this.trigger();
     this.loadHoldOrdersFromStorage();
 
@@ -552,7 +551,6 @@ export class PosCartSidebarComponent implements OnDestroy {
   removeFromList(index: number) {
     this.salesInvoiceDetails.removeAt(index);
     this.posService.removeFromCart(index);
-    console.log("Removed, current form:", this.salesInvoiceDetails.value);
   }
 
   // -------- Calculations --------
@@ -1186,5 +1184,11 @@ export class PosCartSidebarComponent implements OnDestroy {
   getCustomerName(customerId: any): string {
     const customer = this.customer.find(c => c.id === customerId);
     return customer ? customer.name : 'Unknown';
+  }
+
+  trackByCartItem(index: number, _ctrl: any) {
+    // Prefer stable keys if present in control value
+    const val = _ctrl?.value || {};
+    return val.id || val.itemId || index;
   }
 }

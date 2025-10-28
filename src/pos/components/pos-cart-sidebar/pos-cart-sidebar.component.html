@@ -93,7 +93,7 @@
     <div *ngIf="cartItems.length; else noItems">
       <div formArrayName="salesInvoiceDetails">
         <div
-          *ngFor="let item of salesInvoiceDetails.controls; let i = index"
+          *ngFor="let item of salesInvoiceDetails.controls; let i = index; trackBy: trackByCartItem"
           [formGroupName]="i"
           class="compact-cart-item mb-1"
           [class.selected-cart-item]="isCartItemSelected(i)"
