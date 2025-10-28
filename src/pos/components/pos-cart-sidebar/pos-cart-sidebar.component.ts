@@ -1,23 +1,35 @@
-import { ChangeDetectorRef, Component, Input, HostListener } from "@angular/core";
+import { ChangeDetectorRef, Component, Input, HostListener, OnDestroy } from "@angular/core";
 import { PurchaseService } from "@app/main/purchase/shared/services/purchase.service";
 import { FormArray, FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { MessageService } from "primeng/api";
-import { finalize, catchError, throwError } from "rxjs";
+import { finalize, catchError, throwError, takeUntil } from "rxjs";
 import * as moment from "moment";
 import { PosService } from "pos/core/services/pos.service";
 import { ThermalPrinterService, ReceiptData } from "pos/core/services/thermal-printer.service";
+import { KeyboardNavigationService, NavigationState } from "../../core/services/keyboard-navigation.service";
+import { Subject } from "rxjs";
 
 @Component({
   selector: "app-pos-cart-sidebar",
   templateUrl: "./pos-cart-sidebar.component.html",
   styleUrls: ["./pos-cart-sidebar.component.css"],
 })
-export class PosCartSidebarComponent {
+export class PosCartSidebarComponent implements OnDestroy {
   purchaseForm: FormGroup;
   paymentTerms: { id: any; name: string }[] = [];
   customer: { id: any; name: string }[] = [];
   wareHouse: { id: any; name: string }[] = [];
   private _cartItems: any[] = [];
+  selectedCartItemIndex = -1;
+  selectedActionIndex = -1;
+  private destroy$ = new Subject<void>();
+  navigationState: NavigationState = {
+    currentSection: 'search',
+    selectedProductIndex: -1,
+    selectedCartItemIndex: -1,
+    isSearchFocused: false,
+    isBarcodeFocused: false
+  };
   displayModal = false;
   displayHoldOrdersDialog = false;
   pendingLabel = "";
@@ -45,7 +57,8 @@ export class PosCartSidebarComponent {
     private cdr: ChangeDetectorRef,
     private msgService: MessageService,
     private posService: PosService,
-    private thermalPrinter: ThermalPrinterService
+    private thermalPrinter: ThermalPrinterService,
+    private keyboardNavService: KeyboardNavigationService
   ) {
     this.purchaseForm = this.fb.group({
       id: [0],
@@ -112,6 +125,98 @@ export class PosCartSidebarComponent {
         // Update the warehouse ID in PosService
         this.posService.setCurrentWarehouseId(id);
       });
+
+    // Subscribe to navigation state changes
+    this.keyboardNavService.navigationState$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(state => {
+        this.navigationState = state;
+        this.handleNavigationStateChange(state);
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private handleNavigationStateChange(state: NavigationState) {
+    if (state.currentSection === 'cart') {
+      if (state.selectedCartItemIndex >= 0 && state.selectedCartItemIndex < this.cartItems.length) {
+        this.selectedCartItemIndex = state.selectedCartItemIndex;
+        this.scrollToSelectedCartItem();
+        this.cdr.markForCheck();
+      }
+    } else if (state.currentSection === 'actions') {
+      this.selectedActionIndex = 0; // Default to first action
+      this.cdr.markForCheck();
+    } else {
+      this.selectedCartItemIndex = -1;
+      this.selectedActionIndex = -1;
+      this.cdr.markForCheck();
+    }
+  }
+
+  private scrollToSelectedCartItem() {
+    if (this.selectedCartItemIndex >= 0) {
+      setTimeout(() => {
+        const selectedElement = document.querySelector(`[data-cart-item-index="${this.selectedCartItemIndex}"]`);
+        if (selectedElement) {
+          selectedElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center',
+            inline: 'nearest'
+          });
+        }
+      }, 100);
+    }
+  }
+
+  navigateCartItems(direction: 'up' | 'down') {
+    if (this.cartItems.length === 0) return;
+
+    if (this.selectedCartItemIndex === -1) {
+      this.selectedCartItemIndex = 0;
+    } else {
+      if (direction === 'up') {
+        this.selectedCartItemIndex = Math.max(0, this.selectedCartItemIndex - 1);
+      } else {
+        this.selectedCartItemIndex = Math.min(this.cartItems.length - 1, this.selectedCartItemIndex + 1);
+      }
+    }
+
+    this.keyboardNavService.updateNavigationState({
+      selectedCartItemIndex: this.selectedCartItemIndex,
+      currentSection: 'cart'
+    });
+    this.cdr.markForCheck();
+  }
+
+  focusCartItemQuantity() {
+    if (this.selectedCartItemIndex >= 0 && this.selectedCartItemIndex < this.cartItems.length) {
+      // Focus on the quantity input of the selected cart item
+      const quantityInput = document.querySelector(`input[formControlName="invoiceQty"]`) as HTMLInputElement;
+      if (quantityInput) {
+        quantityInput.focus();
+        quantityInput.select();
+      }
+    }
+  }
+
+  isCartItemSelected(index: number): boolean {
+    return this.selectedCartItemIndex === index;
+  }
+
+  isActionFocused(action: string): boolean {
+    if (this.navigationState.currentSection !== 'actions') return false;
+    
+    switch (action) {
+      case 'hold': return this.selectedActionIndex === 0;
+      case 'sale': return this.selectedActionIndex === 1;
+      case 'proceed': return this.selectedActionIndex === 2 && this.isPaymentModeCredit;
+      case 'print': return this.selectedActionIndex === (this.isPaymentModeCredit ? 3 : 2);
+      default: return false;
+    }
   }
 
   trigger() {

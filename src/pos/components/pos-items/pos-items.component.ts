@@ -2,9 +2,14 @@ import {
   ChangeDetectorRef,
   ChangeDetectionStrategy,
   Component,
+  OnDestroy,
+  OnInit,
 } from "@angular/core";
 import { catchError, throwError } from "rxjs";
 import { PosService } from "pos/core/services/pos.service";
+import { KeyboardNavigationService, NavigationState } from "../../core/services/keyboard-navigation.service";
+import { takeUntil } from "rxjs/operators";
+import { Subject } from "rxjs";
 
 @Component({
   selector: "app-pos-items",
@@ -12,13 +17,16 @@ import { PosService } from "pos/core/services/pos.service";
   styleUrl: "./pos-items.component.css",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PosItemsComponent {
+export class PosItemsComponent implements OnInit, OnDestroy {
   products = [];
   filteredProducts = [];
+  selectedProductIndex = -1;
+  private destroy$ = new Subject<void>();
 
   constructor(
     public sidebarService: PosService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private keyboardNavService: KeyboardNavigationService
   ) {}
 
   ngOnInit() {
@@ -43,6 +51,77 @@ export class PosItemsComponent {
         this.addToCart(matched);
       }
     });
+
+    // Subscribe to navigation state changes
+    this.keyboardNavService.navigationState$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(state => {
+        this.handleNavigationStateChange(state);
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private handleNavigationStateChange(state: NavigationState) {
+    if (state.currentSection === 'products') {
+      if (state.selectedProductIndex >= 0 && state.selectedProductIndex < this.filteredProducts.length) {
+        this.selectedProductIndex = state.selectedProductIndex;
+        this.scrollToSelectedProduct();
+        this.cdr.markForCheck();
+      }
+    } else {
+      this.selectedProductIndex = -1;
+      this.cdr.markForCheck();
+    }
+  }
+
+  private scrollToSelectedProduct() {
+    if (this.selectedProductIndex >= 0) {
+      setTimeout(() => {
+        const selectedElement = document.querySelector(`[data-product-index="${this.selectedProductIndex}"]`);
+        if (selectedElement) {
+          selectedElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center',
+            inline: 'nearest'
+          });
+        }
+      }, 100);
+    }
+  }
+
+  navigateProductGrid(direction: 'up' | 'down') {
+    if (this.filteredProducts.length === 0) return;
+
+    if (this.selectedProductIndex === -1) {
+      this.selectedProductIndex = 0;
+    } else {
+      if (direction === 'up') {
+        this.selectedProductIndex = Math.max(0, this.selectedProductIndex - 1);
+      } else {
+        this.selectedProductIndex = Math.min(this.filteredProducts.length - 1, this.selectedProductIndex + 1);
+      }
+    }
+
+    this.keyboardNavService.updateNavigationState({
+      selectedProductIndex: this.selectedProductIndex,
+      currentSection: 'products'
+    });
+    this.cdr.markForCheck();
+  }
+
+  addSelectedProductToCart() {
+    if (this.selectedProductIndex >= 0 && this.selectedProductIndex < this.filteredProducts.length) {
+      const product = this.filteredProducts[this.selectedProductIndex];
+      this.addToCart(product);
+    }
+  }
+
+  isProductSelected(index: number): boolean {
+    return this.selectedProductIndex === index;
   }
 
   // Optimized filter method - searches by name, SKU, or barcode

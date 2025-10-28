@@ -2,6 +2,15 @@
 <div class="container-fluid vh-100 overflow-hidden">
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+    <!-- Navigation State Indicator -->
+    <div class="nav-state-indicator" [class]="'state-' + navigationState.currentSection">
+      <span class="state-text">{{ navigationState.currentSection | titlecase }}</span>
+      <span class="state-key" *ngIf="navigationState.currentSection === 'search'">(F3/F4)</span>
+      <span class="state-key" *ngIf="navigationState.currentSection === 'products'">(F5)</span>
+      <span class="state-key" *ngIf="navigationState.currentSection === 'cart'">(F6)</span>
+      <span class="state-key" *ngIf="navigationState.currentSection === 'actions'">(F7)</span>
+    </div>
+    
     <div
       class="container-fluid d-flex justify-content-between align-items-center px-3"
     >
@@ -73,6 +82,12 @@
 
       <!-- Right Side Menu -->
       <div class="d-flex align-items-center gap-3">
+        <!-- Keyboard Help Button -->
+        <button (click)="showKeyboardHelp()" class="btn btn-outline-info" title="Keyboard Shortcuts (F1)">
+          <i class="fa-solid fa-keyboard me-1"></i>
+          Help
+        </button>
+
         <!-- Hold Orders Button -->
         <button (click)="showHoldOrders()" class="btn btn-outline-primary">
           <i class="fa-solid fa-clock-rotate-left me-1"></i>
@@ -105,7 +120,7 @@
 
     <!-- Product Grid (Right - 20%) -->
     <div style="width: 20%">
-      <app-pos-items class="d-block w-100"></app-pos-items>
+      <app-pos-items #posItems class="d-block w-100"></app-pos-items>
     </div>
   </div>
 </div>

@@ -9,6 +9,18 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
+/* Keyboard navigation styles */
+.selected-product {
+  border-color: #007bff !important;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25) !important;
+  background-color: #f8f9fa !important;
+}
+
+.keyboard-focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
 .card-title {
   font-size: 0.9rem;
   line-height: 1.3;

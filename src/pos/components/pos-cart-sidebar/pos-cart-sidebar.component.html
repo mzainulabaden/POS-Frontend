@@ -91,6 +91,9 @@
           *ngFor="let item of salesInvoiceDetails.controls; let i = index"
           [formGroupName]="i"
           class="compact-cart-item mb-1"
+          [class.selected-cart-item]="isCartItemSelected(i)"
+          [class.keyboard-focus]="isCartItemSelected(i)"
+          [attr.data-cart-item-index]="i"
         >
           <div class="compact-card-body">
             <!-- Item name with SKU -->
@@ -228,29 +231,37 @@
     <div class="compact-buttons-section">
       <button 
         class="compact-btn compact-btn-hold"
+        [class.keyboard-focus]="isActionFocused('hold')"
         (click)="holdCurrentOrder()"
         [disabled]="cartItems.length === 0"
+        title="Hold Order (F8 or Ctrl+H)"
       >
         <i class="pi pi-pause me-1"></i>Hold
       </button>
       <button 
         class="compact-btn compact-btn-proceed" 
+        [class.keyboard-focus]="isActionFocused('sale')"
         (click)="saveWithoutPrint()"
         [disabled]="cartItems.length === 0"
+        title="Complete Sale (F9 or Ctrl+S)"
       >
         Sale
       </button>
       <button 
         *ngIf="isPaymentModeCredit"
         class="compact-btn compact-btn-proceed" 
+        [class.keyboard-focus]="isActionFocused('proceed')"
         (click)="displayModal = true"
+        title="Proceed to Payment"
       >
         Proceed
       </button>
       <button 
         class="compact-btn compact-btn-print" 
+        [class.keyboard-focus]="isActionFocused('print')"
         (click)="manualPrint()"
         [disabled]="cartItems.length === 0"
+        title="Print Receipt (F10 or Ctrl+P)"
       >
         <i class="pi pi-print me-1"></i>Print
       </button>

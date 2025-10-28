@@ -6,6 +6,51 @@
   }
 }
 
+/* Navigation State Indicator */
+.nav-state-indicator {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-state-indicator.state-search {
+  background: #28a745;
+}
+
+.nav-state-indicator.state-products {
+  background: #007bff;
+}
+
+.nav-state-indicator.state-cart {
+  background: #ffc107;
+  color: #000;
+}
+
+.nav-state-indicator.state-actions {
+  background: #dc3545;
+}
+
+.state-text {
+  font-weight: 700;
+}
+
+.state-key {
+  font-size: 10px;
+  opacity: 0.8;
+}
+
 /* Search Dropdown Styles */
 .search-dropdown {
   border-radius: 8px !important;

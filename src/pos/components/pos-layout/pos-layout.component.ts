@@ -1,15 +1,17 @@
-import { Component, Renderer2, ViewChild, ElementRef, AfterViewInit, HostListener } from "@angular/core";
+import { Component, Renderer2, ViewChild, ElementRef, AfterViewInit, HostListener, OnDestroy } from "@angular/core";
 import { Router } from "@node_modules/@angular/router";
 import { PosService } from "../../core/services/pos.service";
 import { PosCartSidebarComponent } from "../pos-cart-sidebar/pos-cart-sidebar.component";
-import { debounceTime, distinctUntilChanged } from "rxjs/operators";
+import { KeyboardNavigationService, NavigationState } from "../../core/services/keyboard-navigation.service";
+import { debounceTime, distinctUntilChanged, takeUntil } from "rxjs/operators";
+import { Subject } from "rxjs";
 
 @Component({
   selector: "app-pos-layout",
   templateUrl: "./pos-layout.component.html",
   styleUrl: "./pos-layout.component.css",
 })
-export class PosLayoutComponent implements AfterViewInit {
+export class PosLayoutComponent implements AfterViewInit, OnDestroy {
   isFullScreen = false;
   cartItems: any[] = [];
   searchItems: string = "";
@@ -17,6 +19,7 @@ export class PosLayoutComponent implements AfterViewInit {
   private barcodeTimer: any;
   @ViewChild("barcodeScan") barcodeScanInput!: ElementRef<HTMLInputElement>;
   @ViewChild(PosCartSidebarComponent) cartSidebar!: PosCartSidebarComponent;
+  @ViewChild('posItems') posItemsComponent!: any;
   private scanBuffer: string = "";
   private scanTimeout: any;
   private lastKeyTime = 0;
@@ -28,9 +31,40 @@ export class PosLayoutComponent implements AfterViewInit {
   allProducts: any[] = [];
   @ViewChild("searchInput") searchInput!: ElementRef<HTMLInputElement>;
 
-  constructor(private sidebarService: PosService, private router: Router) {
+  // Keyboard navigation properties
+  private destroy$ = new Subject<void>();
+  navigationState: NavigationState = {
+    currentSection: 'search',
+    selectedProductIndex: -1,
+    selectedCartItemIndex: -1,
+    isSearchFocused: false,
+    isBarcodeFocused: false,
+    lastAction: undefined
+  };
+  private debugMode = true; // Set to false in production
+
+  constructor(
+    private sidebarService: PosService, 
+    private router: Router,
+    private keyboardNavService: KeyboardNavigationService
+  ) {
     // Load all products for search
     this.loadAllProducts();
+    
+    // Subscribe to navigation state changes
+    this.keyboardNavService.navigationState$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(state => {
+        this.navigationState = state;
+        this.handleNavigationStateChange();
+      });
+
+    // Subscribe to key press events
+    this.keyboardNavService.keyPress$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(event => {
+        this.handleKeyPress(event);
+      });
   }
 
   // Toggle Sidebar
@@ -183,8 +217,425 @@ export class PosLayoutComponent implements AfterViewInit {
     }
   }
 
+  showKeyboardHelp() {
+    const shortcuts = `
+🎯 POS KEYBOARD NAVIGATION HELP
+
+📍 NAVIGATION:
+• Arrow Keys: Move between sections (Search → Products → Cart → Actions)
+• Tab / Shift+Tab: Navigate between sections
+• Escape: Clear focus and return to search
+
+🔍 SEARCH & BARCODE:
+• F3: Focus search input
+• F4: Focus barcode scanner
+• Arrow Up/Down: Navigate search results
+• Enter: Select highlighted search result
+• Ctrl+F: Focus search
+
+📦 PRODUCTS:
+• F5: Navigate to products section
+• Arrow Up/Down: Navigate product list
+• Enter: Add selected product to cart
+
+🛒 CART:
+• F6: Navigate to cart section
+• Arrow Up/Down: Navigate cart items
+• Enter: Focus quantity field of selected item
+
+⚡ ACTIONS:
+• F7: Navigate to actions section
+• F8: Show hold orders
+• F9: Complete sale
+• F10: Print receipt
+• Ctrl+H: Show hold orders
+• Ctrl+S: Complete sale
+• Ctrl+P: Print receipt
+
+🔧 GENERAL:
+• F1: Show this help
+• F2: Toggle full screen
+
+💡 TIP: The colored indicator at the top shows your current section!
+    `;
+    
+    // Create a better help dialog
+    const helpDialog = document.createElement('div');
+    helpDialog.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 2px solid #007bff;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      z-index: 10000;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-line;
+    `;
+    
+    helpDialog.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="margin: 0; color: #007bff;">🎯 Keyboard Shortcuts</h3>
+        <button onclick="this.parentElement.parentElement.remove()" 
+                style="background: #dc3545; color: white; border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer;">
+          ✕ Close
+        </button>
+      </div>
+      <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; border-left: 4px solid #007bff;">
+        ${shortcuts}
+      </div>
+    `;
+    
+    // Add backdrop
+    const backdrop = document.createElement('div');
+    backdrop.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 9999;
+    `;
+    
+    backdrop.onclick = () => {
+      helpDialog.remove();
+      backdrop.remove();
+    };
+    
+    document.body.appendChild(backdrop);
+    document.body.appendChild(helpDialog);
+    
+    // Auto-close after 30 seconds
+    setTimeout(() => {
+      if (helpDialog.parentElement) {
+        helpDialog.remove();
+        backdrop.remove();
+      }
+    }, 30000);
+  }
+
   ngAfterViewInit() {
     // Barcode scanning now works in background without focus requirement
+    // Focus on search input by default
+    if (this.searchInput) {
+      this.searchInput.nativeElement.focus();
+      this.keyboardNavService.focusSearch();
+    }
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // Keyboard navigation methods
+  private handleNavigationStateChange() {
+    if (this.debugMode) {
+      this.keyboardNavService.logState('Navigation state changed');
+    }
+    
+    // Handle focus changes based on navigation state
+    if (this.navigationState.isSearchFocused && this.searchInput) {
+      setTimeout(() => {
+        this.searchInput.nativeElement.focus();
+        if (this.debugMode) console.log('Focused on search input');
+      }, 0);
+    } else if (this.navigationState.isBarcodeFocused && this.barcodeScanInput) {
+      setTimeout(() => {
+        this.barcodeScanInput.nativeElement.focus();
+        if (this.debugMode) console.log('Focused on barcode input');
+      }, 0);
+    }
+    
+    // Update visual indicators
+    this.updateVisualIndicators();
+  }
+
+  private updateVisualIndicators() {
+    // This will be used to update visual indicators in the template
+    // For now, we'll just log the current section
+    if (this.debugMode) {
+      console.log(`Current section: ${this.navigationState.currentSection}`);
+    }
+  }
+
+  private handleKeyPress(event: KeyboardEvent) {
+    if (this.debugMode) {
+      console.log(`Key pressed: ${event.key}, Section: ${this.navigationState.currentSection}`);
+    }
+
+    // Skip if user is typing in input fields (except when we want to handle specific keys)
+    if (this.isTypingInInput(event) && !this.shouldHandleInInput(event)) {
+      return;
+    }
+
+    // Handle the key press
+    const handled = this.processKeyPress(event);
+    
+    if (handled && this.debugMode) {
+      console.log(`Key ${event.key} handled successfully`);
+    }
+  }
+
+  private shouldHandleInInput(event: KeyboardEvent): boolean {
+    // Handle these keys even when typing in input fields
+    const keysToHandleInInput = ['Escape', 'Tab', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10'];
+    return keysToHandleInInput.includes(event.key) || event.ctrlKey;
+  }
+
+  private processKeyPress(event: KeyboardEvent): boolean {
+    switch (event.key) {
+      case 'ArrowUp':
+        this.handleArrowUp();
+        return true;
+      case 'ArrowDown':
+        this.handleArrowDown();
+        return true;
+      case 'ArrowLeft':
+        this.handleArrowLeft();
+        return true;
+      case 'ArrowRight':
+        this.handleArrowRight();
+        return true;
+      case 'Enter':
+        this.handleEnter();
+        return true;
+      case 'Escape':
+        this.handleEscape();
+        return true;
+      case 'Tab':
+        this.handleTab(event);
+        return true;
+      case 'F1':
+        this.showKeyboardHelp();
+        return true;
+      case 'F2':
+        this.toggleFullScreen();
+        return true;
+      case 'F3':
+        this.keyboardNavService.focusSearch();
+        return true;
+      case 'F4':
+        this.keyboardNavService.focusBarcode();
+        return true;
+      case 'F5':
+        this.keyboardNavService.navigateToSection('products');
+        return true;
+      case 'F6':
+        this.keyboardNavService.navigateToSection('cart');
+        return true;
+      case 'F7':
+        this.keyboardNavService.navigateToSection('actions');
+        return true;
+      case 'F8':
+        this.showHoldOrders();
+        return true;
+      case 'F9':
+        this.executeSale();
+        return true;
+      case 'F10':
+        this.executePrint();
+        return true;
+    }
+
+    // Handle Ctrl shortcuts
+    if (event.ctrlKey) {
+      return this.handleCtrlShortcuts(event);
+    }
+
+    return false;
+  }
+
+  private handleCtrlShortcuts(event: KeyboardEvent): boolean {
+    switch (event.key.toLowerCase()) {
+      case 'h':
+        this.showHoldOrders();
+        return true;
+      case 's':
+        this.executeSale();
+        return true;
+      case 'p':
+        this.executePrint();
+        return true;
+      case 'f':
+        this.keyboardNavService.focusSearch();
+        return true;
+    }
+    return false;
+  }
+
+  private executeSale() {
+    if (this.cartSidebar && this.cartItems.length > 0) {
+      this.cartSidebar.saveWithoutPrint();
+    } else if (this.debugMode) {
+      console.log('Cannot execute sale - no items in cart');
+    }
+  }
+
+  private executePrint() {
+    if (this.cartSidebar && this.cartItems.length > 0) {
+      this.cartSidebar.manualPrint();
+    } else if (this.debugMode) {
+      console.log('Cannot print - no items in cart');
+    }
+  }
+
+  private isTypingInInput(event: KeyboardEvent): boolean {
+    const target = event.target as HTMLElement;
+    return target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.contentEditable === 'true';
+  }
+
+  private handleArrowUp() {
+    switch (this.navigationState.currentSection) {
+      case 'search':
+        if (this.showSearchDropdown && this.searchResults.length > 0) {
+          this.selectedSearchIndex = Math.max(0, this.selectedSearchIndex - 1);
+        }
+        break;
+      case 'products':
+        // Navigate up in product grid
+        this.navigateProductGrid('up');
+        break;
+      case 'cart':
+        // Navigate up in cart items
+        this.navigateCartItems('up');
+        break;
+    }
+  }
+
+  private handleArrowDown() {
+    switch (this.navigationState.currentSection) {
+      case 'search':
+        if (this.showSearchDropdown && this.searchResults.length > 0) {
+          this.selectedSearchIndex = Math.min(this.searchResults.length - 1, this.selectedSearchIndex + 1);
+        }
+        break;
+      case 'products':
+        // Navigate down in product grid
+        this.navigateProductGrid('down');
+        break;
+      case 'cart':
+        // Navigate down in cart items
+        this.navigateCartItems('down');
+        break;
+    }
+  }
+
+  private handleArrowLeft() {
+    switch (this.navigationState.currentSection) {
+      case 'search':
+        this.keyboardNavService.navigateToSection('actions');
+        break;
+      case 'products':
+        this.keyboardNavService.navigateToSection('cart');
+        break;
+      case 'cart':
+        this.keyboardNavService.navigateToSection('products');
+        break;
+      case 'actions':
+        this.keyboardNavService.navigateToSection('search');
+        break;
+    }
+  }
+
+  private handleArrowRight() {
+    switch (this.navigationState.currentSection) {
+      case 'search':
+        this.keyboardNavService.navigateToSection('products');
+        break;
+      case 'products':
+        this.keyboardNavService.navigateToSection('cart');
+        break;
+      case 'cart':
+        this.keyboardNavService.navigateToSection('actions');
+        break;
+      case 'actions':
+        this.keyboardNavService.navigateToSection('search');
+        break;
+    }
+  }
+
+  private handleEnter() {
+    switch (this.navigationState.currentSection) {
+      case 'search':
+        if (this.showSearchDropdown && this.selectedSearchIndex >= 0) {
+          this.selectSearchResult(this.searchResults[this.selectedSearchIndex], this.selectedSearchIndex);
+        }
+        break;
+      case 'products':
+        // Add selected product to cart
+        this.addSelectedProductToCart();
+        break;
+      case 'cart':
+        // Focus on quantity field of selected cart item
+        this.focusCartItemQuantity();
+        break;
+      case 'actions':
+        // Execute action based on current state
+        this.executeAction();
+        break;
+    }
+  }
+
+  private handleEscape() {
+    this.keyboardNavService.clearFocus();
+    this.showSearchDropdown = false;
+    this.selectedSearchIndex = -1;
+  }
+
+  private handleTab(event: KeyboardEvent) {
+    event.preventDefault();
+    if (event.shiftKey) {
+      // Shift+Tab - navigate backwards
+      this.handleArrowLeft();
+    } else {
+      // Tab - navigate forwards
+      this.handleArrowRight();
+    }
+  }
+
+  private navigateProductGrid(direction: 'up' | 'down') {
+    // Get reference to pos-items component and call its navigation method
+    const posItemsComponent = (this as any).posItemsComponent;
+    if (posItemsComponent) {
+      posItemsComponent.navigateProductGrid(direction);
+    }
+  }
+
+  private navigateCartItems(direction: 'up' | 'down') {
+    // Get reference to cart sidebar component and call its navigation method
+    if (this.cartSidebar) {
+      this.cartSidebar.navigateCartItems(direction);
+    }
+  }
+
+  private addSelectedProductToCart() {
+    // Get reference to pos-items component and call its method
+    const posItemsComponent = (this as any).posItemsComponent;
+    if (posItemsComponent) {
+      posItemsComponent.addSelectedProductToCart();
+    }
+  }
+
+  private focusCartItemQuantity() {
+    // Get reference to cart sidebar component and call its method
+    if (this.cartSidebar) {
+      this.cartSidebar.focusCartItemQuantity();
+    }
+  }
+
+  private executeAction() {
+    // Execute the appropriate action based on current context
+    console.log('Execute action');
   }
 
   // onBarcodeInput removed to prevent double-trigger with global listener
@@ -194,6 +645,11 @@ export class PosLayoutComponent implements AfterViewInit {
   handleDocumentKeydown(event: KeyboardEvent) {
     // Ignore modifier key combinations
     if (event.ctrlKey || event.altKey || event.metaKey) {
+      return;
+    }
+
+    // Ignore function keys (F1-F10) - these are handled by keyboard navigation
+    if (event.key.startsWith('F') && event.key.length <= 3) {
       return;
     }
 

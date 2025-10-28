@@ -23,6 +23,24 @@ input[type="number"] {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
+/* Keyboard navigation styles */
+.selected-cart-item {
+  border-color: #007bff !important;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25) !important;
+  background-color: #f8f9fa !important;
+}
+
+.keyboard-focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.compact-btn.keyboard-focus {
+  background-color: #007bff !important;
+  color: white !important;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25) !important;
+}
+
 .compact-card-body {
   display: flex;
   align-items: center;

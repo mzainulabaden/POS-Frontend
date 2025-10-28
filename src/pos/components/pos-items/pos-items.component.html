@@ -3,8 +3,11 @@
     <!-- Product Cards - Stacked vertically for narrow space -->
     <div class="d-flex flex-column gap-2">
       <div
-        *ngFor="let product of filteredProducts; trackBy: trackByProductId"
+        *ngFor="let product of filteredProducts; let i = index; trackBy: trackByProductId"
         class="card border rounded"
+        [class.selected-product]="isProductSelected(i)"
+        [class.keyboard-focus]="isProductSelected(i)"
+        [attr.data-product-index]="i"
         (click)="addToCart(product)"
         style="cursor: pointer"
       >
