@@ -194,7 +194,17 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
   selectSearchResult(product: any, index: number) {
     this.searchItems = product.name;
     this.showSearchDropdown = false;
-    this.sidebarService.addToCart(product);
+    const cartItem = {
+      ...product,
+      id: product?.id ?? product?.itemId,
+      itemId: product?.itemId ?? product?.id,
+      itemName: product?.itemName ?? product?.name ?? '',
+      unitPrice: Number(product?.unitPrice ?? product?.price ?? product?.rate ?? 0),
+      barcode: product?.barcode ?? product?.Barcode ?? product?.sku ?? product?.SKU ?? '',
+      qty: 1,
+      discount: 0,
+    };
+    this.sidebarService.addToCart(cartItem);
     if (this.enableProgrammaticFocus && this.searchInput) {
       this.searchInput.nativeElement.focus();
     }

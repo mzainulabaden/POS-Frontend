@@ -236,7 +236,14 @@ export class PosItemsComponent implements OnInit, OnDestroy {
 
   addToCart(product) {
     const cartItem = {
+      // keep other fields first
       ...product,
+      // then normalize fields expected by cart sidebar
+      id: product?.id ?? product?.itemId,
+      itemId: product?.itemId ?? product?.id,
+      itemName: product?.itemName ?? product?.name ?? '',
+      unitPrice: Number(product?.unitPrice ?? product?.price ?? product?.rate ?? 0),
+      barcode: product?.barcode ?? product?.Barcode ?? product?.sku ?? product?.SKU ?? '',
       qty: 1,
       discount: 0,
     };
