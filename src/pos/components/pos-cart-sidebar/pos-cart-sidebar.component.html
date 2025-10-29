@@ -306,6 +306,7 @@
         pInputText
         [(ngModel)]="receivedAmount"
         (input)="calculatePending()"
+        (keydown)="onPaymentFieldKeyDown($event)"
       />
     </div>
 

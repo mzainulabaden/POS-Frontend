@@ -1274,6 +1274,18 @@ export class PosCartSidebarComponent implements OnDestroy {
 
     const key = event.key;
     const code = (event as any).code as string | undefined;
+    // Prevent blur on Enter for bill discount fields; keep focus on same input
+    if (key === 'Enter') {
+      event.preventDefault();
+      event.stopPropagation();
+      const target = event.target as HTMLInputElement | null;
+      setTimeout(() => {
+        target?.focus();
+        target?.select?.();
+      }, 0);
+      return;
+    }
+
     const isPlus = key === '+' || code === 'NumpadAdd' || (key === '=' && event.shiftKey);
     const isMinus = key === '-' || code === 'NumpadSubtract' || (key === '_' && event.shiftKey);
     if (!isPlus && !isMinus) { return; }
@@ -1293,6 +1305,18 @@ export class PosCartSidebarComponent implements OnDestroy {
 
     if (val < 0) val = 0;
     ctrl.setValue(+val.toFixed(2));
+  }
+
+  onPaymentFieldKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      event.stopPropagation();
+      const target = event.target as HTMLInputElement | null;
+      setTimeout(() => {
+        target?.focus();
+        target?.select?.();
+      }, 0);
+    }
   }
 
   trackByCartItem(index: number, _ctrl: any) {
