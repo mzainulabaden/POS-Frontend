@@ -42,8 +42,17 @@ export class KeyboardNavigationService {
   }
 
   private handleKeyPress(event: KeyboardEvent) {
-    // Prevent default behavior for our custom shortcuts
-    if (this.isCustomShortcut(event)) {
+    // Prevent default behavior for our custom shortcuts, but allow text editing keys inside inputs
+    const target = event.target as HTMLElement | null;
+    const isInput = !!target && (
+      target.tagName === 'INPUT' ||
+      target.tagName === 'TEXTAREA' ||
+      (target as any).isContentEditable === true
+    );
+    const key = event.key;
+    const allowInInput = isInput && (key === 'Backspace' || key === 'Delete');
+
+    if (this.isCustomShortcut(event) && !allowInInput) {
       event.preventDefault();
       event.stopPropagation();
     }

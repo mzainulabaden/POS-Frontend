@@ -1186,6 +1186,68 @@ export class PosCartSidebarComponent implements OnDestroy {
     return customer ? customer.name : 'Unknown';
   }
 
+  onCartFieldKeyDown(event: KeyboardEvent, index: number, controlName: 'invoiceQty' | 'lineTotal' | 'discount' | 'discountPercentage') {
+    const fg = this.salesInvoiceDetails.at(index) as FormGroup;
+    const ctrl = fg?.get(controlName);
+    if (!ctrl) { return; }
+
+    const key = event.key;
+    const code = (event as any).code as string | undefined;
+    const isPlus = key === '+' || code === 'NumpadAdd' || (key === '=' && event.shiftKey);
+    const isMinus = key === '-' || code === 'NumpadSubtract' || (key === '_' && event.shiftKey);
+    if (!isPlus && !isMinus) { return; }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    let val = parseFloat((ctrl.value as any)) || 0;
+    val = isPlus ? val + 1 : val - 1;
+
+    if (controlName === 'discountPercentage') {
+      if (val < 0) val = 0;
+      if (val > 100) val = 100;
+      ctrl.setValue(+val.toFixed(2));
+      return;
+    }
+
+    if (val < 0) val = 0;
+
+    if (controlName === 'invoiceQty') {
+      if (val < 0.001) val = 0.001;
+      ctrl.setValue(+val.toFixed(3));
+      return;
+    }
+
+    ctrl.setValue(+val.toFixed(2));
+  }
+
+  onBillFieldKeyDown(event: KeyboardEvent, controlName: 'discountAmount' | 'discountPercentage') {
+    const ctrl = this.purchaseForm.get(controlName);
+    if (!ctrl) { return; }
+
+    const key = event.key;
+    const code = (event as any).code as string | undefined;
+    const isPlus = key === '+' || code === 'NumpadAdd' || (key === '=' && event.shiftKey);
+    const isMinus = key === '-' || code === 'NumpadSubtract' || (key === '_' && event.shiftKey);
+    if (!isPlus && !isMinus) { return; }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    let val = parseFloat((ctrl.value as any)) || 0;
+    val = isPlus ? val + 1 : val - 1;
+
+    if (controlName === 'discountPercentage') {
+      if (val < 0) val = 0;
+      if (val > 100) val = 100;
+      ctrl.setValue(+val.toFixed(2));
+      return;
+    }
+
+    if (val < 0) val = 0;
+    ctrl.setValue(+val.toFixed(2));
+  }
+
   trackByCartItem(index: number, _ctrl: any) {
     // Prefer stable keys if present in control value
     const val = _ctrl?.value || {};

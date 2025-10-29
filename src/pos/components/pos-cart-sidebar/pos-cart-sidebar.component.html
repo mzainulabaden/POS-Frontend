@@ -118,6 +118,7 @@
                   step="0.001"
                   clearZeroOnFocus
                   (keydown.enter)="$event.preventDefault()"
+                  (keydown)="onCartFieldKeyDown($event, i, 'invoiceQty')"
                 />
               </div>
 
@@ -131,6 +132,7 @@
                   step="0.01"
                   clearZeroOnFocus
                   (keydown.enter)="$event.preventDefault()"
+                  (keydown)="onCartFieldKeyDown($event, i, 'lineTotal')"
                 />
               </div>
 
@@ -144,6 +146,7 @@
                   step="0.01"
                   clearZeroOnFocus
                   (keydown.enter)="$event.preventDefault()"
+                  (keydown)="onCartFieldKeyDown($event, i, 'discount')"
                 />
               </div>
 
@@ -158,6 +161,7 @@
                   step="0.01"
                   clearZeroOnFocus
                   (keydown.enter)="$event.preventDefault()"
+                  (keydown)="onCartFieldKeyDown($event, i, 'discountPercentage')"
                 />
               </div>
 
@@ -189,6 +193,7 @@
           step="0.01"
           clearZeroOnFocus
           (keydown.enter)="$event.preventDefault()"
+          (keydown)="onBillFieldKeyDown($event, 'discountAmount')"
         />
       </div>
       <div class="d-flex align-items-center gap-1">
@@ -203,6 +208,7 @@
           step="0.01"
           clearZeroOnFocus
           (keydown.enter)="$event.preventDefault()"
+          (keydown)="onBillFieldKeyDown($event, 'discountPercentage')"
         />
       </div>
     </div>
