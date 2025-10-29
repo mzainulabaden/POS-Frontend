@@ -154,10 +154,7 @@ export class PosCartSidebarComponent implements OnDestroy {
         this.selectedCartFieldIndex = -1; // reset per-item field selection on change/entry
         this.cdr.markForCheck();
       }
-    } else if (state.currentSection === 'actions') {
-      // Do not set any focused action unless explicitly enabled
-      this.selectedActionIndex = this.enableActionFocus ? 0 : -1;
-      this.cdr.markForCheck();
+
     } else if (state.currentSection === 'header') {
       // Visually no selection indexes here; optionally focus first dropdown
       const headerIds = ['customer', 'paymentModeId', 'warehouse'];
@@ -325,9 +322,7 @@ export class PosCartSidebarComponent implements OnDestroy {
   }
 
   isActionFocused(action: string): boolean {
-    if (!this.enableActionFocus) return false;
-    if (this.navigationState.currentSection !== 'actions') return false;
-    
+    if (!this.enableActionFocus) return false;    
     switch (action) {
       case 'hold': return this.selectedActionIndex === 0;
       case 'sale': return this.selectedActionIndex === 1;
@@ -1252,5 +1247,33 @@ export class PosCartSidebarComponent implements OnDestroy {
     // Prefer stable keys if present in control value
     const val = _ctrl?.value || {};
     return val.id || val.itemId || index;
+  }
+
+  // Increment quantity for a cart item
+  incrementQuantity(index: number) {
+    if (index < 0 || index >= this.salesInvoiceDetails.length) return;
+    
+    const itemForm = this.salesInvoiceDetails.at(index) as FormGroup;
+    const qtyCtrl = itemForm.get('invoiceQty');
+    
+    if (qtyCtrl) {
+      const currentQty = parseFloat(qtyCtrl.value) || 0;
+      const newQty = +(currentQty + 1).toFixed(3);
+      qtyCtrl.setValue(newQty);
+    }
+  }
+
+  // Decrement quantity for a cart item
+  decrementQuantity(index: number) {
+    if (index < 0 || index >= this.salesInvoiceDetails.length) return;
+    
+    const itemForm = this.salesInvoiceDetails.at(index) as FormGroup;
+    const qtyCtrl = itemForm.get('invoiceQty');
+    
+    if (qtyCtrl) {
+      const currentQty = parseFloat(qtyCtrl.value) || 0;
+      const newQty = Math.max(0.001, +(currentQty - 1).toFixed(3)); // Minimum 0.001
+      qtyCtrl.setValue(newQty);
+    }
   }
 }

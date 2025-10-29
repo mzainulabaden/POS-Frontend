@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 
 export interface NavigationState {
-  currentSection: 'search' | 'products' | 'cart' | 'actions' | 'header';
+  currentSection: 'search' | 'products' | 'cart' | 'header';
   selectedProductIndex: number;
   selectedCartItemIndex: number;
   selectedHeaderIndex?: number;

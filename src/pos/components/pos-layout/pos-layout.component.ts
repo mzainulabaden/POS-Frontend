@@ -571,18 +571,13 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
 
   private handleArrowLeft() {
     switch (this.navigationState.currentSection) {
-      case 'search':
-        this.keyboardNavService.navigateToSection('actions');
-        break;
       case 'products':
         this.keyboardNavService.navigateToSection('cart');
         break;
       case 'cart':
         this.keyboardNavService.navigateToSection('products');
         break;
-      case 'actions':
-        this.keyboardNavService.navigateToSection('search');
-        break;
+
       case 'header':
         // Move left within header dropdowns
         {
@@ -604,12 +599,7 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
       case 'products':
         this.keyboardNavService.navigateToSection('cart');
         break;
-      case 'cart':
-        this.keyboardNavService.navigateToSection('actions');
-        break;
-      case 'actions':
-        this.keyboardNavService.navigateToSection('search');
-        break;
+  
       case 'header':
         // Move right within header dropdowns
         {
@@ -637,10 +627,6 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
       case 'cart':
         // Focus on quantity field of selected cart item
         this.focusCartItemQuantity();
-        break;
-      case 'actions':
-        // Execute action based on current state
-        this.executeAction();
         break;
     }
   }
