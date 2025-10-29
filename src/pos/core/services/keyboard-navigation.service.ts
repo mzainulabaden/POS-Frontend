@@ -50,7 +50,8 @@ export class KeyboardNavigationService {
       (target as any).isContentEditable === true
     );
     const key = event.key;
-    const allowInInput = isInput && (key === 'Backspace' || key === 'Delete');
+    // Allow Enter, Backspace, Delete in input fields - let them work normally
+    const allowInInput = isInput && (key === 'Backspace' || key === 'Delete' || key === 'Enter');
 
     if (this.isCustomShortcut(event) && !allowInInput) {
       event.preventDefault();

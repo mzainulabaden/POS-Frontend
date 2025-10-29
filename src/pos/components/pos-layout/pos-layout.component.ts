@@ -428,7 +428,14 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
   private shouldHandleInInput(event: KeyboardEvent): boolean {
     // Handle these keys even when typing in input fields
     const keysToHandleInInput = ['Escape', 'Tab', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10'];
-    return keysToHandleInInput.includes(event.key) || event.ctrlKey;
+    if (keysToHandleInInput.includes(event.key) || event.ctrlKey) {
+      return true;
+    }
+    // Allow ArrowLeft/ArrowRight inside inputs when navigating cart fields
+    if (this.navigationState.currentSection === 'cart' && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+      return true;
+    }
+    return false;
   }
 
   private processKeyPress(event: KeyboardEvent): boolean {
@@ -575,7 +582,11 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
         this.keyboardNavService.navigateToSection('cart');
         break;
       case 'cart':
-        this.keyboardNavService.navigateToSection('products');
+        // Ensure a cart item is selected, then go to previous field (like Shift+Tab)
+        this.ensureCartSelection();
+        if (this.cartSidebar) {
+          (this.cartSidebar as any).navigateCartFields('prev');
+        }
         break;
 
       case 'header':
@@ -598,6 +609,14 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
         break;
       case 'products':
         this.keyboardNavService.navigateToSection('cart');
+        this.ensureCartSelection();
+        break;
+      case 'cart':
+        // Ensure a cart item is selected, then go to next field (like Tab)
+        this.ensureCartSelection();
+        if (this.cartSidebar) {
+          (this.cartSidebar as any).navigateCartFields('next');
+        }
         break;
   
       case 'header':
@@ -611,6 +630,26 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
         }
         break;
     }
+  }
+
+  private ensureCartSelection() {
+    try {
+      const hasItems = Array.isArray(this.cartItems) && this.cartItems.length > 0;
+      const currentIndex = (this.navigationState && typeof this.navigationState.selectedCartItemIndex === 'number')
+        ? this.navigationState.selectedCartItemIndex
+        : -1;
+      if (hasItems && currentIndex < 0) {
+        // Update global navigation state
+        this.keyboardNavService.updateNavigationState({
+          selectedCartItemIndex: 0,
+          currentSection: 'cart'
+        } as any);
+        // Update sidebar component selection if accessible
+        if (this.cartSidebar && typeof (this.cartSidebar as any).selectedCartItemIndex === 'number') {
+          (this.cartSidebar as any).selectedCartItemIndex = 0;
+        }
+      }
+    } catch {}
   }
 
   private handleEnter() {
