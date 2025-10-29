@@ -427,7 +427,7 @@ export class PosCartSidebarComponent implements OnDestroy {
       rate: [product.unitPrice || 0],
       invoiceQty: [product.qty || 1],
       discount: [product.discount || 0], // amount
-      discountPercentage: [0], // percent
+      discountPercentage: [product.discountPercentage || 0], // percent - preserve from product
       
       unitId: [product.unitId || 0],
       warehouseId: [defaultId],
@@ -519,6 +519,33 @@ export class PosCartSidebarComponent implements OnDestroy {
       isUpdating = false;
     });
 
+    // Sync discount values back to cart item when they change (only if value actually changed)
+    discAmtCtrl?.valueChanges.subscribe((discountAmt) => {
+      const currentItems = this.posService.cartItems;
+      const itemIndex = currentItems.findIndex((item: any) => item.id === product.id);
+      if (itemIndex >= 0) {
+        const newValue = discountAmt || 0;
+        // Only update if value actually changed to prevent infinite loops
+        if (currentItems[itemIndex].discount !== newValue) {
+          currentItems[itemIndex].discount = newValue;
+          this.posService.updateCartItems([...currentItems]);
+        }
+      }
+    });
+
+    discPctCtrl?.valueChanges.subscribe((discountPct) => {
+      const currentItems = this.posService.cartItems;
+      const itemIndex = currentItems.findIndex((item: any) => item.id === product.id);
+      if (itemIndex >= 0) {
+        const newValue = discountPct || 0;
+        // Only update if value actually changed to prevent infinite loops
+        if (currentItems[itemIndex].discountPercentage !== newValue) {
+          currentItems[itemIndex].discountPercentage = newValue;
+          this.posService.updateCartItems([...currentItems]);
+        }
+      }
+    });
+
     this.salesInvoiceDetails.push(itemForm);
   }
 
@@ -581,7 +608,13 @@ export class PosCartSidebarComponent implements OnDestroy {
   getTotalItemDiscounts(): number {
     return this.salesInvoiceDetails.controls.reduce((acc, ctrl) => {
       const discount = ctrl.get("discount")?.value || 0;
-      return acc + discount;
+      const discountPercentage = ctrl.get("discountPercentage")?.value || 0;
+      const lineTotal = ctrl.get("lineTotal")?.value || 0;
+      
+      // Calculate discount from percentage
+      const discountFromPercentage = +(lineTotal * (discountPercentage / 100)).toFixed(2);
+      
+      return acc + discount + discountFromPercentage;
     }, 0);
   }
 

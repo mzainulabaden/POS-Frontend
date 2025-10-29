@@ -54,6 +54,10 @@ export class PosService {
     this._cartItems.next(items);
   }
 
+  updateCartItems(items: any[]) {
+    this._cartItems.next(items);
+  }
+
   clearCart() {
     this._cartItems.next([]);
   }
