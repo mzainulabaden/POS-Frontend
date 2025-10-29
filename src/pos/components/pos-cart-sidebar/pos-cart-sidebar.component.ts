@@ -1188,6 +1188,58 @@ export class PosCartSidebarComponent implements OnDestroy {
 
     const key = event.key;
     const code = (event as any).code as string | undefined;
+    // Enter navigates between fields within the current cart item
+    if (key === 'Enter') {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const isFirstItem = index === 0;
+      const isLastItem = index === (this.cartItems?.length ?? 0) - 1;
+      const isFirstField = controlName === 'invoiceQty';
+      const isLastField = controlName === 'discountPercentage';
+
+      // At boundaries, keep focus on the same field (do not blur)
+      if ((!event.shiftKey && isLastItem && isLastField) || (event.shiftKey && isFirstItem && isFirstField)) {
+        const target = event.target as HTMLInputElement | null;
+        // Defer to ensure the browser doesn't steal focus on Enter
+        setTimeout(() => {
+          if (target) {
+            target.focus();
+            target.select?.();
+          }
+        }, 0);
+        return;
+      }
+
+      this.selectedCartItemIndex = index;
+      const fieldIndexMap: Record<'invoiceQty' | 'lineTotal' | 'discount' | 'discountPercentage', number> = {
+        invoiceQty: 0,
+        lineTotal: 1,
+        discount: 2,
+        discountPercentage: 3
+      };
+      this.selectedCartFieldIndex = fieldIndexMap[controlName];
+      this.navigateCartFields(event.shiftKey ? 'prev' : 'next');
+
+      // Fallback: ensure focus lands on intended target after navigation
+      setTimeout(() => {
+        const selectors = [
+          'input[formControlName="invoiceQty"]',
+          'input[formControlName="lineTotal"]',
+          'input[formControlName="discount"]',
+          'input[formControlName="discountPercentage"]'
+        ];
+        const container = document.querySelector(`[data-cart-item-index="${this.selectedCartItemIndex}"]`) as HTMLElement | null;
+        if (!container) { return; }
+        const sel = selectors[this.selectedCartFieldIndex];
+        const el = container.querySelector(sel) as HTMLInputElement | null;
+        if (el) {
+          el.focus();
+          el.select?.();
+        }
+      }, 0);
+      return;
+    }
     const isPlus = key === '+' || code === 'NumpadAdd' || (key === '=' && event.shiftKey);
     const isMinus = key === '-' || code === 'NumpadSubtract' || (key === '_' && event.shiftKey);
     if (!isPlus && !isMinus) { return; }
