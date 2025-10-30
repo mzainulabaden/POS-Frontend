@@ -672,8 +672,7 @@ export class PosCartSidebarComponent implements OnDestroy {
     return this.salesInvoiceDetails.controls.reduce((acc, ctrl) => {
       const qty = ctrl.get("invoiceQty")?.value || 1;
       const price = ctrl.get("rate")?.value || 0;
-      const discount = ctrl.get("discount")?.value || 0;
-      return acc + qty * price - discount;
+      return acc + qty * price;
     }, 0);
   }
 
@@ -692,21 +691,24 @@ export class PosCartSidebarComponent implements OnDestroy {
   get payableAmount(): number {
     const billDiscountAmt = this.purchaseForm.get("discountAmount")?.value || 0;
     const billDiscountPct = this.purchaseForm.get("discountPercentage")?.value || 0;
-    const pctAmt = +(this.subtotal * (billDiscountPct / 100)).toFixed(2);
-    const total = this.subtotal - billDiscountAmt - pctAmt;
+    const billDiscountFromPct = +(this.subtotal * (billDiscountPct / 100)).toFixed(2);
+    const itemDiscounts = this.getTotalItemDiscounts();
+    const total = this.subtotal - itemDiscounts - billDiscountAmt - billDiscountFromPct;
     return total < 0 ? 0 : total; // prevent negative totals
   }
 
   getTotalItemDiscounts(): number {
     return this.salesInvoiceDetails.controls.reduce((acc, ctrl) => {
-      const discount = ctrl.get("discount")?.value || 0;
-      const discountPercentage = ctrl.get("discountPercentage")?.value || 0;
-      const lineTotal = ctrl.get("lineTotal")?.value || 0;
-      
-      // Calculate discount from percentage
-      const discountFromPercentage = +(lineTotal * (discountPercentage / 100)).toFixed(2);
-      
-      return acc + discount + discountFromPercentage;
+      const discountAmount = +(ctrl.get("discount")?.value || 0);
+      const discountPercentage = +(ctrl.get("discountPercentage")?.value || 0);
+      const lineTotal = +(ctrl.get("lineTotal")?.value || 0);
+
+      // Use either percentage-based discount OR fixed amount, not both
+      const effectiveDiscount = discountPercentage > 0
+        ? +(lineTotal * (discountPercentage / 100)).toFixed(2)
+        : discountAmount;
+
+      return acc + effectiveDiscount;
     }, 0);
   }
 
