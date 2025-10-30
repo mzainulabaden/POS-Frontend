@@ -20,7 +20,7 @@
 
       <div style="width: 40%" class="d-flex gap-2 position-relative">
         <!-- Search Input with Dropdown -->
-        <div class="position-relative w-100">
+        <div class="position-relative w-100" #searchContainer>
           <input
             type="text"
             pInputText
@@ -37,10 +37,14 @@
           
           <!-- Search Dropdown -->
           <div 
-            *ngIf="showSearchDropdown && searchResults.length > 0" 
+            *ngIf="showSearchDropdown" 
             class="search-dropdown"
             style="position: absolute; top: 100%; left: 0; min-width: 400px; max-width: 600px; z-index: 1000; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); max-height: 400px; overflow-y: auto; margin-top: 4px;"
           >
+            <!-- Empty state -->
+            <div *ngIf="searchResults.length === 0" class="p-2 text-muted small">
+              No matches found
+            </div>
             <div 
               *ngFor="let product of searchResults; let i = index; trackBy: trackByProduct"
               class="search-result-item"
@@ -49,14 +53,10 @@
               (mouseenter)="selectedSearchIndex = i"
             >
               <div class="flex-grow-1">
-                <div class="fw-bold text-dark">
-                  {{ product.name }}
-                </div>
+                <div class="fw-bold text-dark" [innerHTML]="getHighlighted(product.name, searchItems)"></div>
                 <div class="text-muted small">
                   <span *ngIf="product.sku || product.SKU">SKU: {{ product.sku || product.SKU }}</span>
-                  <span *ngIf="product.barcode || product.Barcode" style="margin-left: 8px;">
-                    Barcode: {{ product.barcode || product.Barcode }}
-                  </span>
+                  <span *ngIf="product.barcode || product.Barcode" style="margin-left: 8px;">Barcode: {{ product.barcode || product.Barcode }}</span>
                 </div>
               </div>
               <div class="text-success fw-bold">

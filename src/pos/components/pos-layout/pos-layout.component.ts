@@ -33,6 +33,7 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
   selectedSearchIndex = -1;
   allProducts: any[] = [];
   @ViewChild("searchInput") searchInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('searchContainer') searchContainerRef!: ElementRef<HTMLElement>;
   // Cache products per warehouse to avoid repeated API calls
   private productsCache = new Map<any, any[]>();
   // Debounced search stream
@@ -165,7 +166,7 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
 
   // Perform search and show dropdown
   performSearch(term: string) {
-    if (!term || term.trim().length < 2) {
+    if (!term || term.trim().length < 1) {
       this.showSearchDropdown = false;
       this.searchResults = [];
       return;
@@ -184,6 +185,20 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
 
     this.showSearchDropdown = this.searchResults.length > 0;
     this.selectedSearchIndex = -1;
+  }
+
+  // Highlight matching text helper
+  getHighlighted(text: string | number | undefined, term: string): string {
+    const value = (text ?? '').toString();
+    const t = (term ?? '').toString().trim();
+    if (!t) return value;
+    try {
+      const escaped = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(${escaped})`, 'ig');
+      return value.replace(regex, '<mark>$1</mark>');
+    } catch {
+      return value;
+    }
   }
 
   trackByProduct(index: number, product: any) {
@@ -212,27 +227,56 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
 
   // Handle keyboard navigation in search dropdown
   onSearchKeyDown(event: KeyboardEvent) {
-    if (!this.showSearchDropdown) return;
+    // Handle dropdown navigation when visible
+    if (this.showSearchDropdown) {
+      switch (event.key) {
+        case 'ArrowDown':
+          event.preventDefault();
+          this.selectedSearchIndex = Math.min(this.selectedSearchIndex + 1, this.searchResults.length - 1);
+          return;
+        case 'ArrowUp':
+          event.preventDefault();
+          this.selectedSearchIndex = Math.max(this.selectedSearchIndex - 1, -1);
+          return;
+        case 'Enter':
+          event.preventDefault();
+          // If nothing highlighted but we have results, select the first
+          if (this.selectedSearchIndex < 0 && this.searchResults.length > 0) {
+            this.selectedSearchIndex = 0;
+          }
+          if (this.selectedSearchIndex >= 0 && this.selectedSearchIndex < this.searchResults.length) {
+            this.selectSearchResult(this.searchResults[this.selectedSearchIndex], this.selectedSearchIndex);
+          }
+          // Always blur on Enter
+          if (this.searchInput) {
+            this.searchInput.nativeElement.blur();
+          }
+          this.showSearchDropdown = false;
+          this.selectedSearchIndex = -1;
+          return;
+        case 'Escape':
+          this.showSearchDropdown = false;
+          this.selectedSearchIndex = -1;
+          return;
+      }
+    } else if (event.key === 'Enter') {
+      // When dropdown is not visible, Enter should blur
+      event.preventDefault();
+      if (this.searchInput) {
+        this.searchInput.nativeElement.blur();
+      }
+      this.keyboardNavService.clearFocus();
+    }
+  }
 
-    switch (event.key) {
-      case 'ArrowDown':
-        event.preventDefault();
-        this.selectedSearchIndex = Math.min(this.selectedSearchIndex + 1, this.searchResults.length - 1);
-        break;
-      case 'ArrowUp':
-        event.preventDefault();
-        this.selectedSearchIndex = Math.max(this.selectedSearchIndex - 1, -1);
-        break;
-      case 'Enter':
-        event.preventDefault();
-        if (this.selectedSearchIndex >= 0 && this.selectedSearchIndex < this.searchResults.length) {
-          this.selectSearchResult(this.searchResults[this.selectedSearchIndex], this.selectedSearchIndex);
-        }
-        break;
-      case 'Escape':
-        this.showSearchDropdown = false;
-        this.selectedSearchIndex = -1;
-        break;
+  // Close dropdown on outside click
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as Node;
+    const containerEl = this.searchContainerRef?.nativeElement;
+    if (containerEl && target && !containerEl.contains(target)) {
+      this.showSearchDropdown = false;
+      this.selectedSearchIndex = -1;
     }
   }
 
@@ -469,6 +513,10 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
         return true;
       case 'F3':
         this.keyboardNavService.focusSearch();
+        // Programmatically focus the search input
+        if (this.searchInput?.nativeElement) {
+          setTimeout(() => this.searchInput.nativeElement.focus(), 0);
+        }
         return true;
       case 'F4':
         this.keyboardNavService.focusBarcode();
