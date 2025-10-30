@@ -141,6 +141,8 @@
                   step="0.01"
                   clearZeroOnFocus
                   (keydown)="onCartFieldKeyDown($event, i, 'discount')"
+                  (focus)="onDiscountFieldFocus(i)"
+                  (blur)="onDiscountFieldBlur(i)"
                 />
               </div>
 

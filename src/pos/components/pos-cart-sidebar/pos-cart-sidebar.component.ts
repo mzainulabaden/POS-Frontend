@@ -43,6 +43,7 @@ export class PosCartSidebarComponent implements OnDestroy {
   // We'll query it when header section is active
   // Disable highlighting/focus for Actions section by default
   private enableActionFocus = false;
+  isEditingDiscountAmount: { [index: number]: boolean } = {};
 
   set cartItems(value: any[]) {
     this._cartItems = value || [];
@@ -573,6 +574,7 @@ export class PosCartSidebarComponent implements OnDestroy {
 
     // When discount % changes: recompute discount amount
     discPctCtrl?.valueChanges.subscribe((pct) => {
+      if (this.isEditingDiscountAmount[this.salesInvoiceDetails.length - 1]) return; // Do not overwrite while editing
       if (isUpdating) return;
       isUpdating = true;
       const percent = +pct || 0;
@@ -991,21 +993,22 @@ export class PosCartSidebarComponent implements OnDestroy {
       customer: selectedCustomer?.name || 'Walk-in Customer',
       paymentMode: selectedPayment?.name || 'Cash',
       warehouse: selectedWarehouse?.name || '',
-      items: this.salesInvoiceDetails.controls.map((ctrl) => {
+      items: this.salesInvoiceDetails.controls.map((ctrl, index) => {
         const qty = Number(ctrl.get('invoiceQty')?.value) || 0;
-        // Use rate as unit price (this is the actual unit price)
         const unitPrice = Number(ctrl.get('rate')?.value) || 0;
-        // Use the already calculated discount amount from the form (no double calculation)
-        const discountAmount = Number(ctrl.get('discount')?.value) || 0;
-        // Use the lineTotal which already has the discount applied
-        const lineTotal = Number(ctrl.get('lineTotal')?.value) || 0;
+        const gross = +(qty * unitPrice).toFixed(2);
+        const discountAmountCtrl = Number(ctrl.get('discount')?.value) || 0;
+        const discountPct = Number(ctrl.get('discountPercentage')?.value) || 0;
+        const pctDiscount = +((discountPct > 0 ? gross * (discountPct / 100) : 0)).toFixed(2);
+        const effectiveDiscount = discountPct > 0 ? pctDiscount : discountAmountCtrl;
+        const net = Math.max(0, +(gross - effectiveDiscount).toFixed(2));
 
         return {
           name: ctrl.get('itemName')?.value || '',
           quantity: qty,
           price: unitPrice,
-          discount: discountAmount,
-          total: lineTotal
+          discount: +(effectiveDiscount || 0).toFixed(2) as unknown as number,
+          total: net
         };
       }),
       subtotal: this.subtotal,
@@ -1393,6 +1396,20 @@ export class PosCartSidebarComponent implements OnDestroy {
     }
 
     ctrl.setValue(+val.toFixed(2));
+  }
+
+  onDiscountFieldFocus(index: number) {
+    this.isEditingDiscountAmount[index] = true;
+  }
+
+  onDiscountFieldBlur(index: number) {
+    this.isEditingDiscountAmount[index] = false;
+    // Force sync of the displayed value to the control (in case user typed then blurred)
+    const ctrl = this.salesInvoiceDetails.at(index)?.get('discount');
+    if (ctrl) {
+      const input = (document.querySelectorAll('input[formControlName="discount"]')[index] as HTMLInputElement);
+      if (input) ctrl.setValue(Number(input.value), { emitEvent: true });
+    }
   }
 
   onBillFieldKeyDown(event: KeyboardEvent, controlName: 'discountAmount' | 'discountPercentage') {
