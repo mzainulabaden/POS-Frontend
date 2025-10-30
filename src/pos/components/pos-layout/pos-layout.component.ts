@@ -85,6 +85,13 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
         this.sidebarService.setSearchTerm(term);
         this.performSearch(term);
       });
+
+    // Reload products when warehouse dropdown changes
+    this.sidebarService.currentWarehouseId$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.loadAllProducts();
+      });
   }
 
   // Toggle Sidebar
@@ -138,7 +145,7 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
   // Load all products for search functionality
   loadAllProducts() {
     // Get effective warehouse ID (current or dukkan as default)
-    const warehouseId:any = this.sidebarService.getCurrentWarehouseId();
+    const warehouseId: any = this.sidebarService.getEffectiveWarehouseId?.();
     
     if (warehouseId) {
       // Return cached products if available
@@ -147,7 +154,7 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
         this.allProducts = cached;
         return;
       }
-      // Call the new API with warehouse parameter and cache
+      // Fetch from API once per warehouse and cache results
       this.sidebarService.getItemsWithStockByWarehouse(warehouseId).subscribe({
         next: (response) => {
           const items = response.items || response || [];
@@ -173,16 +180,17 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
     }
 
     const lowerTerm = term.toLowerCase().trim();
-    this.searchResults = this.allProducts.filter((product) => {
-      const name = (product.name || '').toLowerCase();
+    // Filter locally from cached/allProducts; loadAllProducts handles API + caching on warehouse changes
+    this.searchResults = (this.allProducts || []).filter((product: any) => {
+      const name = (product.name || product.itemName || '').toLowerCase();
       const sku = (product.sku || product.SKU || '').toString().toLowerCase();
       const barcode = (product.barcode || product.Barcode || '').toString().toLowerCase();
-      
-      return name.includes(lowerTerm) || 
-             sku.includes(lowerTerm) || 
-             barcode.includes(lowerTerm);
-    }).slice(0, 8); // Limit to 8 results like Google
-
+      return (
+        name.includes(lowerTerm) ||
+        sku.includes(lowerTerm) ||
+        barcode.includes(lowerTerm)
+      );
+    }).slice(0, 8);
     this.showSearchDropdown = this.searchResults.length > 0;
     this.selectedSearchIndex = -1;
   }

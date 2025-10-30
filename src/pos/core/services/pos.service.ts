@@ -125,7 +125,8 @@ export class PosService {
 
   getItemsWithStockByWarehouse(warehouseId: number, itemId?: number) {
     this.url = `${this.baseUrl}Item/GetItemsWithStockByWarehouse`;
-    const params = [`WarehouseId=${warehouseId}`];
+    // Use lowercase param name to match backend (per provided URL)
+    const params = [`warehouseId=${warehouseId}`];
     
     if (params.length > 0) {
       this.url += `?${params.join("&")}`;
