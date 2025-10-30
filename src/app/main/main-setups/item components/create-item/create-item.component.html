@@ -552,7 +552,11 @@
         <label class="label-text font-bold">Generated Barcode:</label>
         <p class="text-lg font-mono">{{ generatedBarcode }}</p>
       </div>
-
+      <!-- Custom Header Above Barcode -->
+      <div class="text-center mb-2">
+        <span class="font-bold" style="font-size:18px">Usama Sweets and bakers</span><br />
+        <span class="font-medium" style="font-size:15px">{{ itemForm.value.name }}</span>
+      </div>
       <!-- Barcode Canvas -->
       <div class="text-center mb-3">
         <canvas id="barcodeCanvas"></canvas>
