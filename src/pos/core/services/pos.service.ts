@@ -37,10 +37,12 @@ export class PosService {
 
   addToCart(product: any) {
     const items = [...this._cartItems.value];
-    const existing = items.find((item) => item.id === product.id);
+    const targetId = product && product.id != null ? String(product.id) : undefined;
+    const existing = items.find((item) => (item && item.id != null ? String(item.id) : undefined) === targetId);
 
     if (existing) {
-      existing.qty = (existing.qty || 1) + 1;
+      const currentQty = Number(existing.qty || 1);
+      existing.qty = currentQty + 1;
     } else {
       items.push({ ...product, qty: 1 });
     }

@@ -52,6 +52,7 @@ export class PosCartSidebarComponent implements OnDestroy {
       this._cartItems.forEach((product) => this.addItemToForm(product));
     }
     // items updated; form rebuilt accordingly
+    try { this.cdr.detectChanges(); } catch {}
   }
 
   get cartItems() {
@@ -97,11 +98,9 @@ export class PosCartSidebarComponent implements OnDestroy {
     this.trigger();
     this.loadHoldOrdersFromStorage();
 
-    // Subscribe to shared cart
+    // Subscribe to shared cart: update form in place when possible for visible qty increments
     this.posService.cartItems$.subscribe((items) => {
-      this.cartItems = items;
-      this.salesInvoiceDetails.clear();
-      this.cartItems.forEach((p) => this.addItemToForm(p));
+      this.syncFormWithCart(items || []);
     });
 
     this.purchaseForm.get("paymentModeId")?.valueChanges.subscribe((modeId) => {
@@ -139,6 +138,68 @@ export class PosCartSidebarComponent implements OnDestroy {
         this.navigationState = state;
         this.handleNavigationStateChange(state);
       });
+  }
+
+  // Keep form rows in sync with cart items while preserving and updating existing controls
+  private syncFormWithCart(items: any[]) {
+    // If counts or identities differ, rebuild via setter
+    const currentCount = this.salesInvoiceDetails.length;
+    const incomingCount = items.length;
+
+    const formIds = new Set(
+      Array.from({ length: currentCount }, (_, i) => (this.salesInvoiceDetails.at(i) as FormGroup)?.get('itemId')?.value)
+    );
+    const incomingIds = new Set(items.map((it: any) => it?.id));
+
+    const sameShape = currentCount === incomingCount && [...incomingIds].every((id) => formIds.has(id));
+
+    if (!sameShape) {
+      // Fall back to existing setter which rebuilds form from scratch
+      this.cartItems = items as any[];
+      return;
+    }
+
+    // Update existing rows in place (qty, price, discounts)
+    const byId: Record<string, any> = {};
+    for (const it of items) {
+      if (it && it.id != null) byId[String(it.id)] = it;
+    }
+
+    for (let i = 0; i < this.salesInvoiceDetails.length; i++) {
+      const fg = this.salesInvoiceDetails.at(i) as FormGroup;
+      const id = fg.get('itemId')?.value;
+      const key = id != null ? String(id) : undefined;
+      const fromCart = key ? byId[key] : undefined;
+      if (!fromCart) { continue; }
+
+      const qtyCtrl = fg.get('invoiceQty');
+      const rateCtrl = fg.get('rate');
+      const discAmtCtrl = fg.get('discount');
+      const discPctCtrl = fg.get('discountPercentage');
+
+      // Only set when different to avoid loops
+      const newQty = Number(fromCart.qty || 1);
+      if ((Number(qtyCtrl?.value) || 0) !== newQty) {
+        qtyCtrl?.setValue(newQty);
+      }
+
+      const newRate = Number(fromCart.unitPrice || 0);
+      if ((Number(rateCtrl?.value) || 0) !== newRate) {
+        rateCtrl?.setValue(newRate);
+      }
+
+      const newDiscAmt = Number(fromCart.discount || 0);
+      if ((Number(discAmtCtrl?.value) || 0) !== newDiscAmt) {
+        discAmtCtrl?.setValue(newDiscAmt);
+      }
+
+      const newDiscPct = Number(fromCart.discountPercentage || 0);
+      if ((Number(discPctCtrl?.value) || 0) !== newDiscPct) {
+        discPctCtrl?.setValue(newDiscPct);
+      }
+    }
+
+    try { this.cdr.detectChanges(); } catch {}
   }
 
   ngOnDestroy() {
@@ -455,6 +516,17 @@ export class PosCartSidebarComponent implements OnDestroy {
         const dAmt = +(amount * (pct / 100)).toFixed(2);
         discAmtCtrl?.setValue(dAmt, { emitEvent: false });
       }
+      // Sync qty back to shared cart state
+      const currentItems = this.posService.cartItems;
+      const targetId = product && product.id != null ? String(product.id) : undefined;
+      const itemIndex = currentItems.findIndex((item: any) => (item && item.id != null ? String(item.id) : undefined) === targetId);
+      if (itemIndex >= 0) {
+        const newQty = quantity;
+        if (currentItems[itemIndex].qty !== newQty) {
+          currentItems[itemIndex].qty = newQty;
+          this.posService.updateCartItems([...currentItems]);
+        }
+      }
       isUpdating = false;
     });
 
@@ -471,6 +543,17 @@ export class PosCartSidebarComponent implements OnDestroy {
       if (pct > 0) {
         const dAmt = +(amount * (pct / 100)).toFixed(2);
         discAmtCtrl?.setValue(dAmt, { emitEvent: false });
+      }
+      // Sync unit price back to shared cart state
+      const currentItems = this.posService.cartItems;
+      const targetId = product && product.id != null ? String(product.id) : undefined;
+      const itemIndex = currentItems.findIndex((item: any) => (item && item.id != null ? String(item.id) : undefined) === targetId);
+      if (itemIndex >= 0) {
+        const newUnitPrice = unitRate;
+        if (currentItems[itemIndex].unitPrice !== newUnitPrice) {
+          currentItems[itemIndex].unitPrice = newUnitPrice;
+          this.posService.updateCartItems([...currentItems]);
+        }
       }
       isUpdating = false;
     });
@@ -547,6 +630,15 @@ export class PosCartSidebarComponent implements OnDestroy {
     });
 
     this.salesInvoiceDetails.push(itemForm);
+
+    // Ensure UI reflects latest qty/rate immediately (handles DOM reuse cases)
+    setTimeout(() => {
+      try {
+        qtyCtrl?.setValue(product.qty || 1);
+        rateCtrl?.setValue(product.unitPrice || 0);
+        this.cdr.detectChanges();
+      } catch {}
+    }, 0);
   }
 
   // Check stock for a specific item in warehouse

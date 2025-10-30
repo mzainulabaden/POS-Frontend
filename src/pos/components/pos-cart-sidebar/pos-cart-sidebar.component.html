@@ -86,10 +86,7 @@
 
   <div class="flex-grow-1 overflow-auto pe-1">
     <!-- Selected Item Name Header -->
-    <div *ngIf="selectedCartItemIndex >= 0" class="mb-2 px-2 py-1 border rounded bg-light">
-      <strong>Item:</strong>
-      <span>{{ getSelectedCartItemName() }}</span>
-    </div>
+
     <div *ngIf="cartItems.length; else noItems">
       <div formArrayName="salesInvoiceDetails">
         <div
