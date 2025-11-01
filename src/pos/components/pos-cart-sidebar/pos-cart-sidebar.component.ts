@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, HostListener, OnDestroy } from "@angular/core";
+import { ChangeDetectorRef, Component, Input, HostListener, OnDestroy, OnInit } from "@angular/core";
 import { PurchaseService } from "@app/main/purchase/shared/services/purchase.service";
 import { FormArray, FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { MessageService } from "primeng/api";
@@ -12,9 +12,9 @@ import { Subject } from "rxjs";
 @Component({
   selector: "app-pos-cart-sidebar",
   templateUrl: "./pos-cart-sidebar.component.html",
-  styleUrls: ["./pos-cart-sidebar.component.css"],
+  styleUrl: "./pos-cart-sidebar.component.css",
 })
-export class PosCartSidebarComponent implements OnDestroy {
+export class PosCartSidebarComponent implements OnInit, OnDestroy {
   purchaseForm: FormGroup;
   // Disable programmatic focusing in cart by default
   private enableProgrammaticFocus = false;
