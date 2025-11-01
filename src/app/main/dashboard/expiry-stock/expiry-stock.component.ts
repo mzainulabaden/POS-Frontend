@@ -31,6 +31,5 @@ export class ExpiryStockComponent implements OnInit {
       },
     });
   }
-1``}
-
+}
 

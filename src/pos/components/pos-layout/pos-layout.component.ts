@@ -215,7 +215,6 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
 
   // Handle search result selection
   selectSearchResult(product: any, index: number) {
-    this.searchItems = product.name;
     this.showSearchDropdown = false;
     const cartItem = {
       ...product,
@@ -228,6 +227,10 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
       discount: 0,
     };
     this.sidebarService.addToCart(cartItem);
+    // Clear search bar after adding product to cart
+    this.searchItems = "";
+    // Clear search term to show all products in product section
+    this.sidebarService.setSearchTerm("");
     if (this.enableProgrammaticFocus && this.searchInput) {
       this.searchInput.nativeElement.focus();
     }
