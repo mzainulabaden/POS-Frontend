@@ -186,37 +186,40 @@
           </div>
 
           <div class="flex gap-1 justify-content-end mt-4">
-            <p-button
-              (onClick)="displayModal = false"
-              label="Cancel"
-              [outlined]="true"
-              severity="warning"
-            />
-            <p-button
-              [loading]="saving"
+            <button
+              pButton
+              type="button"
+              class="p-button-outlined p-button-warning"
+              (click)="displayModal = false"
+            >
+              Cancel
+            </button>
+            <button
+              pButton
+              type="button"
+              class="p-button-outlined p-button-secondary"
               *ngIf="!editMode && !viewMode"
               (click)="save()"
               [disabled]="!todoListForm.valid"
-              label="Save"
-              [outlined]="true"
-              severity="contrast"
-            />
-            <p-button
-              [loading]="saving"
+            >
+              Save
+            </button>
+            <button
+              pButton
+              type="button"
+              class="p-button-outlined p-button-secondary"
               *ngIf="editMode && !viewMode"
               (click)="update()"
               [disabled]="!todoListForm.valid"
-              label="Update"
-              [outlined]="true"
-              severity="contrast"
-            />
+            >
+              Update
+            </button>
           </div>
         </form>
       </ng-container>
     </p-dialog>
     <div>
-      <p-toast />
-      <p-confirmDialog />
+      
     </div>
   </div>
 </div>

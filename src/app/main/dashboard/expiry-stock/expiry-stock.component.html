@@ -1,0 +1,51 @@
+<p-toolbar styleClass="mb-3 px-4 py-2">
+  <ng-template pTemplate="left">
+    <h4>Expiry Stock</h4>
+  </ng-template>
+  <ng-template pTemplate="right">
+    <button
+      class="bg-white hover:bg-gray-800 hover:text-white text-black px-3 py-2 rounded-lg border border-gray-500 font-medium shadow-none transition-all duration-200"
+      (click)="fetchData()"
+    >
+      Refresh
+    </button>
+  </ng-template>
+  
+</p-toolbar>
+
+<p-card>
+  <p-table
+    [value]="rows"
+    [loading]="loading"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[10,20,50]"
+    [tableStyle]="{ 'min-width': '50rem' }"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Item</th>
+        <th>Unit</th>
+        <th class="text-end">Stock Balance</th>
+        <th>Expiry Date</th>
+        <th class="text-end">Days Until Expiry</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-row>
+      <tr>
+        <td>{{ row.itemName }}</td>
+        <td>{{ row.unitName }}</td>
+        <td class="text-end">{{ row.stockBalance }}</td>
+        <td>{{ row.expiryDate | date: 'yyyy-MM-dd' }}</td>
+        <td class="text-end">{{ row.daysUntilExpiry }}</td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="5">No data</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+

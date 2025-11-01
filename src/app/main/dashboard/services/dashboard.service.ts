@@ -75,6 +75,17 @@ export class DashboardService extends EnhancedDataService {
     );
   }
 
+  getExpiryStock() {
+    this.url = `${this.baseUrl}WarehouseStockAdjustment/GetExpiryStock`;
+    return this.http.get(this.url).pipe(
+      map((response: any) => response["result"]),
+      catchError((error) => {
+        console.error("Error fetching expiry stock:", error);
+        return throwError(error);
+      })
+    );
+  }
+
   getAll(target: string, param?: any) {
     this.url = `${this.baseUrl}${target}/GetAll`;
     const params = [];

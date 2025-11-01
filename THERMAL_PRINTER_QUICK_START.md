@@ -324,3 +324,4 @@ For detailed documentation, see `THERMAL_PRINTER_SETUP.md`
 
 
 
+

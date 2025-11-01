@@ -49,6 +49,15 @@ export class ReportsService {
       );
     }
 
+  getExpiryStock() {
+    this.url = `${this.baseUrl}WarehouseStockAdjustment/GetExpiryStock`;
+    return this.http.get(this.url).pipe(
+      map((response: any) => {
+        return response["result"];
+      })
+    );
+  }
+
   generateReport(url: string, bodyParams: any[] = []) {
     return this.http.post(url, bodyParams, {
       responseType: "blob", // Set response type to 'blob' for file download

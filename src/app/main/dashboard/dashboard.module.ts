@@ -11,6 +11,7 @@ import { MultiSelectModule } from "primeng/multiselect";
 import { ButtonModule } from "primeng/button";
 import { DashboardComponent } from "./dashboard/dashboard.component";
 import { TodoListComponent } from "./todo-list/todo-list.component";
+import { ExpiryStockComponent } from "./expiry-stock/expiry-stock.component";
 import { DashboardRoutingModule } from "./dashboard-routing.module";
 import { ToolbarModule } from "primeng/toolbar";
 import { ChartModule } from "primeng/chart";
@@ -18,9 +19,10 @@ import { CardModule } from "primeng/card";
 import { TableModule } from "primeng/table";
 import { AgGridModule } from "ag-grid-angular";
 import { AccordionModule } from "primeng/accordion";
+import { InputTextModule } from "primeng/inputtext";
 
 @NgModule({
-  declarations: [DashboardComponent, TodoListComponent],
+  declarations: [DashboardComponent, TodoListComponent, ExpiryStockComponent],
   imports: [
     DashboardRoutingModule,
     CommonModule,
@@ -40,6 +42,7 @@ import { AccordionModule } from "primeng/accordion";
     TableModule,
     AgGridModule,
     AccordionModule,
+    InputTextModule,
   ],
 })
 export class DashboardModule {}
