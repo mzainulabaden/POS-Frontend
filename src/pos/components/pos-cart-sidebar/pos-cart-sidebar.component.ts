@@ -268,13 +268,17 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
         event.preventDefault();
         event.stopPropagation();
         
-        // Check for number keys 1, 2, or 3
+        // Check for number keys 1, 2, 3, 4, or 5
         if (event.key === '1') {
           this.openCustomerDropdown();
         } else if (event.key === '2') {
           this.openPaymentDropdown();
         } else if (event.key === '3') {
           this.openWarehouseDropdown();
+        } else if (event.key === '4') {
+          this.triggerSale();
+        } else if (event.key === '5') {
+          this.holdCurrentOrder();
         }
         
         // Clear the flag
@@ -1644,10 +1648,19 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
   }
 
   triggerSale() {
-    // Trigger the sales button if cart has items
-    if (this.cartItems.length > 0) {
-      this.saveWithoutPrint();
+    // Validate cart has items
+    if (this.salesInvoiceDetails.length === 0) {
+      this.msgService.add({
+        severity: "warn",
+        summary: "Warning",
+        detail: "No items in cart to complete sale",
+        life: 2000,
+      });
+      return;
     }
+
+    // Trigger the sales button
+    this.saveWithoutPrint();
   }
 
   trackByCartItem(index: number, _ctrl: any) {
