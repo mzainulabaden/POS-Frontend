@@ -114,10 +114,11 @@
                   type="number"
                   class="form-control compact-input"
                   formControlName="invoiceQty"
-                  min="0.001"
-                  step="0.001"
+                  [min]="isPerItemUnitForForm(i) ? '1' : '0.001'"
+                  [step]="isPerItemUnitForForm(i) ? '1' : '0.001'"
                   clearZeroOnFocus
                   (keydown)="onCartFieldKeyDown($event, i, 'invoiceQty')"
+                  (input)="onQuantityInput($event, i)"
                 />
               </div>
 
@@ -249,7 +250,7 @@
         [class.keyboard-focus]="isActionFocused('sale')"
         (click)="saveWithoutPrint()"
         [disabled]="cartItems.length === 0"
-        title="Complete Sale (F9 or Ctrl+S)"
+        title="Complete Sale (Tab+4)"
       >
         Sale
       </button>

@@ -185,9 +185,24 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
       const rateCtrl = fg.get('rate');
       const discAmtCtrl = fg.get('discount');
       const discPctCtrl = fg.get('discountPercentage');
+      const unitNameCtrl = fg.get('unitName');
+
+      // Update unitName if available
+      if (fromCart.unitName && unitNameCtrl && unitNameCtrl.value !== fromCart.unitName) {
+        unitNameCtrl.setValue(fromCart.unitName);
+      }
 
       // Only set when different to avoid loops
-      const newQty = Number(fromCart.qty || 1);
+      let newQty = Number(fromCart.qty || 1);
+      
+      // If unit is "per item", round to whole number
+      const unitName = (unitNameCtrl?.value || fromCart.unitName || '').toString().toLowerCase().trim();
+      const isPerItem = unitName === 'per item' || unitName.includes('per item');
+      if (isPerItem) {
+        newQty = Math.round(newQty);
+        if (newQty < 1) newQty = 1;
+      }
+      
       if ((Number(qtyCtrl?.value) || 0) !== newQty) {
         qtyCtrl?.setValue(newQty);
       }
@@ -526,6 +541,20 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Helper method to check if unit is "per item"
+  private isPerItemUnit(product: any): boolean {
+    const unitName = (product.unitName || product.unit || '').toString().toLowerCase().trim();
+    return unitName === 'per item' || unitName.includes('per item');
+  }
+
+  // Helper method to check if unit is "per item" for a form control
+  isPerItemUnitForForm(index: number): boolean {
+    const fg = this.salesInvoiceDetails.at(index) as FormGroup;
+    const unitNameCtrl = fg?.get('unitName');
+    const unitName = (unitNameCtrl?.value || '').toString().toLowerCase().trim();
+    return unitName === 'per item' || unitName.includes('per item');
+  }
+
   // -------- Cart Helpers --------
   addItemToForm(product: any) {
     // Get selected warehouse or find dukkan warehouse as default
@@ -543,17 +572,20 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
       this.checkItemStock(defaultId, product.id, product);
     }
 
+    const isPerItem = this.isPerItemUnit(product);
+
     const itemForm = this.fb.group({
       id: [0],
       itemId: [product.id],
       itemName: [product.itemName],
       itemSKU: [product.barcode || product.Barcode || product.sku || product.SKU || ''],
       rate: [product.unitPrice || 0],
-      invoiceQty: [product.qty || 1],
+      invoiceQty: [isPerItem ? Math.round(product.qty || 1) : (product.qty || 1)],
       discount: [product.discount || 0], // amount
       discountPercentage: [product.discountPercentage || 0], // percent - preserve from product
       
       unitId: [product.unitId || 0],
+      unitName: [product.unitName || product.unit || ''],
       warehouseId: [defaultId],
       lineTotal: [((product.qty || 1) * (product.unitPrice || 0)) || 0],
     });
@@ -569,7 +601,18 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
     qtyCtrl?.valueChanges.subscribe((qty) => {
       if (isUpdating) return;
       isUpdating = true;
-      const quantity = +qty || 0;
+      let quantity = +qty || 0;
+      
+      // If unit is "per item", enforce whole numbers
+      if (isPerItem) {
+        quantity = Math.round(quantity);
+        if (quantity < 1) quantity = 1;
+        // Update control if value was changed
+        if (quantity !== +qty) {
+          qtyCtrl?.setValue(quantity, { emitEvent: false });
+        }
+      }
+      
       const unitRate = +(rateCtrl?.value as any) || 0;
       const amount = quantity * unitRate;
       totalCtrl?.setValue(+amount.toFixed(2), { emitEvent: false });
@@ -628,7 +671,16 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
       const amount = +total || 0;
       const unitRate = +(rateCtrl?.value as any) || 0;
       if (unitRate > 0) {
-        const quantity = +(amount / unitRate).toFixed(3);
+        let quantity = amount / unitRate;
+        
+        // If unit is "per item", round to whole number
+        if (isPerItem) {
+          quantity = Math.round(quantity);
+          if (quantity < 1) quantity = 1;
+        } else {
+          quantity = +(quantity.toFixed(3));
+        }
+        
         qtyCtrl?.setValue(quantity, { emitEvent: false });
       }
       isUpdating = false;
@@ -1452,12 +1504,50 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
     if (val < 0) val = 0;
 
     if (controlName === 'invoiceQty') {
-      if (val < 0.001) val = 0.001;
-      ctrl.setValue(+val.toFixed(3));
+      // Check if this item has "per item" unit
+      const fg = this.salesInvoiceDetails.at(index) as FormGroup;
+      const unitNameCtrl = fg?.get('unitName');
+      const unitName = (unitNameCtrl?.value || '').toString().toLowerCase().trim();
+      const isPerItem = unitName === 'per item' || unitName.includes('per item');
+      
+      if (isPerItem) {
+        // For "per item" units, enforce whole numbers
+        val = Math.round(val);
+        if (val < 1) val = 1;
+        ctrl.setValue(val);
+      } else {
+        // For other units, allow decimals
+        if (val < 0.001) val = 0.001;
+        ctrl.setValue(+val.toFixed(3));
+      }
       return;
     }
 
     ctrl.setValue(+val.toFixed(2));
+  }
+
+  onQuantityInput(event: Event, index: number) {
+    const input = event.target as HTMLInputElement;
+    const fg = this.salesInvoiceDetails.at(index) as FormGroup;
+    const unitNameCtrl = fg?.get('unitName');
+    const qtyCtrl = fg?.get('invoiceQty');
+    
+    if (!qtyCtrl) return;
+    
+    const unitName = (unitNameCtrl?.value || '').toString().toLowerCase().trim();
+    const isPerItem = unitName === 'per item' || unitName.includes('per item');
+    
+    if (isPerItem) {
+      const value = parseFloat(input.value);
+      if (!isNaN(value)) {
+        const rounded = Math.round(value);
+        const finalValue = rounded < 1 ? 1 : rounded;
+        if (finalValue !== value) {
+          input.value = finalValue.toString();
+          qtyCtrl.setValue(finalValue, { emitEvent: false });
+        }
+      }
+    }
   }
 
   onDiscountFieldFocus(index: number) {
@@ -1553,6 +1643,13 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
     }
   }
 
+  triggerSale() {
+    // Trigger the sales button if cart has items
+    if (this.cartItems.length > 0) {
+      this.saveWithoutPrint();
+    }
+  }
+
   trackByCartItem(index: number, _ctrl: any) {
     // Prefer stable keys if present in control value
     const val = _ctrl?.value || {};
@@ -1565,10 +1662,19 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
     
     const itemForm = this.salesInvoiceDetails.at(index) as FormGroup;
     const qtyCtrl = itemForm.get('invoiceQty');
+    const unitNameCtrl = itemForm.get('unitName');
     
     if (qtyCtrl) {
       const currentQty = parseFloat(qtyCtrl.value) || 0;
-      const newQty = +(currentQty + 1).toFixed(3);
+      const unitName = (unitNameCtrl?.value || '').toString().toLowerCase().trim();
+      const isPerItem = unitName === 'per item' || unitName.includes('per item');
+      
+      let newQty: number;
+      if (isPerItem) {
+        newQty = Math.round(currentQty) + 1;
+      } else {
+        newQty = +(currentQty + 1).toFixed(3);
+      }
       qtyCtrl.setValue(newQty);
     }
   }
@@ -1579,10 +1685,19 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
     
     const itemForm = this.salesInvoiceDetails.at(index) as FormGroup;
     const qtyCtrl = itemForm.get('invoiceQty');
+    const unitNameCtrl = itemForm.get('unitName');
     
     if (qtyCtrl) {
       const currentQty = parseFloat(qtyCtrl.value) || 0;
-      const newQty = Math.max(0.001, +(currentQty - 1).toFixed(3)); // Minimum 0.001
+      const unitName = (unitNameCtrl?.value || '').toString().toLowerCase().trim();
+      const isPerItem = unitName === 'per item' || unitName.includes('per item');
+      
+      let newQty: number;
+      if (isPerItem) {
+        newQty = Math.max(1, Math.round(currentQty) - 1); // Minimum 1 for per item
+      } else {
+        newQty = Math.max(0.001, +(currentQty - 1).toFixed(3)); // Minimum 0.001 for others
+      }
       qtyCtrl.setValue(newQty);
     }
   }

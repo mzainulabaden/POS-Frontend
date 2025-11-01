@@ -256,6 +256,8 @@ export class PosItemsComponent implements OnInit, OnDestroy {
       itemName: product?.itemName ?? product?.name ?? '',
       unitPrice: Number(product?.unitPrice ?? product?.price ?? product?.rate ?? 0),
       barcode: product?.barcode ?? product?.Barcode ?? product?.sku ?? product?.SKU ?? '',
+      unitId: product?.unitId || 0,
+      unitName: product?.unitName ?? product?.unit ?? '',
       qty: 1,
       discount: 0,
     };

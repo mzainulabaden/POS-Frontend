@@ -223,6 +223,8 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
       itemName: product?.itemName ?? product?.name ?? '',
       unitPrice: Number(product?.unitPrice ?? product?.price ?? product?.rate ?? 0),
       barcode: product?.barcode ?? product?.Barcode ?? product?.sku ?? product?.SKU ?? '',
+      unitId: product?.unitId || 0,
+      unitName: product?.unitName ?? product?.unit ?? '',
       qty: 1,
       discount: 0,
     };
@@ -342,11 +344,10 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
 ⚡ ACTIONS:
 • F7: Navigate to actions section
 • F8: Show hold orders
-• F9: Complete sale
 • F10: Print receipt
 • Ctrl+H: Show hold orders
-• Ctrl+S: Complete sale
 • Ctrl+P: Print receipt
+• Tab+4: Complete sale
 
 🔧 GENERAL:
 • F1: Show this help
@@ -482,7 +483,7 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
 
   private shouldHandleInInput(event: KeyboardEvent): boolean {
     // Handle these keys even when typing in input fields
-    const keysToHandleInInput = ['Escape', 'Tab', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10'];
+    const keysToHandleInInput = ['Escape', 'Tab', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F10'];
     if (keysToHandleInInput.includes(event.key) || event.ctrlKey) {
       return true;
     }
@@ -544,9 +545,6 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
       case 'F8':
         this.showHoldOrders();
         return true;
-      case 'F9':
-        this.executeSale();
-        return true;
       case 'F10':
         this.executePrint();
         return true;
@@ -564,9 +562,6 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
     switch (event.key.toLowerCase()) {
       case 'h':
         this.showHoldOrders();
-        return true;
-      case 's':
-        this.executeSale();
         return true;
       case 'p':
         this.executePrint();
