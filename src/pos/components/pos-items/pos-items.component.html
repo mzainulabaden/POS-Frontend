@@ -1,5 +1,18 @@
 <div class="">
-  <div class="vh-100 overflow-y-auto p-2">
+  <div class="p-2 mb-2">
+    <!-- Category Filter Dropdown -->
+    <select 
+      class="form-select form-select-sm" 
+      [(ngModel)]="selectedCategoryId"
+      (ngModelChange)="onCategoryChange()"
+    >
+      <option [ngValue]="null">All Categories</option>
+      <option *ngFor="let category of categories" [ngValue]="category.id">
+        {{ category.name }}
+      </option>
+    </select>
+  </div>
+  <div class="vh-100 overflow-y-auto p-2" style="height: calc(100vh - 80px);">
     <!-- Product Cards - Stacked vertically for narrow space -->
     <div class="d-flex flex-column gap-2">
       <div

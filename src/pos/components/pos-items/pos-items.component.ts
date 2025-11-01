@@ -21,6 +21,8 @@ export class PosItemsComponent implements OnInit, OnDestroy {
   products = [];
   filteredProducts = [];
   selectedProductIndex = -1;
+  categories: any[] = [];
+  selectedCategoryId: number | null = null;
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -30,7 +32,7 @@ export class PosItemsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    // this.getAllCategory(); // Removed - not showing categories
+    this.getAllCategory();
     this.getAllItem();
 
     // Subscribe to search term updates
@@ -165,23 +167,32 @@ export class PosItemsComponent implements OnInit, OnDestroy {
   //     });
   // }
 
-  // Removed - not using categories in POS
-  // getAllCategory() {
-  //   this.sidebarService
-  //     .getAll("ItemCategory")
-  //     .pipe(
-  //       finalize(() => {}),
-  //       catchError((error) => {
-  //         return throwError(error.error.error.message);
-  //       })
-  //     )
-  //     .subscribe({
-  //       next: (response) => {
-  //         this.menuItems = response.items;
-  //         this.cdr.detectChanges();
-  //       },
-  //     });
-  // }
+  getAllCategory() {
+    this.sidebarService
+      .getAll("ItemCategory")
+      .pipe(
+        catchError((error) => {
+          console.error('Error fetching categories:', error);
+          return throwError(error.error?.error?.message || error.message);
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          this.categories = response?.items || response || [];
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          console.error('Error loading categories:', error);
+          this.categories = [];
+          this.cdr.markForCheck();
+        }
+      });
+  }
+  
+  onCategoryChange() {
+    // Reload items with selected category filter
+    this.getAllItem();
+  }
  
   getAllItem() {
     debugger;
@@ -191,13 +202,14 @@ export class PosItemsComponent implements OnInit, OnDestroy {
         console.log('Getting items with warehouse ID:', warehouseId);
         
         if (warehouseId) {
-          // Call the new API with warehouse parameter
+          // Call the new API with warehouse parameter and optional category filter
+          const categoryId = this.selectedCategoryId && this.selectedCategoryId > 0 ? this.selectedCategoryId : undefined;
           this.sidebarService
-            .getItemsWithStockByWarehouse(warehouseId)
+            .getItemsWithStockByWarehouse(warehouseId, undefined, categoryId)
             .pipe(
               catchError((error) => {
                 console.error('Error fetching items with warehouse:', error);
-                return throwError(error.error.error.message);
+                return throwError(error.error?.error?.message || error.message);
               })
             )
             .subscribe({

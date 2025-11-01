@@ -123,10 +123,14 @@ export class PosService {
 
   //  ------------ New API Methods ---------------
 
-  getItemsWithStockByWarehouse(warehouseId: number, itemId?: number) {
+  getItemsWithStockByWarehouse(warehouseId: number, itemId?: number, categoryId?: number) {
     this.url = `${this.baseUrl}Item/GetItemsWithStockByWarehouse`;
     // Use lowercase param name to match backend (per provided URL)
     const params = [`warehouseId=${warehouseId}`];
+    
+    if (categoryId !== undefined && categoryId !== null) {
+      params.push(`ItemCategoryId=${categoryId}`);
+    }
     
     if (params.length > 0) {
       this.url += `?${params.join("&")}`;
