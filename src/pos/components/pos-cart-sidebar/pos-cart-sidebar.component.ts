@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, HostListener, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, Input, HostListener, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { PurchaseService } from "@app/main/purchase/shared/services/purchase.service";
 import { FormArray, FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { MessageService } from "primeng/api";
@@ -8,6 +8,7 @@ import { PosService } from "pos/core/services/pos.service";
 import { ThermalPrinterService, ReceiptData } from "pos/core/services/thermal-printer.service";
 import { KeyboardNavigationService, NavigationState } from "../../core/services/keyboard-navigation.service";
 import { Subject } from "rxjs";
+import { Dropdown } from "primeng/dropdown";
 
 @Component({
   selector: "app-pos-cart-sidebar",
@@ -44,6 +45,11 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
   // Disable highlighting/focus for Actions section by default
   private enableActionFocus = false;
   isEditingDiscountAmount: { [index: number]: boolean } = {};
+  
+  // ViewChild references for dropdowns
+  @ViewChild('customerDropdown') customerDropdown!: Dropdown;
+  @ViewChild('paymentDropdown') paymentDropdown!: Dropdown;
+  @ViewChild('warehouseDropdown') warehouseDropdown!: Dropdown;
 
   set cartItems(value: any[]) {
     this._cartItems = value || [];
@@ -98,6 +104,8 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.trigger();
     this.loadHoldOrdersFromStorage();
+    // Setup global keyboard listener for Tab + number shortcuts
+    this.setupTabNumberShortcuts();
 
     // Subscribe to shared cart: update form in place when possible for visible qty increments
     this.posService.cartItems$.subscribe((items) => {
@@ -206,6 +214,60 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+    // Clean up document listener
+    if (this.tabKeyHandler) {
+      document.removeEventListener('keydown', this.tabKeyHandler);
+    }
+  }
+
+  // Document-level keyboard handler for Tab + number
+  private tabKeyHandler: ((event: KeyboardEvent) => void) | null = null;
+
+  setupTabNumberShortcuts() {
+    this.tabKeyHandler = (event: KeyboardEvent) => {
+      // Check if Tab key is pressed
+      if (event.key === 'Tab') {
+        // Set flag to wait for next key
+        this.waitingForTabNumber = true;
+        
+        // Clear any existing timeout
+        if (this.tabTimeout) {
+          clearTimeout(this.tabTimeout);
+        }
+        
+        // Set timeout to clear flag if no number is pressed within 300ms
+        this.tabTimeout = setTimeout(() => {
+          this.waitingForTabNumber = false;
+        }, 300);
+        
+        return; // Let Tab work normally
+      }
+      
+      // If we're waiting for a number and a number key is pressed
+      if (this.waitingForTabNumber) {
+        // Clear the timeout since we got our number
+        if (this.tabTimeout) {
+          clearTimeout(this.tabTimeout);
+        }
+        
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // Check for number keys 1, 2, or 3
+        if (event.key === '1') {
+          this.openCustomerDropdown();
+        } else if (event.key === '2') {
+          this.openPaymentDropdown();
+        } else if (event.key === '3') {
+          this.openWarehouseDropdown();
+        }
+        
+        // Clear the flag
+        this.waitingForTabNumber = false;
+      }
+    };
+    
+    document.addEventListener('keydown', this.tabKeyHandler);
   }
 
   private handleNavigationStateChange(state: NavigationState) {
@@ -1459,6 +1521,34 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
       setTimeout(() => {
         target?.focus();
         target?.select?.();
+      }, 0);
+    }
+  }
+
+  // Track if we're waiting for a number after Tab
+  private waitingForTabNumber: boolean = false;
+  private tabTimeout: any;
+
+  openCustomerDropdown() {
+    if (this.customerDropdown) {
+      setTimeout(() => {
+        this.customerDropdown.show();
+      }, 0);
+    }
+  }
+
+  openPaymentDropdown() {
+    if (this.paymentDropdown) {
+      setTimeout(() => {
+        this.paymentDropdown.show();
+      }, 0);
+    }
+  }
+
+  openWarehouseDropdown() {
+    if (this.warehouseDropdown) {
+      setTimeout(() => {
+        this.warehouseDropdown.show();
       }, 0);
     }
   }

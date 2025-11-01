@@ -8,6 +8,7 @@
     <!-- Customer -->
     <div class="compact-dropdown-wrapper">
       <p-dropdown
+        #customerDropdown
         [options]="customer"
         optionLabel="name"
         optionValue="id"
@@ -25,6 +26,7 @@
     <!-- Payment Terms -->
     <div class="compact-dropdown-wrapper">
       <p-dropdown
+        #paymentDropdown
         [options]="paymentTerms"
         optionLabel="name"
         optionValue="id"
@@ -42,6 +44,7 @@
     <!-- Warehouse -->
     <div class="compact-dropdown-wrapper">
       <p-dropdown
+        #warehouseDropdown
         [options]="wareHouse"
         optionLabel="name"
         optionValue="id"
