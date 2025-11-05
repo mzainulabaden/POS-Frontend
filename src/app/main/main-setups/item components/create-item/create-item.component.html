@@ -546,20 +546,46 @@
       </button>
     </div>
 
+    <!-- Date Inputs -->
+    <div class="row col-md-12 mt-2 mb-3">
+      <div id="inputField" class="col-md-6 p-field flex flex-column">
+        <label class="label-text" for="manufactureDate">Manufacture Date</label>
+        <p-calendar
+          [(ngModel)]="manufactureDate"
+          id="manufactureDate"
+          dateFormat="yy-mm-dd"
+          [showIcon]="true"
+          [style]="{ width: '100%' }"
+          appendTo="body"
+        ></p-calendar>
+      </div>
+      <div id="inputField" class="col-md-6 p-field flex flex-column">
+        <label class="label-text" for="expiryDate">Expiry Date</label>
+        <p-calendar
+          [(ngModel)]="expiryDate"
+          id="expiryDate"
+          dateFormat="yy-mm-dd"
+          [showIcon]="true"
+          [style]="{ width: '100%' }"
+          appendTo="body"
+        ></p-calendar>
+      </div>
+    </div>
+
     <!-- Barcode Display -->
     <div *ngIf="generatedBarcode" class="barcode-display mb-4">
       <div class="text-center mb-3">
         <label class="label-text font-bold">Generated Barcode:</label>
         <p class="text-lg font-mono">{{ generatedBarcode }}</p>
       </div>
-      <!-- Custom Header Above Barcode -->
-      <div class="text-center mb-2">
-        <span class="font-bold" style="font-size:18px">Usama Sweets and bakers</span><br />
-        <span class="font-medium" style="font-size:15px">{{ itemForm.value.name }}</span>
-      </div>
-      <!-- Barcode Canvas -->
-      <div class="text-center mb-3">
-        <canvas id="barcodeCanvas"></canvas>
+      <!-- Preview for 1" × 1" Label -->
+      <div class="text-center mb-2" style="border: 1px solid #ddd; padding: 4px; width: 94.5px; height: 94.5px; margin: 0 auto; display: flex; flex-direction: column; justify-content: flex-start; background: white;">
+        <div class="font-bold" style="font-size: 6px; font-weight: bold; line-height: 1.2; margin-bottom: 2px; text-align: center;">USAMA SWEETS & BAKERS</div>
+        <div style="font-size: 6px; line-height: 1.2; word-wrap: break-word; margin-bottom: 3px; text-align: center; max-height: 20px; overflow: hidden;">{{ itemForm.value.name || 'Item Name' }}</div>
+        <div class="text-center" style="flex: 1; display: flex; align-items: center; justify-content: center; margin: 2px 0;">
+          <canvas id="barcodeCanvas" style="max-width: 100%; max-height: 35px; width: auto;"></canvas>
+        </div>
+        <div style="font-size: 7px; font-weight: normal; text-align: center; margin-top: 2px;">{{ generatedBarcode }}</div>
       </div>
 
       <!-- Action Buttons -->

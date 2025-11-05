@@ -951,6 +951,8 @@ export class CreateItemComponent implements OnInit {
   barcodeModalVisible = false;
   generatedBarcode: string = "";
   barcodePreviewUrl: string = "";
+  expiryDate: Date | null = null;
+  manufactureDate: Date | null = null;
 
   openCategoryModal() {
     this.newCategory = { name: "" }; // reset form data
@@ -975,9 +977,9 @@ export class CreateItemComponent implements OnInit {
 
   // Barcode Generation Functions
   generateBarcode() {
-    const timestamp = Date.now();
-    const randomNum = Math.floor(Math.random() * 10000);
-    this.generatedBarcode = `${timestamp}${randomNum}`.substring(0, 13); // Generate EAN-13 compatible barcode
+    // Generate 6-digit barcode
+    const randomNum = Math.floor(Math.random() * 900000) + 100000; // Ensure 6 digits (100000-999999)
+    this.generatedBarcode = randomNum.toString();
     
     // Generate barcode image
     this.generateBarcodeImage(this.generatedBarcode);
@@ -995,11 +997,20 @@ export class CreateItemComponent implements OnInit {
       const canvas = document.getElementById("barcodeCanvas") as HTMLCanvasElement;
       if (canvas) {
         try {
+          // Reduced size for 1" × 1" (25mm × 25mm) label
+          // Canvas size adjusted for label dimensions
+          canvas.width = 200;
+          canvas.height = 40;
+          
           JsBarcode(canvas, barcodeValue, {
             format: "CODE128",
-            width: 2,
-            height: 100,
+            width: 0.8,
+            height: 30,
             displayValue: true,
+            fontSize: 6,
+            margin: 1,
+            textAlign: "center",
+            textPosition: "bottom",
           });
           this.barcodePreviewUrl = canvas.toDataURL("image/png");
         } catch (error) {
@@ -1019,6 +1030,8 @@ export class CreateItemComponent implements OnInit {
     this.barcodeModalVisible = true;
     this.generatedBarcode = "";
     this.barcodePreviewUrl = "";
+    this.expiryDate = null;
+    this.manufactureDate = null;
   }
 
   applyBarcodeToGrid() {
@@ -1087,28 +1100,94 @@ export class CreateItemComponent implements OnInit {
       return;
     }
 
+    const itemName = this.itemForm.value.name || "N/A";
+    const expiryDateStr = this.expiryDate 
+      ? new Date(this.expiryDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      : "";
+    const manufactureDateStr = this.manufactureDate 
+      ? new Date(this.manufactureDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      : "";
+
     const printWindow = window.open("", "_blank");
     if (printWindow) {
       printWindow.document.write(`
         <html>
           <head>
-            <title>Print Barcode</title>
+            <title>Print Barcode Label</title>
             <style>
-              body { 
-                display: flex; 
-                justify-content: center; 
-                align-items: center; 
-                height: 100vh; 
+              @page {
+                size: 25mm 25mm;
                 margin: 0;
               }
-              img { 
-                max-width: 100%; 
-                height: auto; 
+              body { 
+                width: 25mm;
+                height: 25mm;
+                margin: 0;
+                padding: 2mm 1.5mm;
+                font-family: Arial, sans-serif;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                box-sizing: border-box;
+              }
+              .company-name {
+                font-size: 5px;
+                font-weight: bold;
+                text-align: center;
+                line-height: 1.2;
+                margin-bottom: 1.5mm;
+                text-transform: uppercase;
+              }
+              .item-name {
+                font-size: 6px;
+                text-align: center;
+                line-height: 1.2;
+                margin-bottom: 2mm;
+                word-wrap: break-word;
+              }
+              .barcode-container {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 1mm 0;
+                flex: 1;
+              }
+              .barcode-container img {
+                max-width: 100%;
+                max-height: 12mm;
+                width: auto;
+                height: auto;
+              }
+              .barcode-number {
+                font-size: 7px;
+                text-align: center;
+                margin-top: 1mm;
+                font-weight: normal;
+              }
+              .dates {
+                font-size: 4px;
+                text-align: center;
+                line-height: 1.1;
+                margin-top: 0.5mm;
+              }
+              .date-row {
+                margin: 0.2mm 0;
               }
             </style>
           </head>
           <body>
-            <img src="${this.barcodePreviewUrl}" />
+            <div class="company-name">USAMA SWEETS & BAKERS</div>
+            <div class="item-name">${itemName}</div>
+            <div class="barcode-container">
+              <img src="${this.barcodePreviewUrl}" alt="Barcode" />
+            </div>
+            <div class="barcode-number">${this.generatedBarcode}</div>
+            ${(expiryDateStr || manufactureDateStr) ? `
+            <div class="dates">
+              ${manufactureDateStr ? `<div class="date-row">Mfg: ${manufactureDateStr}</div>` : ''}
+              ${expiryDateStr ? `<div class="date-row">Exp: ${expiryDateStr}</div>` : ''}
+            </div>
+            ` : ''}
           </body>
         </html>
       `);
