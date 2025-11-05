@@ -133,6 +133,56 @@
     font-size: 17px;
     font-weight: 600;
     color: #333;
+    margin: 2px 0;
+  }
+
+  /* Smaller inline row for Date and Customer */
+  .bill-small-row {
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  .bill-left,
+  .bill-right {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .bill-left {
+    flex: 0 1 55%;
+  }
+  .bill-right {
+    flex: 0 1 45%;
+    text-align: right;
+  }
+
+  /* Dedicated rows for customer and date */
+  .bill-customer-row {
+    font-size: 14px;
+    margin-top: 2px;
+    margin-bottom: 0;
+  }
+  .bill-date-row {
+    font-size: 13px;
+    margin-top: 2px;
+  }
+
+  /* Condensed first line for Bill No and Date */
+  .bill-condensed {
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  .bill-left,
+  .bill-right {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .bill-left {
+    flex: 0 1 55%;
+  }
+  .bill-right {
+    flex: 0 1 45%;
+    text-align: right;
   }
 
   /* Divider */

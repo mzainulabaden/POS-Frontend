@@ -214,11 +214,13 @@ export class ThermalPrinterService {
         </div>
         
         <div style="margin: 10px 0;">
-          <div style="display: flex; justify-content: space-between; font-size: 9px;">
-            <span>Bill No : ${data.invoiceNumber}</span>
-            <span>Date : ${data.date}</span>
-          </div>
-          ${data.customer ? `<div style="font-size: 9px; margin: 4px 0;">Customer : ${data.customer}</div>` : ''}
+          <table style="width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 8px;">
+            <tr>
+              <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 40%; font-size: px; font-weight: bold;">Bill No : ${data.invoiceNumber}</td>
+              <td style="text-align: right; white-space: nowrap; overflow: hidden; text-overflow: clip; width: 40%;">Date : ${data.date}</td>
+            </tr>
+          </table>
+          ${data.customer ? `<div style="font-size: 7px; margin: 4px 0;">Customer : ${data.customer}</div>` : ''}
           ${data.paymentMode ? `<div style="font-size: 9px; margin: 4px 0;">Payment : ${data.paymentMode}</div>` : ''}
         </div>
         

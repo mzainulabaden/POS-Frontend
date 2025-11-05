@@ -13,13 +13,13 @@
     <div class="bill-details">
       <div class="bill-row">
         <span>Bill No : {{ receiptData.invoiceNumber }}</span>
-        <span>Date : {{ receiptData.date }}</span>
+        <span *ngIf="receiptData.paymentMode">Payment : {{ receiptData.paymentMode }}</span>
       </div>
-      <div class="bill-row" *ngIf="receiptData.customer">
+      <div class="bill-row bill-customer-row" *ngIf="receiptData.customer">
         <span>Customer : {{ receiptData.customer }}</span>
       </div>
-      <div class="bill-row" *ngIf="receiptData.paymentMode">
-        <span>Payment : {{ receiptData.paymentMode }}</span>
+      <div class="bill-row bill-date-row">
+        <span>Date : {{ receiptData.date }}</span>
       </div>
     </div>
 

@@ -1104,9 +1104,20 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
     const billDiscountFromPct = +(this.subtotal * (billDiscountPct / 100)).toFixed(2);
     const totalBillDiscount = billDiscountAmt + billDiscountFromPct;
 
+    // Resolve voucher/bill number from API response or form
+    const voucherNumber = (
+      response?.result?.voucherNumber ||
+      response?.voucherNumber ||
+      response?.result?.voucherNo ||
+      response?.result?.VoucherNumber ||
+      response?.result?.id ||
+      this.purchaseForm.get('referenceNumber')?.value ||
+      this.purchaseForm.get('voucherNumber')?.value
+    );
+
     // Prepare receipt data
     const receiptData: ReceiptData = {
-      invoiceNumber: response?.result?.id?.toString() || 'N/A',
+      invoiceNumber: (voucherNumber != null ? voucherNumber : 'N/A').toString(),
       date: moment().format('DD/MM/YYYY HH:mm'),
       customer: selectedCustomer?.name || 'Walk-in Customer',
       paymentMode: selectedPayment?.name || 'Cash',
