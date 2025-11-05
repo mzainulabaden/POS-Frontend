@@ -23,6 +23,7 @@ import { WarehouseStockTransferComponent } from "./warehouse-stock-transfer/ware
 import { DepartmentStockComponent } from "./department-stock/department-stock.component";
 import { DepartmentStockTransferComponent } from "./department-stock-transfer/department-stock-transfer.component";
 import { ItemBarcodePrintingComponent } from "./item components/item-barcode-printing/item-barcode-printing.component";
+import { StockReorderComponent } from "./item components/stock-reorder/stock-reorder.component";
 
 @NgModule({
   declarations: [
@@ -42,6 +43,7 @@ import { ItemBarcodePrintingComponent } from "./item components/item-barcode-pri
     DepartmentStockComponent,
     DepartmentStockTransferComponent,
     ItemBarcodePrintingComponent,
+    StockReorderComponent,
   ],
   imports: [
     CommonModule,

@@ -1,0 +1,22 @@
+<div class="table-responsive custom-table col-lg-12 col-md-12 col-sm-12">
+  <p-table [value]="rows" [loading]="loading" [rowHover]="true" dataKey="itemName" [scrollable]="true" scrollHeight="55vh">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Item</th>
+        <th>Re-Order Qty</th>
+        <th>Unit</th>
+        <th>Warehouse</th>
+        <th>Balance</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-r>
+      <tr [ngClass]="{ 'low-stock': (r.balance || 0) < (r.reOrderQty || 0) }">
+        <td>{{ r.itemName }}</td>
+        <td>{{ r.reOrderQty }}</td>
+        <td>{{ r.unitName }}</td>
+        <td>{{ r.warehouseName }}</td>
+        <td>{{ r.balance }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

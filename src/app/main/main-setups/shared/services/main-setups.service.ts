@@ -416,4 +416,12 @@ export class MainSetupsService {
     }
     return this.http.get(url).pipe(map((response: any) => response["result"] as string));
   }
+
+  // Stock Reorder API
+  getStockReorder() {
+    const url = `${this.baseUrl}StockReorderApi/GetStockReorder`;
+    return this.http.get(url).pipe(
+      map((response: any) => response?.result || response)
+    );
+  }
 }

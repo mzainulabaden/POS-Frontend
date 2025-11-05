@@ -1,0 +1,9 @@
+.stock-reorder {
+  width: 100%;
+}
+
+/* Highlight rows where balance < reorder qty */
+.low-stock {
+  background: #ffeaea;
+  color: #b71c1c;
+}
