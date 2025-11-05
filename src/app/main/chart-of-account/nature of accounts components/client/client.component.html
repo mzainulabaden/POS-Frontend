@@ -108,14 +108,23 @@
   <form #supplierForm="ngForm">
     <div class="row col-md-12 mt-2">
       <div id="inputField" class="col-md-6 p-field flex flex-column">
-        <label class="label-text" for="name">Name</label>
+        <label class="label-text" for="name">Name <span class="text-danger">*</span></label>
         <input
           appAllowOnlyAlphabets
           id="name"
+          name="name"
           type="text"
           pInputText
           [(ngModel)]="materialType.name"
+          #nameModel="ngModel"
+          required
         />
+        <div
+          *ngIf="nameModel.invalid && nameModel.touched"
+          class="text-danger"
+        >
+          Name is required
+        </div>
       </div>
       <div id="inputField" class="col-md-6 p-field flex flex-column">
         <label class="label-text" for="shortName">Serial Number</label>

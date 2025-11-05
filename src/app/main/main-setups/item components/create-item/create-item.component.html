@@ -493,13 +493,13 @@
           <td>{{ item.description || "-" }}</td>
           <td>{{ item.itemCategoryName || "-" }}</td>
           <td>{{ item.isDiscountable ? 'Yes' : 'No' }}</td>
-          <td>{{ item.discountAmount || 0 }}</td>
+          <td>PKR {{ item.discountAmount || 0 }}</td>
           <td>{{ item.discountPercentage || 0 }}%</td>
           <td>
             {{ item.itemDetails?.length ? item.itemDetails[0].unitName : "-" }}
           </td>
           <td>
-            {{ item.itemDetails?.length ? item.itemDetails[0].unitPrice : "-" }}
+            {{ item.itemDetails?.length ? 'PKR ' + item.itemDetails[0].unitPrice : "-" }}
           </td>
           <td>
             {{ item.itemDetails?.length ? item.itemDetails[0].barcode : "-" }}

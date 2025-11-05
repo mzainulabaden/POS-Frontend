@@ -163,7 +163,7 @@ export class ClientComponent implements OnInit, OnChanges {
 
   save() {
     this.saving = true;
-    if (!this.materialType.name) {
+    if (!this.materialType.name?.trim()) {
       this.messageService.add({
         severity: "error",
         detail: "Name is Required",
