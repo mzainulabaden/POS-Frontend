@@ -84,6 +84,7 @@ export class CreateItemComponent implements OnInit {
       reOrderQty: [10],
       itemDetails: [[]],
       imageUrl: "",
+      barcodeurl: "",
     });
   }
   ngOnInit(): void {
@@ -410,6 +411,7 @@ export class CreateItemComponent implements OnInit {
               discountPercentage: this.dataForEdit.discountPercentage,
               isDiscountable: this.dataForEdit.isDiscountable,
               reOrderQty: this.dataForEdit.reOrderQty,
+              barcodeurl: this.dataForEdit.barcodeurl || "",
             });
             // Load raw document paths
             this.rawAttachedDocument = response.imageUrl || "";
@@ -445,6 +447,7 @@ export class CreateItemComponent implements OnInit {
       this.rowData = [];
       this.itemForm.patchValue({
         isDiscountable: false,
+        barcodeurl: "",
       });
       this.displayModal = true;
     }
@@ -1013,6 +1016,9 @@ export class CreateItemComponent implements OnInit {
             textPosition: "bottom",
           });
           this.barcodePreviewUrl = canvas.toDataURL("image/png");
+          
+          // Upload the barcode image and save to barcodeurl
+          this.uploadBarcodeImage(this.barcodePreviewUrl);
         } catch (error) {
           console.error("Barcode generation error:", error);
           this.msgService.add({
@@ -1024,6 +1030,39 @@ export class CreateItemComponent implements OnInit {
         }
       }
     }, 100);
+  }
+
+  uploadBarcodeImage(dataUrl: string) {
+    // Convert data URL to base64
+    const base64String = dataUrl.split(",")[1];
+    
+    if (!base64String) {
+      console.error("Failed to extract base64 from data URL");
+      return;
+    }
+
+    this._hrmService
+      .uploadDocuments("Item", [base64String])
+      .subscribe({
+        next: (res: any) => {
+          const newPath = res?.imagePaths?.[0] || null;
+          if (newPath) {
+            // Save the uploaded barcode image path to barcodeurl field
+            this.itemForm.patchValue({
+              barcodeurl: newPath,
+            });
+            this.changeDetector.detectChanges();
+          }
+        },
+        error: (error) => {
+          console.error("Error uploading barcode image:", error);
+          this.msgService.add({
+            severity: "error",
+            summary: "Upload Failed",
+            detail: "Barcode image failed to upload.",
+          });
+        },
+      });
   }
 
   openBarcodeModal() {
