@@ -143,7 +143,7 @@ export class PurchaseInvoiceComponent {
       },
     },
     {
-      headerName: "Price / 1Kg",
+      headerName: "Purchase Price ",
       field: "pricePerKg",
       editable: true,
       resizable: true,
@@ -165,7 +165,7 @@ export class PurchaseInvoiceComponent {
     //   width: 150,
     // },
     {
-      headerName: "Price per Bag",
+      headerName: "Price per Unit",
       field: "pricePerBag",
       editable: true,
       resizable: true,
@@ -182,7 +182,7 @@ export class PurchaseInvoiceComponent {
     // },
 
     {
-      headerName: "Quantity (Bag)",
+      headerName: "Quantity",
       field: "quantity",
       editable: true,
       resizable: true,
