@@ -395,4 +395,25 @@ export class MainSetupsService {
   notifyCategoryCreated(newCategory: any) {
     this.categoryCreatedSubject.next(newCategory);
   }
+
+  // Item/GetBarCodeUrl - returns relative or absolute URL string for a barcode image
+  getBarCodeUrl(barcode: string) {
+    const url = `${this.baseUrl}Item/GetBarCodeUrl?barcode=${encodeURIComponent(
+      barcode || ""
+    )}`;
+    return this.http.get(url).pipe(
+      map((response: any) => response["result"] as string)
+    );
+  }
+
+  // Alternative: fetch by item id (and optional unit id)
+  getBarCodeUrlByItem(itemId: number, unitId?: number) {
+    let url = `${this.baseUrl}Item/GetBarCodeUrl?itemId=${encodeURIComponent(
+      String(itemId)
+    )}`;
+    if (unitId != null) {
+      url += `&unitId=${encodeURIComponent(String(unitId))}`;
+    }
+    return this.http.get(url).pipe(map((response: any) => response["result"] as string));
+  }
 }

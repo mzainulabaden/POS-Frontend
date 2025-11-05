@@ -1,0 +1,71 @@
+.item-barcode-printing-container {
+  padding: 20px;
+}
+
+.card {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-bottom: 1px solid #dee2e6;
+  margin: 0;
+  font-weight: 600;
+}
+
+.card-body {
+  padding: 15px;
+}
+
+.suggestions-dropdown {
+  position: absolute;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  margin-top: 2px;
+}
+
+.suggestion-item {
+  padding: 10px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.suggestion-item:hover {
+  background-color: #f8f9fa;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.item-details-list {
+  margin-bottom: 20px;
+}
+
+.barcode-preview-section {
+  border-top: 1px solid #dee2e6;
+  padding-top: 20px;
+  margin-top: 20px;
+}
+
+.barcode-display {
+  text-align: center;
+}
+
+::ng-deep .p-datatable .p-datatable-tbody > tr.p-highlight {
+  background-color: #e3f2fd;
+}
+
+::ng-deep .p-datatable .p-datatable-tbody > tr.p-highlight:hover {
+  background-color: #bbdefb;
+}
+
+

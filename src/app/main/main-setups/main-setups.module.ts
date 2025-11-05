@@ -22,6 +22,7 @@ import { DepartmentComponent } from "./department/department.component";
 import { WarehouseStockTransferComponent } from "./warehouse-stock-transfer/warehouse-stock-transfer.component";
 import { DepartmentStockComponent } from "./department-stock/department-stock.component";
 import { DepartmentStockTransferComponent } from "./department-stock-transfer/department-stock-transfer.component";
+import { ItemBarcodePrintingComponent } from "./item components/item-barcode-printing/item-barcode-printing.component";
 
 @NgModule({
   declarations: [
@@ -40,6 +41,7 @@ import { DepartmentStockTransferComponent } from "./department-stock-transfer/de
     WarehouseStockTransferComponent,
     DepartmentStockComponent,
     DepartmentStockTransferComponent,
+    ItemBarcodePrintingComponent,
   ],
   imports: [
     CommonModule,
