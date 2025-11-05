@@ -143,14 +143,14 @@ export class PurchaseInvoiceComponent {
       },
     },
     {
-      headerName: "Purchase Price ",
+      headerName: "Sale Price",
       field: "pricePerKg",
       editable: true,
       resizable: true,
       width: 120,
     },
     {
-      headerName: "Sale Price",
+      headerName: "Purchase Price",
       field: "costRate",
       editable: true,
       resizable: true,
@@ -392,7 +392,10 @@ export class PurchaseInvoiceComponent {
             this.rowData = this.rowData.map((row) => {
               return {
                 ...row,
-                costRate: Math.round(row.pricePerKg + price / totalQuantity), // Set costRate
+                // Auto-set sale price (pricePerKg) when not manually overridden
+                pricePerKg: row.manualSalePrice
+                  ? row.pricePerKg
+                  : Math.round((Number(row.costRate) || 0) + price / totalQuantity),
               };
             });
             console.log(this.rowData);
@@ -403,7 +406,8 @@ export class PurchaseInvoiceComponent {
           this.rowData = this.rowData.map((row) => {
             return {
               ...row,
-              costRate: row.pricePerKg, // Set costRate
+              // Reset sale price to purchase price when not manually set by user
+              pricePerKg: row.manualSalePrice ? row.pricePerKg : (Number(row.costRate) || 0),
             };
           });
 
@@ -875,6 +879,11 @@ export class PurchaseInvoiceComponent {
     data.pricePerKg = Number(data.pricePerKg) || 0;
     data.quantity = Number(data.quantity) || 0;
     data.adjustment = Number(data.adjustment) || 0;
+    // If user edited Sale Price (pricePerKg), mark manual so later calcs don't overwrite it
+    if (params.column.getId() === "pricePerKg") {
+      data.pricePerKg = Number(data.pricePerKg) || 0;
+      data.manualSalePrice = true;
+    }
     const selectedUnit = this.units.find((unit) => unit.id === data.unitId);
 
     const unitMultiplier = selectedUnit
@@ -1423,7 +1432,10 @@ export class PurchaseInvoiceComponent {
 
     this.rowData = this.rowData.map((row) => ({
       ...row,
-      costRate: Math.round((Number(row.pricePerKg) || 0) + expensePerUnit),
+      // Auto-calc sale price (pricePerKg) from purchase price (costRate) + expenses
+      pricePerKg: row.manualSalePrice
+        ? row.pricePerKg
+        : Math.round((Number(row.costRate) || 0) + expensePerUnit),
     }));
 
     this.gridApi.setRowData(this.rowData);
