@@ -39,4 +39,8 @@ export class StockReorderComponent implements OnInit {
       },
     });
   }
+
+  getLowStockCount(): number {
+    return this.rows.filter((r) => (r.balance || 0) < (r.reOrderQty || 0)).length;
+  }
 }
