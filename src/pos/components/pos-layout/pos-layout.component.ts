@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, HostListener, OnDestroy } from "@angular/core";
+import { Component, ViewChild, ElementRef, AfterViewInit, HostListener, OnDestroy, OnInit } from "@angular/core";
 import { Router } from "@node_modules/@angular/router";
 import { PosService } from "../../core/services/pos.service";
 import { PosCartSidebarComponent } from "../pos-cart-sidebar/pos-cart-sidebar.component";
@@ -12,7 +12,7 @@ import { Subject } from "rxjs";
   templateUrl: "./pos-layout.component.html",
   styleUrl: "./pos-layout.component.css",
 })
-export class PosLayoutComponent implements AfterViewInit, OnDestroy {
+export class PosLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   isFullScreen = false;
   cartItems: any[] = [];
   searchItems: string = "";
@@ -418,6 +418,11 @@ export class PosLayoutComponent implements AfterViewInit, OnDestroy {
         backdrop.remove();
       }
     }, 30000);
+  }
+
+  ngOnInit() {
+    // Clear the cart when entering the POS screen
+    this.sidebarService.clearCart();
   }
 
   ngAfterViewInit() {
