@@ -173,6 +173,12 @@ export class ThermalPrinterService {
    * This requires a middleware service running locally
    */
   async sendToThermalPrinter(data: ReceiptData, printerIP?: string): Promise<void> {
+    // Ensure any bound templates receive the latest receipt data
+    // so the app doesn't appear blank while printing silently.
+    try {
+      this.receiptData.next(data);
+    } catch (_) {}
+
     const commands = this.generateESCPOSCommands(data);
     
     // Option 1: Send to local middleware service
