@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
-import { ItemTrackingReport, ItemTrackingParams, SalesCustomerWiseReport, SalesCustomerWiseParams, WarehouseStockReport, WarehouseStockParams } from "../models/item-tracking.model";
+import { ItemTrackingReport, ItemTrackingParams, SalesCustomerWiseReport, SalesCustomerWiseParams, WarehouseStockReport, WarehouseStockParams, DailySalesReport, DailySalesParams } from "../models/item-tracking.model";
 import { newBaseUrl } from "../../../../shared/AppBaseUrl/appBaseURL";
 
 @Injectable({
@@ -87,6 +87,33 @@ export class NewReportsService {
 
     return this.http.get<any>(
       `${this.baseUrl}salesCustomerWise/GetWarehouseStockLedgerDetails`,
+      { params: httpParams }
+    ).pipe(
+      map((response) => {
+        // Handle ABP response format - data might be in response.result or directly in response
+        if (response && response.result) {
+          return response.result;
+        }
+        return response || [];
+      })
+    );
+  }
+
+  getDailySales(params: DailySalesParams): Observable<DailySalesReport[]> {
+    let httpParams = new HttpParams();
+    
+    if (params.fromDate) {
+      httpParams = httpParams.append("FromDate", params.fromDate);
+    }
+    if (params.toDate) {
+      httpParams = httpParams.append("ToDate", params.toDate);
+    }
+    if (params.warehouseId) {
+      httpParams = httpParams.append("WarehouseId", params.warehouseId.toString());
+    }
+
+    return this.http.get<any>(
+      `${this.baseUrl}ReportingPreview/GetDailySales`,
       { params: httpParams }
     ).pipe(
       map((response) => {

@@ -40,6 +40,13 @@ export class InventoryReportComponent implements OnInit {
         icon: "pi pi-box",
         apiEndpoint: "salesCustomerWise/GetWarehouseStockLedgerDetails",
       },
+      {
+        id: "daily-sales",
+        name: "Daily Sales Report",
+        description: "View daily sales summary with total sales, invoice counts, and payment breakdown",
+        icon: "pi pi-calendar",
+        apiEndpoint: "ReportingPreview/GetDailySales",
+      },
       // Add more reports here as needed
     ];
   }

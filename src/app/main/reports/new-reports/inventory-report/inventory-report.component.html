@@ -41,3 +41,10 @@
   (onClose)="closeReportModal()"
 ></app-warehouse-stock-modal>
 
+<app-daily-sales-modal
+  *ngIf="selectedReport && displayReportModal && selectedReport.id === 'daily-sales'"
+  [visible]="displayReportModal"
+  [reportName]="selectedReport.name"
+  (onClose)="closeReportModal()"
+></app-daily-sales-modal>
+

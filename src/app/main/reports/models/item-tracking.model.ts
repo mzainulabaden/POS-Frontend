@@ -66,3 +66,21 @@ export interface WarehouseStockParams {
   itemId?: number;
 }
 
+export interface DailySalesReport {
+  salesDate?: string;
+  date?: string;
+  totalSales?: number;
+  totalAmount?: number;
+  invoiceCount?: number;
+  totalInvoices?: number;
+  cashSales?: number;
+  creditSales?: number;
+  [key: string]: any; // Allow for additional fields from API
+}
+
+export interface DailySalesParams {
+  fromDate?: string;
+  toDate?: string;
+  warehouseId?: number;
+}
+
