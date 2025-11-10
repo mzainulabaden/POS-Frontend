@@ -200,8 +200,7 @@ export class ThermalPrinterService {
       }
     } catch (error) {
       console.error('Thermal printer error:', error);
-      // Fallback to browser print
-      this.printReceipt(data);
+      // Silently fail if printer is not connected - do not open browser print dialog
     }
   }
 

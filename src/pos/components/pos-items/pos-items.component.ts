@@ -11,6 +11,7 @@ import { KeyboardNavigationService, NavigationState } from "../../core/services/
 import { takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
 
+
 @Component({
   selector: "app-pos-items",
   templateUrl: "./pos-items.component.html",
@@ -65,6 +66,7 @@ export class PosItemsComponent implements OnInit, OnDestroy {
       .subscribe(state => {
         this.handleNavigationStateChange(state);
       });
+      
   }
 
   ngOnDestroy() {
@@ -219,8 +221,55 @@ export class PosItemsComponent implements OnInit, OnDestroy {
             )
             .subscribe({
               next: (response) => {
+                console.log(response)
                 console.log('Items loaded with warehouse stock:', response);
-                this.products = response.items || response;
+                const rawItems = response.items || response || [];
+                // Explicitly map all fields to ensure correct mapping, especially stockQty
+                this.products = (Array.isArray(rawItems) ? rawItems : []).map((item: any) => {
+                  // Determine stockQty value - check multiple possible field names, prioritize stockQty
+                  let stockQtyValue = 0;
+                  if (item.stockQty !== undefined && item.stockQty !== null) {
+                    stockQtyValue = item.stockQty;
+                  } else if (item.StockQty !== undefined && item.StockQty !== null) {
+                    stockQtyValue = item.StockQty;
+                  } else if (item.finalStockQty !== undefined && item.finalStockQty !== null) {
+                    stockQtyValue = item.finalStockQty;
+                  } else if (item.FinalStockQty !== undefined && item.FinalStockQty !== null) {
+                    stockQtyValue = item.FinalStockQty;
+                  } else if (item.currentStock !== undefined && item.currentStock !== null) {
+                    stockQtyValue = item.currentStock;
+                  } else if (item.availableQty !== undefined && item.availableQty !== null) {
+                    stockQtyValue = item.availableQty;
+                  }
+                  
+                  // Create mapped object with all required fields
+                  const mappedItem: any = {
+                    id: item.id ?? item.itemId ?? 0,
+                    name: item.name ?? item.itemName ?? '',
+                    sku: item.sku ?? item.SKU ?? '',
+                    unitId: item.unitId ?? 0,
+                    unitName: item.unitName ?? item.unit ?? '',
+                    barcode: item.barcode ?? item.Barcode ?? '',
+                    unitPrice: item.unitPrice ?? item.price ?? item.rate ?? 0,
+                    // Explicitly set stockQty to ensure it's never overwritten
+                    stockQty: stockQtyValue,
+                    finalStockQty: item.finalStockQty ?? item.FinalStockQty ?? stockQtyValue,
+                  };
+                  
+                  // Preserve all other fields from the original item
+                  Object.keys(item).forEach((key: string) => {
+                    // Only add fields that aren't already explicitly mapped
+                    if (!mappedItem.hasOwnProperty(key)) {
+                      mappedItem[key] = item[key];
+                    }
+                  });
+                  
+                  // Final safeguard: ensure stockQty is set correctly (override any overwritten value)
+                  mappedItem.stockQty = stockQtyValue;
+                  
+                  return mappedItem;
+                });
+                console.log(this.products)
                 this.loadFeaturedFromLocalStorage();
                 this.filteredProducts = this.orderWithFeaturedFirst(this.products);
                 this.cdr.markForCheck();
