@@ -13,9 +13,8 @@
     </select>
     <button class="btn btn-sm btn-outline-primary" (click)="openReorderModal()">Arrange Items</button>
   </div>
-  <div class="vh-100 overflow-y-auto p-2" style="height: calc(100vh - 80px);">
-    <!-- Product Cards - Stacked vertically for narrow space -->
-    <div class="d-flex flex-column gap-2">
+  <div class="items-scroll">
+    <div class="items-grid">
       <div
         *ngFor="let product of filteredProducts; let i = index; trackBy: trackByProductId"
         class="card border rounded"
@@ -27,7 +26,7 @@
       >
         <div class="card-body text-center p-2">
           <div class="mb-2" *ngIf="getProductImageUrl(product) as imgUrl">
-            <img [src]="imgUrl" alt="{{ product.name }}" style="max-height: 64px; object-fit: contain;" />
+            <img [src]="imgUrl" alt="{{ product.name }}" />
           </div>
           <div class="text-muted small mb-1" style="font-size: 0.7rem;">
             <span *ngIf="product.barcode || product.Barcode">{{ product.barcode || product.Barcode }}</span>

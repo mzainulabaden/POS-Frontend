@@ -141,6 +141,28 @@
   border-radius: 0;
 }
 
+.pos-panels {
+  gap: 1rem;
+}
+
+.pos-pane {
+  flex: 1 1 50%;
+  max-width: 50%;
+  display: flex;
+}
+
+.pos-pane > * {
+  flex: 1 1 auto;
+}
+
+.pos-cart-pane {
+  padding-right: 0.5rem;
+}
+
+.pos-items-pane {
+  padding-left: 0.5rem;
+}
+
 .invoice-tab-content {
   background: #f5f5f5;
   padding: 0;

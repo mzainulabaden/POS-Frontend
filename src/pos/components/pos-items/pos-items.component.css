@@ -1,12 +1,24 @@
+.items-scroll {
+  height: calc(100vh - 140px);
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.5rem;
+}
+
 .card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  max-height: 200px;
-  max-width: 300px;
+  height: 100%;
+  border-radius: 0.75rem;
 }
 
 .card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
 /* Keyboard navigation styles */
@@ -22,8 +34,24 @@
 }
 
 .card-title {
-  font-size: 0.9rem;
-  line-height: 1.3;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  margin-bottom: 0.25rem !important;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 100px;
+  padding: 0.5rem !important;
+}
+
+.card-body img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
 }
 
 .rotate-90 {
@@ -99,5 +127,11 @@ aside .dropdown-content a:hover {
   :host,
   :host * {
     display: none !important;
+  }
+}
+
+@media (max-width: 992px) {
+  .items-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
 }
