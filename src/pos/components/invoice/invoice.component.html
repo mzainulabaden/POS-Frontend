@@ -1,0 +1,353 @@
+<div class="invoice-container" *ngIf="!showPreview">
+  <div class="invoice-wrapper">
+    <form [formGroup]="invoiceForm">
+      <!-- Header Section -->
+      <div class="invoice-header">
+        <div class="header-left">
+          <!-- Customer Selection -->
+          <div class="customer-select-wrapper">
+            <p-dropdown
+              [options]="customers"
+              optionLabel="name"
+              optionValue="id"
+              formControlName="customerCOALevel04Id"
+              placeholder="Select Customer"
+              [filter]="true"
+              filterBy="name"
+              [showClear]="true"
+              styleClass="customer-dropdown"
+              appendTo="body"
+            ></p-dropdown>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <!-- Invoice Number -->
+          <div class="header-field">
+            <label>Invoice #</label>
+            <div class="field-value">{{ invoiceForm.get('invoiceNumber')?.value }}</div>
+          </div>
+
+          <!-- Purchase Order Number -->
+          <div class="header-field">
+            <label>Purchase Order (PO) #</label>
+            <input 
+              type="text" 
+              pInputText 
+              formControlName="purchaseOrderNumber"
+              class="po-input"
+            />
+          </div>
+
+          <!-- Date -->
+          <div class="header-field">
+            <label>Date <span class="required">*</span></label>
+            <p-calendar
+              formControlName="issueDate"
+              [showIcon]="true"
+              dateFormat="dd M yy"
+              appendTo="body"
+            ></p-calendar>
+          </div>
+
+          <!-- Due Date -->
+          <div class="header-field">
+            <label>Due Date</label>
+            <p-calendar
+              formControlName="dueDate"
+              [showIcon]="true"
+              dateFormat="dd M yy"
+              appendTo="body"
+            ></p-calendar>
+          </div>
+        </div>
+      </div>
+
+      <!-- Items Section -->
+      <div class="invoice-items">
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th class="col-item">Item</th>
+              <th class="col-qty">Quantity</th>
+              <th class="col-price">Price</th>
+              <th class="col-amount">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Item Search/Add Row -->
+            <tr class="add-item-row">
+              <td class="col-item">
+                <div class="item-search-wrapper">
+                  <input
+                    type="text"
+                    pInputText
+                    placeholder="Type your item to add"
+                    [(ngModel)]="searchTerm"
+                    [ngModelOptions]="{standalone: true}"
+                    (input)="onSearchInputChange($event.target.value)"
+                    (blur)="onSearchBlur()"
+                    (focus)="onSearchFocus()"
+                    class="item-search-input"
+                  />
+                  <i class="pi pi-search search-icon"></i>
+
+                  <!-- Dropdown for search results -->
+                  <div class="item-dropdown" *ngIf="showItemDropdown && filteredItems.length > 0">
+                    <div
+                      *ngFor="let item of filteredItems"
+                      class="item-dropdown-item"
+                      (mousedown)="selectItem(item)"
+                    >
+                      <div class="item-name">{{ item.name }}</div>
+                      <div class="item-details">
+                        <span *ngIf="item.sku || item.SKU">SKU: {{ item.sku || item.SKU }}</span>
+                        <span class="item-price">${{ item.unitPrice || item.price || 0 | number:'1.2-2' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td class="col-qty">
+                <input
+                  type="number"
+                  pInputText
+                  [(ngModel)]="entryQuantity"
+                  [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="onEntryQuantityChange($event)"
+                  min="1"
+                  step="1"
+                  class="qty-input"
+                  [disabled]="!entrySelectedItem"
+                />
+              </td>
+              <td class="col-price">
+                <input
+                  type="number"
+                  pInputText
+                  [(ngModel)]="entryPrice"
+                  [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="onEntryPriceChange($event)"
+                  min="0"
+                  step="0.01"
+                  class="price-input"
+                  [disabled]="!entrySelectedItem"
+                />
+              </td>
+              <td class="col-amount">
+                <div class="amount-cell">
+                  <span class="amount-value">${{ entryAmount | number:'1.2-2' }}</span>
+                  <button
+                    type="button"
+                    class="btn-add"
+                    (click)="addEntryItem()"
+                    [disabled]="!(entrySelectedItem || (searchTerm && searchTerm.trim()))"
+                  >
+                    Add
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Selected Items -->
+            <tr *ngFor="let item of selectedItems; let i = index" class="item-row">
+              <td class="col-item">
+                <div class="item-info">
+                  <div class="item-name">{{ item.itemName }}</div>
+                  <div class="item-sku" *ngIf="item.itemSKU">{{ item.itemSKU }}</div>
+                </div>
+              </td>
+              <td class="col-qty">
+                <input
+                  type="number"
+                  pInputText
+                  [(ngModel)]="item.quantity"
+                  [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="onQuantityChange(i, $event)"
+                  min="1"
+                  step="1"
+                  class="qty-input"
+                />
+              </td>
+              <td class="col-price">
+                <input
+                  type="number"
+                  pInputText
+                  [(ngModel)]="item.unitPrice"
+                  [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="onPriceChange(i, $event)"
+                  min="0"
+                  step="0.01"
+                  class="price-input"
+                />
+              </td>
+              <td class="col-amount">
+                <div class="amount-cell">
+                  <span class="amount-value">${{ item.amount | number:'1.2-2' }}</span>
+                  <button
+                    type="button"
+                    class="btn-remove"
+                    (click)="removeItem(i)"
+                    title="Remove item"
+                  >
+                    <i class="pi pi-times"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Discount & Shipping Row -->
+            <tr class="discount-shipping-row">
+              <td colspan="4">
+                <div class="discount-shipping-link">
+                  <a href="javascript:void(0)" (click)="toggleDiscountShipping()">
+                    Discount & Shipping
+                    <i class="pi" [ngClass]="showDiscountShipping ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
+                  </a>
+                </div>
+                <div class="discount-shipping-panel" *ngIf="showDiscountShipping">
+                  <div class="panel-row">
+                    <div class="panel-field">
+                      <label>Discount Amount</label>
+                      <input
+                        type="number"
+                        pInputText
+                        formControlName="discountAmount"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                      />
+                      <small>Applies to entire invoice</small>
+                    </div>
+                    <div class="panel-field">
+                      <label>Discount %</label>
+                      <input
+                        type="number"
+                        pInputText
+                        formControlName="discountPercentage"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        placeholder="0"
+                      />
+                    </div>
+                    <div class="panel-field">
+                      <label>Shipping</label>
+                      <input
+                        type="number"
+                        pInputText
+                        formControlName="shippingAmount"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Summary Section -->
+        <div class="invoice-summary">
+          <div class="summary-row">
+            <span class="summary-label">Subtotal</span>
+            <span class="summary-value">${{ subtotal | number:'1.2-2' }}</span>
+          </div>
+          <div class="summary-row" *ngIf="itemDiscountTotal > 0">
+            <span class="summary-label">Item discounts</span>
+            <span class="summary-value negative">- ${{ itemDiscountTotal | number:'1.2-2' }}</span>
+          </div>
+          <div class="summary-row" *ngIf="billDiscountAmount > 0">
+            <span class="summary-label">Invoice discount</span>
+            <span class="summary-value negative">- ${{ billDiscountAmount | number:'1.2-2' }}</span>
+          </div>
+          <div class="summary-row" *ngIf="shippingAmount > 0">
+            <span class="summary-label">Shipping</span>
+            <span class="summary-value positive">+ ${{ shippingAmount | number:'1.2-2' }}</span>
+          </div>
+          <div class="summary-row">
+            <button type="button" class="summary-link">TAX {{ taxRate }}%</button>
+            <span class="summary-value">${{ taxAmount | number:'1.2-2' }}</span>
+          </div>
+          <div class="summary-row total-row">
+            <span class="summary-label">Total</span>
+            <span class="summary-value">${{ total | number:'1.2-2' }}</span>
+          </div>
+          <div class="summary-row amount-due-row">
+            <span class="summary-label">Amount due</span>
+            <span class="summary-value">${{ amountDue | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="invoice-actions">
+        <button
+          type="button"
+          pButton
+          label="Cancel"
+          class="p-button-outlined p-button-secondary"
+          (click)="resetForm()"
+        ></button>
+        <button
+          type="button"
+          pButton
+          label="Create Invoice"
+          class="p-button-success"
+          (click)="createInvoice()"
+          [disabled]="!invoiceForm.valid || selectedItems.length === 0"
+        ></button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Invoice Preview Modal -->
+<p-dialog
+  header="Invoice Preview"
+  [(visible)]="showPreview"
+  [modal]="true"
+  [style]="{width: '80vw', maxWidth: '900px'}"
+  [draggable]="false"
+  [closable]="true"
+  (onHide)="closePreview()"
+>
+  <app-invoice-preview
+    *ngIf="invoiceData"
+    #invoicePreview
+    [invoiceData]="invoiceData"
+  ></app-invoice-preview>
+
+  <ng-template pTemplate="footer">
+    <div class="dialog-footer">
+      <button
+        type="button"
+        pButton
+        label="Download"
+        icon="pi pi-download"
+        class="p-button-outlined"
+        (click)="downloadInvoice()"
+      ></button>
+      <button
+        type="button"
+        pButton
+        label="Print"
+        icon="pi pi-print"
+        class="p-button-outlined"
+        (click)="printInvoice()"
+      ></button>
+      <button
+        type="button"
+        pButton
+        label="Close"
+        class="p-button-primary"
+        (click)="closePreview()"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<p-toast />
+

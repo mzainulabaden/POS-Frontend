@@ -1,0 +1,92 @@
+<div class="invoice-preview" *ngIf="invoiceData">
+  <!-- Header -->
+  <div class="preview-header">
+    <div class="company-info">
+      <h2 class="company-name">{{ companyInfo.name }}</h2>
+      <p>{{ companyInfo.address }}</p>
+      <p>{{ companyInfo.city }}</p>
+      <p>Phone: {{ companyInfo.phone }}</p>
+      <p>Email: {{ companyInfo.email }}</p>
+    </div>
+    <div class="invoice-info">
+      <h1 class="invoice-title">INVOICE</h1>
+      <div class="invoice-details">
+        <p><strong>Invoice #:</strong> {{ invoiceData.invoiceNumber }}</p>
+        <p><strong>PO #:</strong> {{ invoiceData.purchaseOrderNumber || 'N/A' }}</p>
+        <p><strong>Date:</strong> {{ invoiceData.issueDate }}</p>
+        <p><strong>Due Date:</strong> {{ invoiceData.dueDate }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bill To Section -->
+  <div class="bill-to-section">
+    <h3>Bill To</h3>
+    <p class="customer-name">{{ invoiceData.customerName }}</p>
+  </div>
+
+  <!-- Items Table -->
+  <table class="preview-items-table">
+    <thead>
+      <tr>
+        <th class="col-item">Item</th>
+        <th class="col-qty">Quantity</th>
+        <th class="col-price">Price</th>
+        <th class="col-discount">Discount</th>
+        <th class="col-amount">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of invoiceData.invoiceDetails">
+        <td class="col-item">
+          <div class="item-name">{{ item.itemName }}</div>
+          <div class="item-sku" *ngIf="item.itemSKU">{{ item.itemSKU }}</div>
+        </td>
+        <td class="col-qty">{{ item.quantity }}</td>
+        <td class="col-price">${{ item.rate | number:'1.2-2' }}</td>
+        <td class="col-discount">${{ item.discount | number:'1.2-2' }}</td>
+        <td class="col-amount">${{ item.amount | number:'1.2-2' }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Totals Section -->
+  <div class="totals-section">
+    <div class="totals-wrapper">
+      <div class="total-row">
+        <span class="total-label">Subtotal:</span>
+        <span class="total-value">${{ invoiceData.subtotal | number:'1.2-2' }}</span>
+      </div>
+      <div class="total-row" *ngIf="invoiceData.itemDiscountTotal > 0">
+        <span class="total-label">Item Discounts:</span>
+        <span class="total-value">-${{ invoiceData.itemDiscountTotal | number:'1.2-2' }}</span>
+      </div>
+      <div class="total-row" *ngIf="invoiceData.invoiceDiscountAmount > 0">
+        <span class="total-label">Invoice Discount:</span>
+        <span class="total-value">-${{ invoiceData.invoiceDiscountAmount | number:'1.2-2' }}</span>
+      </div>
+      <div class="total-row" *ngIf="invoiceData.shippingAmount > 0">
+        <span class="total-label">Shipping:</span>
+        <span class="total-value">${{ invoiceData.shippingAmount | number:'1.2-2' }}</span>
+      </div>
+      <div class="total-row">
+        <span class="total-label">Tax ({{ invoiceData.taxRate || 0 }}%):</span>
+        <span class="total-value">${{ invoiceData.taxAmount | number:'1.2-2' }}</span>
+      </div>
+      <div class="total-row grand-total">
+        <span class="total-label">Total:</span>
+        <span class="total-value">${{ invoiceData.grandTotal | number:'1.2-2' }}</span>
+      </div>
+      <div class="total-row amount-due">
+        <span class="total-label">Amount Due:</span>
+        <span class="total-value">${{ invoiceData.grandTotal | number:'1.2-2' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="preview-footer">
+    <p>Thank you for your business!</p>
+  </div>
+</div>
+
