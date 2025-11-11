@@ -30,6 +30,8 @@ export class PosItemsComponent implements OnInit, OnDestroy {
   // Reorder UI state
   reorderModalVisible = false;
   tempFeaturedIds: number[] = [];
+  // Invoice dialog state
+  invoiceDialogVisible = false;
 
   constructor(
     public sidebarService: PosService,
@@ -377,6 +379,11 @@ export class PosItemsComponent implements OnInit, OnDestroy {
 
   cancelReorder() {
     this.reorderModalVisible = false;
+    this.cdr.markForCheck();
+  }
+
+  openInvoiceDialog() {
+    this.invoiceDialogVisible = true;
     this.cdr.markForCheck();
   }
 

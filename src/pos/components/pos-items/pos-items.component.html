@@ -12,6 +12,10 @@
       </option>
     </select>
     <button class="btn btn-sm btn-outline-primary" (click)="openReorderModal()">Arrange Items</button>
+    <button class="btn btn-sm btn-outline-success" (click)="openInvoiceDialog()">
+      <i class="pi pi-file me-1"></i>
+      Invoice
+    </button>
   </div>
   <div class="items-scroll">
     <div class="items-grid">
@@ -76,5 +80,18 @@
       <button class="btn btn-sm btn-secondary" (click)="cancelReorder()">Cancel</button>
       <button class="btn btn-sm btn-primary" (click)="saveFeaturedOrder()">Save</button>
     </ng-template>
+  </p-dialog>
+
+  <!-- Invoice Dialog -->
+  <p-dialog 
+    header="Create Invoice" 
+    [(visible)]="invoiceDialogVisible" 
+    [modal]="true" 
+    [closable]="true" 
+    [style]="{ width: '95vw', maxWidth: '1400px', height: '90vh' }"
+    [draggable]="false"
+    [resizable]="true"
+  >
+    <app-invoice></app-invoice>
   </p-dialog>
 </div>

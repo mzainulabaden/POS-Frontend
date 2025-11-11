@@ -1,127 +1,114 @@
 <!-- POS Layout -->
 <div class="container-fluid vh-100 overflow-auto">
-  <p-tabView
-    class="pos-tabview h-100"
-    [(activeIndex)]="activeTabIndex"
-    (onChange)="onTabChange($event.index)"
-  >
-    <p-tabPanel header="POS" leftIcon="pi pi-th-large">
-      <div class="pos-tab-content d-flex flex-column h-100">
-        <!-- Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
-          <!-- Navigation State Indicator -->
-          <div class="nav-state-indicator" [class]="'state-' + navigationState.currentSection">
-            <span class="state-text">{{ navigationState.currentSection | titlecase }}</span>
-            <span class="state-key" *ngIf="navigationState.currentSection === 'search'">(F3/F4)</span>
-            <span class="state-key" *ngIf="navigationState.currentSection === 'products'">(F5)</span>
-            <span class="state-key" *ngIf="navigationState.currentSection === 'cart'">(F6)</span>
-          </div>
+  <div class="pos-tab-content d-flex flex-column h-100">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+      <!-- Navigation State Indicator -->
+      <div class="nav-state-indicator" [class]="'state-' + navigationState.currentSection">
+        <span class="state-text">{{ navigationState.currentSection | titlecase }}</span>
+        <span class="state-key" *ngIf="navigationState.currentSection === 'search'">(F3/F4)</span>
+        <span class="state-key" *ngIf="navigationState.currentSection === 'products'">(F5)</span>
+        <span class="state-key" *ngIf="navigationState.currentSection === 'cart'">(F6)</span>
+      </div>
 
-          <div
-            class="container-fluid d-flex justify-content-between align-items-center px-3"
-          >
-            <div style="width: 40%" class="d-flex gap-2 position-relative">
-              <!-- Search Input with Dropdown -->
-              <div class="position-relative w-100" #searchContainer>
-                <input
-                  type="text"
-                  pInputText
-                  placeholder="Search by Name or SKU..."
-                  [(ngModel)]="searchItems"
-                  (input)="onSearchChange()"
-                  (keydown)="onSearchKeyDown($event)"
-                  (blur)="onSearchBlur()"
-                  (focus)="onSearchFocus()"
-                  #searchInput
-                  class="w-100"
-                  autocomplete="off"
-                />
+      <div
+        class="container-fluid d-flex justify-content-between align-items-center px-3"
+      >
+        <div style="width: 40%" class="d-flex gap-2 position-relative">
+          <!-- Search Input with Dropdown -->
+          <div class="position-relative w-100" #searchContainer>
+            <input
+              type="text"
+              pInputText
+              placeholder="Search by Name or SKU..."
+              [(ngModel)]="searchItems"
+              (input)="onSearchChange()"
+              (keydown)="onSearchKeyDown($event)"
+              (blur)="onSearchBlur()"
+              (focus)="onSearchFocus()"
+              #searchInput
+              class="w-100"
+              autocomplete="off"
+            />
 
-                <!-- Search Dropdown -->
-                <div
-                  *ngIf="showSearchDropdown"
-                  class="search-dropdown"
-                  style="position: absolute; top: 100%; left: 0; min-width: 400px; max-width: 600px; z-index: 1000; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); max-height: 400px; overflow-y: auto; margin-top: 4px;"
-                >
-                  <!-- Empty state -->
-                  <div *ngIf="searchResults.length === 0" class="p-2 text-muted small">
-                    No matches found
-                  </div>
-                  <div
-                    *ngFor="let product of searchResults; let i = index; trackBy: trackByProduct"
-                    class="search-result-item"
-                    [class.selected]="i === selectedSearchIndex"
-                    (click)="selectSearchResult(product, i)"
-                    (mouseenter)="selectedSearchIndex = i"
-                  >
-                    <div class="flex-grow-1">
-                      <div class="fw-bold text-dark" [innerHTML]="getHighlighted(product.name, searchItems)"></div>
-                      <div class="text-muted small">
-                        <span *ngIf="product.sku || product.SKU">SKU: {{ product.sku || product.SKU }}</span>
-                        <span *ngIf="product.barcode || product.Barcode" style="margin-left: 8px;">Barcode: {{ product.barcode || product.Barcode }}</span>
-                      </div>
-                    </div>
-                    <div class="text-success fw-bold">
-                      ${{ product.unitPrice || product.price || '0.00' }}
-                    </div>
+            <!-- Search Dropdown -->
+            <div
+              *ngIf="showSearchDropdown"
+              class="search-dropdown"
+              style="position: absolute; top: 100%; left: 0; min-width: 400px; max-width: 600px; z-index: 1000; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); max-height: 400px; overflow-y: auto; margin-top: 4px;"
+            >
+              <!-- Empty state -->
+              <div *ngIf="searchResults.length === 0" class="p-2 text-muted small">
+                No matches found
+              </div>
+              <div
+                *ngFor="let product of searchResults; let i = index; trackBy: trackByProduct"
+                class="search-result-item"
+                [class.selected]="i === selectedSearchIndex"
+                (click)="selectSearchResult(product, i)"
+                (mouseenter)="selectedSearchIndex = i"
+              >
+                <div class="flex-grow-1">
+                  <div class="fw-bold text-dark" [innerHTML]="getHighlighted(product.name, searchItems)"></div>
+                  <div class="text-muted small">
+                    <span *ngIf="product.sku || product.SKU">SKU: {{ product.sku || product.SKU }}</span>
+                    <span *ngIf="product.barcode || product.Barcode" style="margin-left: 8px;">Barcode: {{ product.barcode || product.Barcode }}</span>
                   </div>
                 </div>
+                <div class="text-success fw-bold">
+                  ${{ product.unitPrice || product.price || '0.00' }}
+                </div>
               </div>
-
-              <ng-container *ngIf="showBarcodeInput">
-                <input
-                  type="text"
-                  pInputText
-                  placeholder="Scan barcode"
-                  [(ngModel)]="barcodeInput"
-                  #barcodeScan
-                  autocomplete="off"
-                  style="width: 260px"
-                />
-              </ng-container>
-            </div>
-
-            <!-- Right Side Menu -->
-            <div class="d-flex align-items-center gap-3">
-              <!-- Keyboard Help Button -->
-              <button (click)="showKeyboardHelp()" class="btn btn-outline-info" title="Keyboard Shortcuts (F1)">
-                <i class="fa-solid fa-keyboard me-1"></i>
-                Help
-              </button>
-
-              <!-- Hold Orders Button -->
-              <button (click)="showHoldOrders()" class="btn btn-outline-primary">
-                <i class="fa-solid fa-clock-rotate-left me-1"></i>
-                Hold Orders
-              </button>
-
-              <button
-                class="btn btn-link text-success"
-                (click)="goto('app/main/dashboard/dashboard')"
-              >
-                <i class="fa fa-sign-out"></i>
-              </button>
             </div>
           </div>
-        </nav>
 
-        <div class="d-flex flex-grow-1 pos-panels">
-          <!-- Cart Sidebar -->
-          <div class="pos-pane pos-cart-pane">
-            <app-pos-cart-sidebar class="d-block w-100 h-100"></app-pos-cart-sidebar>
-          </div>
+          <ng-container *ngIf="showBarcodeInput">
+            <input
+              type="text"
+              pInputText
+              placeholder="Scan barcode"
+              [(ngModel)]="barcodeInput"
+              #barcodeScan
+              autocomplete="off"
+              style="width: 260px"
+            />
+          </ng-container>
+        </div>
 
-          <!-- Product Grid -->
-          <div class="pos-pane pos-items-pane">
-            <app-pos-items #posItems class="d-block w-100 h-100"></app-pos-items>
-          </div>
+        <!-- Right Side Menu -->
+        <div class="d-flex align-items-center gap-3">
+          <!-- Keyboard Help Button -->
+          <button (click)="showKeyboardHelp()" class="btn btn-outline-info" title="Keyboard Shortcuts (F1)">
+            <i class="fa-solid fa-keyboard me-1"></i>
+            Help
+          </button>
+
+          <!-- Hold Orders Button -->
+          <button (click)="showHoldOrders()" class="btn btn-outline-primary">
+            <i class="fa-solid fa-clock-rotate-left me-1"></i>
+            Hold Orders
+          </button>
+
+          <button
+            class="btn btn-link text-success"
+            (click)="goto('app/main/dashboard/dashboard')"
+          >
+            <i class="fa fa-sign-out"></i>
+          </button>
         </div>
       </div>
-    </p-tabPanel>
-    <p-tabPanel header="Invoice" leftIcon="pi pi-file">
-      <div class="invoice-tab-content h-100 overflow-auto">
-        <app-invoice></app-invoice>
+    </nav>
+
+    <div class="d-flex flex-grow-1 pos-panels">
+      <!-- Cart Sidebar -->
+      <div class="pos-pane pos-cart-pane">
+        <app-pos-cart-sidebar class="d-block w-100 h-100"></app-pos-cart-sidebar>
       </div>
-    </p-tabPanel>
-  </p-tabView>
+
+      <!-- Product Grid -->
+      <div class="pos-pane pos-items-pane">
+        <app-pos-items #posItems class="d-block w-100 h-100"></app-pos-items>
+      </div>
+    </div>
+  </div>
 </div>

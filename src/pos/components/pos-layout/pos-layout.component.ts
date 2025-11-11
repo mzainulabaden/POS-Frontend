@@ -14,7 +14,6 @@ import { Subject } from "rxjs";
 })
 export class PosLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   isFullScreen = false;
-  activeTabIndex = 0;
   cartItems: any[] = [];
   searchItems: string = "";
   barcodeInput: string = "";
@@ -93,10 +92,6 @@ export class PosLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
       .subscribe(() => {
         this.loadAllProducts();
       });
-  }
-
-  onTabChange(index: number) {
-    this.activeTabIndex = index;
   }
 
   // Toggle Sidebar
