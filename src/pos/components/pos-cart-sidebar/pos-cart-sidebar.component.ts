@@ -845,6 +845,48 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
   }
 
   // -------- Save --------
+  private buildApiPayload() {
+    const form = this.purchaseForm.value;
+    const details = (this.salesInvoiceDetails.value || []).map((d: any) => {
+      const qty = Number(d.invoiceQty || 0);
+      const rate = Number(d.rate || 0);
+      const gross = +(qty * rate).toFixed(2);
+      const discountPct = Number(d.discountPercentage || 0);
+      const discountAmtCtrl = Number(d.discount || 0);
+      const pctDiscount = discountPct > 0 ? +(gross * (discountPct / 100)).toFixed(2) : 0;
+      const discountAmount = discountPct > 0 ? pctDiscount : discountAmtCtrl;
+      const lineGrandTotal = Math.max(0, +(gross - discountAmount).toFixed(2));
+      return {
+        id: 0,
+        itemId: d.itemId,
+        unitId: Number(d.unitId || 0),
+        rate: rate,
+        pricePerKg: 0,
+        invoiceQty: qty,
+        discountPercentage: discountPct,
+        discountAmount: +(discountAmount || 0).toFixed(2),
+        grandTotal: lineGrandTotal,
+        salesOrderDetailId: Number(d.salesOrderDetailId || 0)
+      };
+    });
+    return {
+      id: 0,
+      issueDate: moment(form.issueDate).toISOString(true),
+      remarks: form.remarks || "",
+      referenceNumber: form.referenceNumber || "",
+      paymentModeId: Number(form.paymentModeId || 0),
+      customerCOALevel04Id: Number(form.customerCOALevel04Id || 0),
+      warehouseId: Number(form.selectedWarehouseId || this.posService.getEffectiveWarehouseId() || 0),
+      advanceAmountBankCOALevl04Id: Number(form.advanceAmountBankCOALevl04Id || 0),
+      grandTotal: Number(this.payableAmount || 0),
+      advanceAmount: Number(form.advanceAmount || 0),
+      discountPercentage: Number(form.discountPercentage || 0),
+      discountAmount: Number(form.discountAmount || 0),
+      netTotal: Number(this.nettotal || 0),
+      salesInvoiceDetails: details
+    };
+  }
+
   save() {
     if (!this.purchaseForm.valid) {
       this.msgService.add({
@@ -857,7 +899,7 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
 
     this.purchaseForm.patchValue({
       salesInvoiceDetails: this.salesInvoiceDetails.value,
-      issueDate: moment(this.purchaseForm.value.issueDate).format("YYYY-MM-DD"),
+      issueDate: moment(this.purchaseForm.value.issueDate).toISOString(true),
       viAmount: 0,
       commissionAmount: this.purchaseForm.value.commissionAmount || 0,
       netTotal: this.nettotal,
@@ -879,7 +921,7 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
     } catch (_) {}
 
     this.posService
-      .create({ ...this.purchaseForm.value }, "SalesInvoice")
+      .create(this.buildApiPayload(), "SalesInvoice")
       .pipe(
         finalize(() => {
           try {
@@ -958,7 +1000,7 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
 
     this.purchaseForm.patchValue({
       salesInvoiceDetails: this.salesInvoiceDetails.value,
-      issueDate: moment(this.purchaseForm.value.issueDate).format("YYYY-MM-DD"),
+      issueDate: moment(this.purchaseForm.value.issueDate).toISOString(true),
       viAmount: 0,
       commissionAmount: this.purchaseForm.value.commissionAmount || 0,
       netTotal: this.nettotal,
@@ -977,7 +1019,7 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
     } catch (_) {}
 
     this.posService
-      .create({ ...this.purchaseForm.value }, "SalesInvoice")
+      .create(this.buildApiPayload(), "SalesInvoice")
       .pipe(
         finalize(() => {
           try {
@@ -1187,7 +1229,7 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
     // Prepare form data
     this.purchaseForm.patchValue({
       salesInvoiceDetails: this.salesInvoiceDetails.value,
-      issueDate: moment(this.purchaseForm.value.issueDate).format("YYYY-MM-DD"),
+      issueDate: moment(this.purchaseForm.value.issueDate).toISOString(true),
       viAmount: 0,
       commissionAmount: this.purchaseForm.value.commissionAmount || 0,
       netTotal: this.nettotal,
@@ -1207,7 +1249,7 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
     } catch (_) {}
 
     this.posService
-      .create({ ...this.purchaseForm.value }, "SalesInvoice")
+      .create(this.buildApiPayload(), "SalesInvoice")
       .pipe(
         finalize(() => {
           try {
