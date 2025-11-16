@@ -162,8 +162,9 @@ export class ThermalPrinterService {
     commands += LF;
     commands += LF;
     
-    // Cut paper (if supported)
-    commands += GS + 'V' + '\x00';
+    // Feed paper and cut (Epson TM-T81 compatible)
+    commands += LF; // Extra line feed before cut
+    commands += GS + 'V' + '\x01'; // Partial cut (Epson TM-T81: 0=full, 1=partial)
     
     return commands;
   }
@@ -171,8 +172,9 @@ export class ThermalPrinterService {
   /**
    * Send ESC/POS commands to thermal printer via network/USB
    * This requires a middleware service running locally
+   * Always uses the system's default printer
    */
-  async sendToThermalPrinter(data: ReceiptData, printerIP?: string): Promise<void> {
+  async sendToThermalPrinter(data: ReceiptData): Promise<void> {
     // Ensure any bound templates receive the latest receipt data
     // so the app doesn't appear blank while printing silently.
     try {
@@ -181,8 +183,7 @@ export class ThermalPrinterService {
 
     const commands = this.generateESCPOSCommands(data);
     
-    // Option 1: Send to local middleware service
-    // You can install a service like "Node Thermal Printer" or similar
+    // Send to local middleware service using system's default printer
     try {
       const response = await fetch('http://localhost:3000/print', {
         method: 'POST',
@@ -190,17 +191,22 @@ export class ThermalPrinterService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          printer: printerIP || 'default',
+          printer: 'default', // Always use system default printer
           data: commands
         })
       });
       
       if (!response.ok) {
-        throw new Error('Failed to send to thermal printer');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Print service returned status ${response.status}`);
       }
+      
+      const result = await response.json().catch(() => ({}));
+      console.log('Print successful:', result);
     } catch (error) {
       console.error('Thermal printer error:', error);
-      // Silently fail if printer is not connected - do not open browser print dialog
+      // Re-throw error so caller can handle fallback
+      throw error;
     }
   }
 
