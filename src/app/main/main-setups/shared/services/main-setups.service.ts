@@ -398,7 +398,7 @@ export class MainSetupsService {
 
   // Item/GetBarCodeUrl - returns relative or absolute URL string for a barcode image
   getBarCodeUrl(barcode: string) {
-    const url = `${this.baseUrl}Item/GetBarCodeUrl?barcode=${encodeURIComponent(
+    const url = `${this.baseUrl}Item/GetBarCodeUrl?itemId=${encodeURIComponent(
       barcode || ""
     )}`;
     return this.http.get(url).pipe(

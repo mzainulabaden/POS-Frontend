@@ -10,6 +10,7 @@ import { catchError, finalize, throwError } from "rxjs";
 import { MainSetupsService } from "../../shared/services/main-setups.service";
 import { debounceTime, distinctUntilChanged, Subject } from "rxjs";
 import * as JsBarcode from "jsbarcode";
+import { newBaseUrl } from "@shared/AppBaseUrl/appBaseURL";
 
 @Component({
   selector: "app-item-barcode-printing",
@@ -30,7 +31,7 @@ export class ItemBarcodePrintingComponent implements OnInit {
   searchQuery: string = "";
   suggestions: string[] = [];
   private searchSubject = new Subject<string>();
-  baseurl: string = "http://ec2-16-171-113-162.eu-north-1.compute.amazonaws.com:8081";
+  baseurl: string = newBaseUrl;
   
   selectedItem: any = null;
   selectedItemDetail: any = null;
@@ -220,7 +221,7 @@ export class ItemBarcodePrintingComponent implements OnInit {
     this.selectedItemDetail = itemDetail;
     if (itemDetail.barcode) {
       // Prefer server-provided barcode image URL if available
-      this._hrmService.getBarCodeUrl(itemDetail.barcode).subscribe({
+      this._hrmService.getBarCodeUrl(itemDetail.id).subscribe({
         next: (url: string) => {
           if (url) {
             // Normalize absolute vs relative URL
@@ -314,125 +315,268 @@ export class ItemBarcodePrintingComponent implements OnInit {
     this.performPrint(detail);
   }
 
-  private performPrint(itemDetail: any) {
-    const itemName = this.selectedItem?.name || "N/A";
-    const barcodeValue = itemDetail.barcode;
+  // private performPrint(itemDetail: any) {
+  //   const itemName = this.selectedItem?.name || "N/A";
+  //   const barcodeValue = itemDetail.barcode;
     
-    // Use server image only (no local generation)
-    const barcodeImageUrl = this.barcodePreviewUrl;
-    if (!barcodeImageUrl) {
-      this.msgService.add({
-        severity: "warn",
-        summary: "Warning",
-        detail: "No barcode image available to print",
-        life: 2000,
-      });
-      return;
-    }
-      const expiryDateStr = this.expiryDate 
-        ? new Date(this.expiryDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
-        : "";
-      const manufactureDateStr = this.manufactureDate 
-        ? new Date(this.manufactureDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
-        : "";
+  //   // Use server image only (no local generation)
+  //   const barcodeImageUrl = this.barcodePreviewUrl;
+  //   if (!barcodeImageUrl) {
+  //     this.msgService.add({
+  //       severity: "warn",
+  //       summary: "Warning",
+  //       detail: "No barcode image available to print",
+  //       life: 2000,
+  //     });
+  //     return;
+  //   }
+  //     const expiryDateStr = this.expiryDate 
+  //       ? new Date(this.expiryDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  //       : "";
+  //     const manufactureDateStr = this.manufactureDate 
+  //       ? new Date(this.manufactureDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  //       : "";
 
-    try {
-      const printWindow = window.open("", "_blank");
-      if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>Print Barcode Label</title>
-              <style>
-                @page {
-                  size: 25mm 25mm;
-                  margin: 0;
-                }
-                body { 
-                  width: 25mm;
-                  height: 25mm;
-                  margin: 0;
-                  padding: 2mm 1.5mm;
-                  font-family: Arial, sans-serif;
-                  display: flex;
-                  flex-direction: column;
-                  justify-content: flex-start;
-                  box-sizing: border-box;
-                }
-                .company-name {
-                  font-size: 5px;
-                  font-weight: bold;
-                  text-align: center;
-                  line-height: 1.2;
-                  margin-bottom: 1.5mm;
-                  text-transform: uppercase;
-                }
-                .item-name {
-                  font-size: 6px;
-                  text-align: center;
-                  line-height: 1.2;
-                  margin-bottom: 2mm;
-                  word-wrap: break-word;
-                }
-                .barcode-container {
-                  display: flex;
-                  justify-content: center;
-                  align-items: center;
-                  margin: 1mm 0;
-                  flex: 1;
-                }
-                .barcode-container img {
-                  max-width: 100%;
-                  max-height: 12mm;
-                  width: auto;
-                  height: auto;
-                }
-                .barcode-number {
-                  font-size: 7px;
-                  text-align: center;
-                  margin-top: 1mm;
-                  font-weight: normal;
-                }
-                .dates {
-                  font-size: 4px;
-                  text-align: center;
-                  line-height: 1.1;
-                  margin-top: 0.5mm;
-                }
-                .date-row {
-                  margin: 0.2mm 0;
-                }
-              </style>
-            </head>
-            <body>
-              <div class="company-name">USAMA SWEETS & BAKERS</div>
-              <div class="item-name">${itemName}</div>
-              <div class="barcode-container">
-                <img src="${barcodeImageUrl}" alt="Barcode" />
-              </div>
-              <div class="barcode-number">${barcodeValue}</div>
-              ${(expiryDateStr || manufactureDateStr) ? `
+  //   try {
+  //     const printWindow = window.open("", "_blank");
+  //     if (printWindow) {
+  //       printWindow.document.write(`
+  //         <html>
+  //           <head>
+  //             <title>Print Barcode Label</title>
+  //             <style>
+  //               @page {
+  //                 size: 25mm 25mm;
+  //                 margin: 0;
+  //               }
+  //               body { 
+  //                 width: 25mm;
+  //                 height: 25mm;
+  //                 margin: 0;
+  //                 padding: 2mm 1.5mm;
+  //                 font-family: Arial, sans-serif;
+  //                 display: flex;
+  //                 flex-direction: column;
+  //                 justify-content: flex-start;
+  //                 box-sizing: border-box;
+  //               }
+  //               .company-name {
+  //                 font-size: 5px;
+  //                 font-weight: bold;
+  //                 text-align: center;
+  //                 line-height: 1.2;
+  //                 margin-bottom: 1.5mm;
+  //                 text-transform: uppercase;
+  //               }
+  //               .item-name {
+  //                 font-size: 6px;
+  //                 text-align: center;
+  //                 line-height: 1.2;
+  //                 margin-bottom: 2mm;
+  //                 word-wrap: break-word;
+  //               }
+  //               .barcode-container {
+  //                 display: flex;
+  //                 justify-content: center;
+  //                 align-items: center;
+  //                 margin: 1mm 0;
+  //                 flex: 1;
+  //               }
+  //               .barcode-container img {
+  //                 max-width: 100%;
+  //                 max-height: 12mm;
+  //                 width: auto;
+  //                 height: auto;
+  //               }
+  //               .barcode-number {
+  //                 font-size: 7px;
+  //                 text-align: center;
+  //                 margin-top: 1mm;
+  //                 font-weight: normal;
+  //               }
+  //               .dates {
+  //                 font-size: 4px;
+  //                 text-align: center;
+  //                 line-height: 1.1;
+  //                 margin-top: 0.5mm;
+  //               }
+  //               .date-row {
+  //                 margin: 0.2mm 0;
+  //               }
+  //             </style>
+  //           </head>
+  //           <body>
+  //             <div class="company-name">USAMA SWEETS & BAKERS</div>
+  //             <div class="item-name">${itemName}</div>
+  //             <div class="barcode-container">
+  //               <img src="${barcodeImageUrl}" alt="Barcode" />
+  //             </div>
+  //             <div class="barcode-number">${barcodeValue}</div>
+  //             ${(expiryDateStr || manufactureDateStr) ? `
+  //             <div class="dates">
+  //               ${manufactureDateStr ? `<div class="date-row">Mfg: ${manufactureDateStr}</div>` : ''}
+  //               ${expiryDateStr ? `<div class="date-row">Exp: ${expiryDateStr}</div>` : ''}
+  //             </div>
+  //             ` : ''}
+  //           </body>
+  //         </html>
+  //       `);
+  //       printWindow.document.close();
+  //       printWindow.print();
+  //     }
+  //   } catch (error) {
+  //     console.error("Print error:", error);
+  //     this.msgService.add({
+  //       severity: "error",
+  //       summary: "Error",
+  //       detail: "Failed to print barcode",
+  //       life: 2000,
+  //     });
+  //   }
+  // }
+private performPrint(itemDetail: any) {
+  const itemName = this.selectedItem?.name || "N/A";
+  const barcodeValue = itemDetail.barcode;
+
+  const barcodeImageUrl = this.barcodePreviewUrl;
+  if (!barcodeImageUrl) {
+    this.msgService.add({
+      severity: "warn",
+      summary: "Warning",
+      detail: "No barcode image available to print",
+      life: 2000,
+    });
+    return;
+  }
+
+  const expiryDateStr = this.expiryDate
+    ? new Date(this.expiryDate).toLocaleDateString("en-GB")
+    : "";
+  const manufactureDateStr = this.manufactureDate
+    ? new Date(this.manufactureDate).toLocaleDateString("en-GB")
+    : "";
+
+  try {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Print Barcode Label</title>
+          <style>
+            @page { size: 38mm 25mm; margin: 0; }
+
+            html, body {
+              width: 38mm;
+              height: 25mm;
+              margin: 0;
+              padding: 0;
+              font-family: Arial, sans-serif;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              box-sizing: border-box;
+            }
+
+            .label-container {
+              width: 100%;
+              height: 100%;
+              padding: 1mm;
+              box-sizing: border-box;
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
+              align-items: center;
+            }
+
+            .company-name {
+              font-size: 8px;
+              font-weight: bold;
+              text-align: center;
+              text-transform: uppercase;
+              line-height: 1;
+            }
+
+            .item-name {
+              font-size: 8px;
+              font-weight: bold;
+              text-align: center;
+              line-height: 1.1;
+              margin: 0.5mm 0;
+              word-wrap: break-word;
+            }
+
+            .barcode-container {
+              width: 100%;
+              flex: 1;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            }
+
+            .barcode-container img {
+              width: 90%;
+              height: auto;
+              max-height: 30px;
+            }
+
+            .barcode-number {
+              font-size: 8px;
+              text-align: center;
+              line-height: 1;
+            }
+
+            .dates {
+              font-size: 8px;
+              font-weight: bold;
+              text-align: center;
+              line-height: 1;
+            }
+
+            .date-row { margin: 0.2mm 0; }
+          </style>
+        </head>
+
+        <body>
+          <div class="label-container">
+            <div class="company-name">USAMA SWEETS & BAKERS</div>
+            <div class="item-name">${itemName}</div>
+
+            <div class="barcode-container">
+              <img id="barcode-img" src="${barcodeImageUrl}" alt="Barcode" />
+            </div>
+
+            ${expiryDateStr || manufactureDateStr ? `
               <div class="dates">
                 ${manufactureDateStr ? `<div class="date-row">Mfg: ${manufactureDateStr}</div>` : ''}
                 ${expiryDateStr ? `<div class="date-row">Exp: ${expiryDateStr}</div>` : ''}
               </div>
-              ` : ''}
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-        printWindow.print();
-      }
-    } catch (error) {
-      console.error("Print error:", error);
-      this.msgService.add({
-        severity: "error",
-        summary: "Error",
-        detail: "Failed to print barcode",
-        life: 2000,
-      });
-    }
+            ` : ""}
+          </div>
+
+          <script>
+            const img = document.getElementById("barcode-img");
+            img.onload = function () {
+              window.focus();
+              window.print();
+            };
+          </script>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+  } catch (error) {
+    console.error("Print error:", error);
+    this.msgService.add({
+      severity: "error",
+      summary: "Error",
+      detail: "Failed to print barcode",
+      life: 2000,
+    });
   }
+}
 
   printAllBarcodes() {
     if (!this.selectedItem || !this.selectedItem.itemDetails) {
