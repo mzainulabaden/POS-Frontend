@@ -10,6 +10,7 @@ import { catchError, finalize, throwError } from "rxjs";
 import { MainSetupsService } from "../../shared/services/main-setups.service";
 import { debounceTime, distinctUntilChanged, Subject } from "rxjs";
 import * as JsBarcode from "jsbarcode";
+import { newBaseUrl } from "@shared/AppBaseUrl/appBaseURL";
 
 @Component({
   selector: "app-item-barcode-printing",
@@ -220,7 +221,7 @@ export class ItemBarcodePrintingComponent implements OnInit {
     this.selectedItemDetail = itemDetail;
     if (itemDetail.barcode) {
       // Prefer server-provided barcode image URL if available
-      this._hrmService.getBarCodeUrl(itemDetail.barcode).subscribe({
+      this._hrmService.getBarCodeUrl(itemDetail.id).subscribe({
         next: (url: string) => {
           if (url) {
             // Normalize absolute vs relative URL
@@ -494,6 +495,7 @@ export class ItemBarcodePrintingComponent implements OnInit {
       });
     }
   }
+}
 
   printAllBarcodes() {
     if (!this.selectedItem || !this.selectedItem.itemDetails) {
