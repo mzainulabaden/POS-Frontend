@@ -573,62 +573,53 @@
     </div>
 
     <!-- Barcode Display -->
-    <div *ngIf="generatedBarcode" class="barcode-display mb-4">
-      <div class="text-center mb-3">
-        <label class="label-text font-bold">Generated Barcode:</label>
-        <p class="text-lg font-mono">{{ generatedBarcode }}</p>
-      </div>
-      <!-- Preview for 1" × 1" Label -->
-      <div class="text-center mb-2" style="border: 1px solid #ddd; padding: 4px; width: 94.5px; height: 94.5px; margin: 0 auto; display: flex; flex-direction: column; justify-content: flex-start; background: white;">
-        <div class="font-bold" style="font-size: 6px; font-weight: bold; line-height: 1.2; margin-bottom: 2px; text-align: center;">USAMA SWEETS & BAKERS</div>
-        <div style="font-size: 6px; line-height: 1.2; word-wrap: break-word; margin-bottom: 3px; text-align: center; max-height: 20px; overflow: hidden;">{{ itemForm.value.name || 'Item Name' }}</div>
-        <div class="text-center" style="flex: 1; display: flex; align-items: center; justify-content: center; margin: 2px 0;">
-          <canvas id="barcodeCanvas" style="max-width: 100%; max-height: 35px; width: auto;"></canvas>
-        </div>
-        <div style="font-size: 7px; font-weight: normal; text-align: center; margin-top: 2px;">{{ generatedBarcode }}</div>
-      </div>
+ <!-- Barcode Display -->
+<div class="barcode-display mb-4" [class.hidden]="!generatedBarcode">
+  <div class="text-center mb-3">
+    <label class="label-text font-bold">Generated Barcode:</label>
+    <p class="text-lg font-mono">{{ generatedBarcode }}</p>
+  </div>
 
-      <!-- Action Buttons -->
-      <div class="flex justify-content-center gap-2">
-        <button
-          pButton
-          pRipple
-          type="button"
-          class="create-btn"
-          (click)="applyBarcodeToGrid()"
-        >
-          <i class="pi pi-check"></i> Apply to Selected Rows
-        </button>
-        <button
-          pButton
-          pRipple
-          type="button"
-          class="create-btn"
-          (click)="downloadBarcodeImage()"
-        >
-          <i class="pi pi-download"></i> Download
-        </button>
-        <button
-          pButton
-          pRipple
-          type="button"
-          class="create-btn"
-          (click)="printBarcode()"
-        >
-          <i class="pi pi-print"></i> Print
-        </button>
-      </div>
+  <!-- Preview for 1" × 1" Label -->
+  <div class="text-center mb-2" style="border: 1px solid #ddd; padding: 4px; width: 94.5px; height: 94.5px; margin: 0 auto; display: flex; flex-direction: column; justify-content: flex-start; background: white;">
+    <div class="font-bold" style="font-size: 6px; font-weight: bold; line-height: 1.2; margin-bottom: 2px; text-align: center;">
+      USAMA SWEETS & BAKERS
     </div>
+    <div style="font-size: 6px; line-height: 1.2; word-wrap: break-word; margin-bottom: 3px; text-align: center; max-height: 20px; overflow: hidden;">
+      {{ itemForm.value.name || 'Item Name' }}
+    </div>
+    <div class="text-center" style="flex: 1; display: flex; align-items: center; justify-content: center; margin: 2px 0;">
+      <!-- Canvas always exists -->
+      <canvas #barcodeCanvas style="max-width: 100%; max-height: 25px; width: auto;"></canvas>
+    </div>
+    <div style="font-size: 7px; font-weight: normal; text-align: center; margin-top: 2px;">
+      {{ generatedBarcode }}
+    </div>
+  </div>
 
-    <!-- Instructions -->
-    <div *ngIf="!generatedBarcode" class="text-center p-4">
-      <i class="pi pi-info-circle" style="font-size: 2rem; color: #6c757d"></i>
-      <p class="mt-3 label-text">
-        Click "Generate New Barcode" to create a unique barcode.<br />
-        Select rows in the grid and click "Apply to Selected Rows" to assign the
-        barcode.
-      </p>
-    </div>
+  <!-- Action Buttons -->
+  <div class="flex justify-content-center gap-2 mt-2">
+    <button pButton pRipple type="button" class="create-btn" (click)="applyBarcodeToGrid()">
+      <i class="pi pi-check"></i> Apply to Selected Rows
+    </button>
+    <button pButton pRipple type="button" class="create-btn" (click)="downloadBarcodeImage()">
+      <i class="pi pi-download"></i> Download
+    </button>
+    <button pButton pRipple type="button" class="create-btn" (click)="printBarcode()">
+      <i class="pi pi-print"></i> Print
+    </button>
+  </div>
+</div>
+
+<!-- Instructions -->
+<div class="text-center p-4" [class.hidden]="generatedBarcode">
+  <i class="pi pi-info-circle" style="font-size: 2rem; color: #6c757d"></i>
+  <p class="mt-3 label-text">
+    Click "Generate New Barcode" to create a unique barcode.<br />
+    Select rows in the grid and click "Apply to Selected Rows" to assign the barcode.
+  </p>
+</div>
+
   </div>
 
   <ng-template pTemplate="footer">
