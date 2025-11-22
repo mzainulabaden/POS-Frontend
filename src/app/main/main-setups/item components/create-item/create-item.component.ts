@@ -1237,33 +1237,87 @@ printBarcode() {
       <head>
         <title>Print Barcode Label</title>
         <style>
-          @page { size: 25mm 25mm; margin: 0; }
-          body {
-            width: 25mm; height: 25mm; margin: 0; padding: 2mm 1.5mm;
-            font-family: Arial, sans-serif; display: flex; flex-direction: column;
-            justify-content: flex-start; box-sizing: border-box;
+          @page { size: 38mm 25mm; margin: 0; }
+          html, body {
+            width: 38mm; 
+            height: 25mm; 
+            margin: 0; 
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
           }
-          .company-name { font-size: 5px; font-weight: bold; text-align: center; margin-bottom: 1.5mm; text-transform: uppercase; }
-          .item-name { font-size: 6px; text-align: center; line-height: 1.2; margin-bottom: 2mm; word-wrap: break-word; }
-          .barcode-container { display: flex; justify-content: center; align-items: center; margin: 1mm 0; flex: 1; }
-          .barcode-container img { max-width: 100%; max-height: 12mm; width: auto; height: auto; }
-          .barcode-number { font-size: 7px; text-align: center; margin-top: 1mm; font-weight: normal; }
-          .dates { font-size: 4px; text-align: center; line-height: 1.1; margin-top: 0.5mm; }
-          .date-row { margin: 0.2mm 0; }
+          .label-container {
+            width: 100%;
+            height: 100%;
+            padding: 1mm;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+          }
+          .company-name {
+            font-size: 8px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1;
+            text-transform: uppercase;
+          }
+          .item-name {
+            font-size: 8px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.1;
+            word-wrap: break-word;
+            margin: 0.5mm 0;
+          }
+          .barcode-container {
+            width: 100%;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+          .barcode-container img {
+            width: 90%;  
+            height: auto; 
+            max-height:30px;
+          }
+          .barcode-number {
+            font-size: 8px;
+            text-align: center;
+            margin-top: 0.5mm;
+            line-height: 1;
+          }
+          .dates {
+            font-size: 8px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1;
+            margin-top: 0.5mm;
+          }
+          .date-row {
+            margin: 0.2mm 0;
+          }
         </style>
       </head>
       <body>
-        <div class="company-name">USAMA SWEETS & BAKERS</div>
-        <div class="item-name">${itemName}</div>
-        <div class="barcode-container">
-          <img id="barcode-img" src="${this.barcodePreviewUrl}" alt="Barcode" />
+        <div class="label-container">
+          <div class="company-name">USAMA SWEETS & BAKERS</div>
+          <div class="item-name">${itemName}</div>
+          <div class="barcode-container">
+            <img id="barcode-img" src="${this.barcodePreviewUrl}" alt="Barcode" />
+          </div>
+          ${(expiryDateStr || manufactureDateStr) ? `
+          <div class="dates">
+            ${manufactureDateStr ? `<div class="date-row">Mfg: ${manufactureDateStr}</div>` : ''}
+            ${expiryDateStr ? `<div class="date-row">Exp: ${expiryDateStr}</div>` : ''}
+          </div>` : ''}
         </div>
-        <div class="barcode-number">${this.generatedBarcode}</div>
-        ${(expiryDateStr || manufactureDateStr) ? `
-        <div class="dates">
-          ${manufactureDateStr ? `<div class="date-row">Mfg: ${manufactureDateStr}</div>` : ''}
-          ${expiryDateStr ? `<div class="date-row">Exp: ${expiryDateStr}</div>` : ''}
-        </div>` : ''}
+
         <script>
           const img = document.getElementById('barcode-img');
           img.onload = function() {
@@ -1274,8 +1328,10 @@ printBarcode() {
       </body>
     </html>
   `);
+
   printWindow.document.close();
 }
+
 
 
 }
