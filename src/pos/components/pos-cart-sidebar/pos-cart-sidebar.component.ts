@@ -1195,10 +1195,7 @@ export class PosCartSidebarComponent implements OnInit, OnDestroy {
     // Print using thermal printer service
     // Prefer silent ESC/POS printing via local middleware; automatically
     // falls back to browser print dialog if the service isn't available.
-    this.thermalPrinter.sendToThermalPrinter(receiptData).catch(() => {
-      // Fallback to browser print dialog if thermal printer service fails
-      this.thermalPrinter.printReceipt(receiptData);
-    });
+    this.thermalPrinter.printReceipt(receiptData);
   }
 
   // Method to manually trigger print (can be called from a button)

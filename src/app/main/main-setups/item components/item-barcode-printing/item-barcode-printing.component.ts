@@ -14,7 +14,7 @@ import * as JsBarcode from "jsbarcode";
 @Component({
   selector: "app-item-barcode-printing",
   templateUrl: "./item-barcode-printing.component.html",
-  styleUrl: "./item-barcode-printing.component.css",
+  styleUrls: ["./item-barcode-printing.component.css"],
   encapsulation: ViewEncapsulation.None,
 })
 export class ItemBarcodePrintingComponent implements OnInit {
@@ -30,7 +30,7 @@ export class ItemBarcodePrintingComponent implements OnInit {
   searchQuery: string = "";
   suggestions: string[] = [];
   private searchSubject = new Subject<string>();
-  baseurl: string = "http://ec2-16-171-113-162.eu-north-1.compute.amazonaws.com:8081";
+  baseurl: string = "http://192.168.10.11:8000";
   
   selectedItem: any = null;
   selectedItemDetail: any = null;
@@ -316,7 +316,7 @@ export class ItemBarcodePrintingComponent implements OnInit {
 
   private performPrint(itemDetail: any) {
     const itemName = this.selectedItem?.name || "N/A";
-    const barcodeValue = itemDetail.barcode;
+    const barcodeValue = itemDetail?.barcode || "";
     
     // Use server image only (no local generation)
     const barcodeImageUrl = this.barcodePreviewUrl;
@@ -329,99 +329,160 @@ export class ItemBarcodePrintingComponent implements OnInit {
       });
       return;
     }
-      const expiryDateStr = this.expiryDate 
-        ? new Date(this.expiryDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
-        : "";
-      const manufactureDateStr = this.manufactureDate 
-        ? new Date(this.manufactureDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
-        : "";
+    const expiryDateStr = this.expiryDate
+      ? new Date(this.expiryDate).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        })
+      : "";
+    const manufactureDateStr = this.manufactureDate
+      ? new Date(this.manufactureDate).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        })
+      : "";
+
+    const printTemplate = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Print Barcode Label</title>
+          <style>
+            @page {
+              size: 34mm 20mm;
+              margin: 0;
+            }
+            body {
+              width: 34mm;
+              height: 20mm;
+              margin: 0;
+              padding: 1.2mm 1.5mm;
+              font-family: Arial, sans-serif;
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
+              box-sizing: border-box;
+              overflow: hidden;
+              background: #fff;
+            }
+            .company-name {
+              font-size: 6px;
+              font-weight: bold;
+              text-align: center;
+              line-height: 1.1;
+              margin-bottom: 0.4mm;
+              text-transform: uppercase;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+            .item-name {
+              font-size: 7px;
+              text-align: center;
+              line-height: 1.1;
+              margin-bottom: 0.4mm;
+              word-wrap: break-word;
+              max-height: 4mm;
+              overflow: hidden;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              -webkit-box-orient: vertical;
+            }
+            .barcode-container {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              margin: 0.4mm 0;
+              flex: 1;
+              min-height: 0;
+            }
+            .barcode-container img {
+              max-width: 100%;
+              max-height: 8mm;
+              width: auto;
+              height: auto;
+              object-fit: contain;
+            }
+            .dates {
+              font-size: 5px;
+              text-align: center;
+              line-height: 1;
+              margin-top: 0.2mm;
+              white-space: nowrap;
+            }
+            .barcode-value {
+              font-size: 6px;
+              text-align: center;
+              letter-spacing: 0.3px;
+              margin-top: 0.2mm;
+            }
+            @media print {
+              body {
+                margin: 0;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="company-name">USAMA SWEETS & BAKERS</div>
+          <div class="item-name">${itemName}</div>
+          <div class="barcode-container">
+            <img id="barcodeImage" src="${barcodeImageUrl}" alt="Barcode" />
+          </div>
+          ${
+            barcodeValue
+              ? `
+          <div class="barcode-value">${barcodeValue}</div>
+          `
+              : ""
+          }
+          ${
+            expiryDateStr || manufactureDateStr
+              ? `
+          <div class="dates">
+            ${manufactureDateStr ? `Mfg: ${manufactureDateStr}` : ""}${
+                  manufactureDateStr && expiryDateStr ? " | " : ""
+                }${expiryDateStr ? `Exp: ${expiryDateStr}` : ""}
+          </div>
+          `
+              : ""
+          }
+          <script>
+            (function () {
+              const finishPrint = () => {
+                setTimeout(() => {
+                  window.focus();
+                  window.print();
+                  window.close();
+                }, 200);
+              };
+
+              const img = document.getElementById("barcodeImage");
+              if (!img) {
+                finishPrint();
+                return;
+              }
+              if (img.complete && img.naturalWidth > 0) {
+                finishPrint();
+                return;
+              }
+              img.addEventListener("load", finishPrint, { once: true });
+              img.addEventListener("error", finishPrint, { once: true });
+            })();
+          </script>
+        </body>
+      </html>
+    `;
 
     try {
       const printWindow = window.open("", "_blank");
       if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>Print Barcode Label</title>
-              <style>
-                @page {
-                  size: 25mm 25mm;
-                  margin: 0;
-                }
-                body { 
-                  width: 25mm;
-                  height: 25mm;
-                  margin: 0;
-                  padding: 2mm 1.5mm;
-                  font-family: Arial, sans-serif;
-                  display: flex;
-                  flex-direction: column;
-                  justify-content: flex-start;
-                  box-sizing: border-box;
-                }
-                .company-name {
-                  font-size: 5px;
-                  font-weight: bold;
-                  text-align: center;
-                  line-height: 1.2;
-                  margin-bottom: 1.5mm;
-                  text-transform: uppercase;
-                }
-                .item-name {
-                  font-size: 6px;
-                  text-align: center;
-                  line-height: 1.2;
-                  margin-bottom: 2mm;
-                  word-wrap: break-word;
-                }
-                .barcode-container {
-                  display: flex;
-                  justify-content: center;
-                  align-items: center;
-                  margin: 1mm 0;
-                  flex: 1;
-                }
-                .barcode-container img {
-                  max-width: 100%;
-                  max-height: 12mm;
-                  width: auto;
-                  height: auto;
-                }
-                .barcode-number {
-                  font-size: 7px;
-                  text-align: center;
-                  margin-top: 1mm;
-                  font-weight: normal;
-                }
-                .dates {
-                  font-size: 4px;
-                  text-align: center;
-                  line-height: 1.1;
-                  margin-top: 0.5mm;
-                }
-                .date-row {
-                  margin: 0.2mm 0;
-                }
-              </style>
-            </head>
-            <body>
-              <div class="company-name">USAMA SWEETS & BAKERS</div>
-              <div class="item-name">${itemName}</div>
-              <div class="barcode-container">
-                <img src="${barcodeImageUrl}" alt="Barcode" />
-              </div>
-              <div class="barcode-number">${barcodeValue}</div>
-              ${(expiryDateStr || manufactureDateStr) ? `
-              <div class="dates">
-                ${manufactureDateStr ? `<div class="date-row">Mfg: ${manufactureDateStr}</div>` : ''}
-                ${expiryDateStr ? `<div class="date-row">Exp: ${expiryDateStr}</div>` : ''}
-              </div>
-              ` : ''}
-            </body>
-          </html>
-        `);
+        printWindow.document.write(printTemplate);
         printWindow.document.close();
-        printWindow.print();
+      } else {
+        throw new Error("Unable to open print window");
       }
     } catch (error) {
       console.error("Print error:", error);
