@@ -153,20 +153,6 @@ export class WarehouseStockAdjustmentComponent {
       width: 100,
     },
     {
-      headerName: "Min",
-      field: "min",
-      editable: false,
-      resizable: true,
-      width: 100,
-    },
-    {
-      headerName: "Max",
-      field: "max",
-      editable: false,
-      resizable: true,
-      width: 100,
-    },
-    {
       headerName: "In",
       field: "credit",
       editable: true,
@@ -176,13 +162,6 @@ export class WarehouseStockAdjustmentComponent {
     {
       headerName: "Out",
       field: "debit",
-      editable: true,
-      resizable: true,
-      width: 100,
-    },
-    {
-      headerName: "Cost Rate",
-      field: "costRate",
       editable: true,
       resizable: true,
       width: 100,
@@ -290,9 +269,6 @@ export class WarehouseStockAdjustmentComponent {
         next: (response) => {
           debugger;
           this.dataForEdit = response;
-          params.data.costRate = this.dataForEdit.rate || 0;
-          params.data.min = this.dataForEdit.minPrice || 0;
-          params.data.max = this.dataForEdit.maxPrice || 0;
 
           this.cdr.detectChanges();
           this.gridApi.refreshCells({ rowNodes: [params.node], force: true });
@@ -421,7 +397,6 @@ export class WarehouseStockAdjustmentComponent {
               minStockLevel: this.dataForEdit.minStockLevel,
               credit: this.dataForEdit.credit,
               debit: this.dataForEdit.debit,
-              costRate: this.dataForEdit.costRate,
               remarks: this.dataForEdit.remarks,
               id: this.dataForEdit.id,
               warehouseStockAdjustmentDetails:
