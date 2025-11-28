@@ -32,7 +32,7 @@ import { error } from "console";
 export class PurchaseInvoiceComponent {
   loading: boolean;
   tableData: any;
-  baseurl: string = "http://192.168.10.11:8000";
+  baseurl: string = "http://ec2-16-171-113-162.eu-north-1.compute.amazonaws.com:8081";
   saving: boolean;
   currentPage: number = 1;
   skipCount: number = 0;

@@ -61,7 +61,7 @@ export class CreateItemComponent implements OnInit {
   loading: boolean;
   searchQuery = "";
   suggestions: string[] = [];
-  baseurl: string = "http://192.168.10.11:8000";
+  baseurl: string = "http://ec2-16-171-113-162.eu-north-1.compute.amazonaws.com:8081";
   private searchSubject = new Subject<string>(); // RxJS subject for debounce
   constructor(
     injector: Injector,
@@ -809,7 +809,7 @@ export class CreateItemComponent implements OnInit {
             life: 3000,
           });
 
-          const BASE_URL = "http://192.168.10.11:8000";
+          const BASE_URL = "http://ec2-16-171-113-162.eu-north-1.compute.amazonaws.com:8081";
           if (result.errorFilePath) {
             const fullPath = result.errorFilePath.startsWith("http")
               ? result.errorFilePath
@@ -978,92 +978,92 @@ export class CreateItemComponent implements OnInit {
     this.displayCategoryModal = false;
   }
 
-  // // Barcode Generation Functions
-  // generateBarcode() {
-  //   // Generate 6-digit barcode
-  //   const randomNum = Math.floor(Math.random() * 900000) + 100000; // Ensure 6 digits (100000-999999)
-  //   this.generatedBarcode = randomNum.toString();
+  // Barcode Generation Functions
+  generateBarcode() {
+    // Generate 6-digit barcode
+    const randomNum = Math.floor(Math.random() * 900000) + 100000; // Ensure 6 digits (100000-999999)
+    this.generatedBarcode = randomNum.toString();
     
-  //   // Generate barcode image
-  //   this.generateBarcodeImage(this.generatedBarcode);
+    // Generate barcode image
+    this.generateBarcodeImage(this.generatedBarcode);
     
-  //   this.msgService.add({
-  //     severity: "success",
-  //     summary: "Success",
-  //     detail: "Barcode generated successfully!",
-  //     life: 2000,
-  //   });
-  // }
+    this.msgService.add({
+      severity: "success",
+      summary: "Success",
+      detail: "Barcode generated successfully!",
+      life: 2000,
+    });
+  }
 
-  // generateBarcodeImage(barcodeValue: string) {
-  //   setTimeout(() => {
-  //     const canvas = document.getElementById("barcodeCanvas") as HTMLCanvasElement;
-  //     if (canvas) {
-  //       try {
-  //         // Reduced size for 1" × 1" (25mm × 25mm) label
-  //         // Canvas size adjusted for label dimensions
-  //         canvas.width = 200;
-  //         canvas.height = 40;
+  generateBarcodeImage(barcodeValue: string) {
+    setTimeout(() => {
+      const canvas = document.getElementById("barcodeCanvas") as HTMLCanvasElement;
+      if (canvas) {
+        try {
+          // Reduced size for 1" × 1" (25mm × 25mm) label
+          // Canvas size adjusted for label dimensions
+          canvas.width = 200;
+          canvas.height = 40;
           
-  //         JsBarcode(canvas, barcodeValue, {
-  //           format: "CODE128",
-  //           width: 0.8,
-  //           height: 30,
-  //           displayValue: true,
-  //           fontSize: 6,
-  //           margin: 1,
-  //           textAlign: "center",
-  //           textPosition: "bottom",
-  //         });
-  //         this.barcodePreviewUrl = canvas.toDataURL("image/png");
+          JsBarcode(canvas, barcodeValue, {
+            format: "CODE128",
+            width: 0.8,
+            height: 30,
+            displayValue: true,
+            fontSize: 6,
+            margin: 1,
+            textAlign: "center",
+            textPosition: "bottom",
+          });
+          this.barcodePreviewUrl = canvas.toDataURL("image/png");
           
-  //         // Upload the barcode image and save to barcodeurl
-  //         this.uploadBarcodeImage(this.barcodePreviewUrl);
-  //       } catch (error) {
-  //         console.error("Barcode generation error:", error);
-  //         this.msgService.add({
-  //           severity: "error",
-  //           summary: "Error",
-  //           detail: "Failed to generate barcode image",
-  //           life: 2000,
-  //         });
-  //       }
-  //     }
-  //   }, 100);
-  // }
+          // Upload the barcode image and save to barcodeurl
+          this.uploadBarcodeImage(this.barcodePreviewUrl);
+        } catch (error) {
+          console.error("Barcode generation error:", error);
+          this.msgService.add({
+            severity: "error",
+            summary: "Error",
+            detail: "Failed to generate barcode image",
+            life: 2000,
+          });
+        }
+      }
+    }, 100);
+  }
 
-  // uploadBarcodeImage(dataUrl: string) {
-  //   // Convert data URL to base64
-  //   const base64String = dataUrl.split(",")[1];
+  uploadBarcodeImage(dataUrl: string) {
+    // Convert data URL to base64
+    const base64String = dataUrl.split(",")[1];
     
-  //   if (!base64String) {
-  //     console.error("Failed to extract base64 from data URL");
-  //     return;
-  //   }
+    if (!base64String) {
+      console.error("Failed to extract base64 from data URL");
+      return;
+    }
 
-  //   this._hrmService
-  //     .uploadDocuments("Item", [base64String])
-  //     .subscribe({
-  //       next: (res: any) => {
-  //         const newPath = res?.imagePaths?.[0] || null;
-  //         if (newPath) {
-  //           // Save the uploaded barcode image path to barcodeurl field
-  //           this.itemForm.patchValue({
-  //             barcodeurl: newPath,
-  //           });
-  //           this.changeDetector.detectChanges();
-  //         }
-  //       },
-  //       error: (error) => {
-  //         console.error("Error uploading barcode image:", error);
-  //         this.msgService.add({
-  //           severity: "error",
-  //           summary: "Upload Failed",
-  //           detail: "Barcode image failed to upload.",
-  //         });
-  //       },
-  //     });
-  // }
+    this._hrmService
+      .uploadDocuments("Item", [base64String])
+      .subscribe({
+        next: (res: any) => {
+          const newPath = res?.imagePaths?.[0] || null;
+          if (newPath) {
+            // Save the uploaded barcode image path to barcodeurl field
+            this.itemForm.patchValue({
+              barcodeurl: newPath,
+            });
+            this.changeDetector.detectChanges();
+          }
+        },
+        error: (error) => {
+          console.error("Error uploading barcode image:", error);
+          this.msgService.add({
+            severity: "error",
+            summary: "Upload Failed",
+            detail: "Barcode image failed to upload.",
+          });
+        },
+      });
+  }
 
   openBarcodeModal() {
     this.barcodeModalVisible = true;
@@ -1072,36 +1072,6 @@ export class CreateItemComponent implements OnInit {
     this.expiryDate = null;
     this.manufactureDate = null;
   }
-
-
-uploadBarcodeImage(dataUrl: string) {
-  const base64String = dataUrl.split(",")[1];
-
-  if (!base64String) {
-    console.error("Failed to extract base64 from data URL");
-    return;
-  }
-
-  this._hrmService.uploadDocuments("Item", [base64String]).subscribe({
-    next: (res: any) => {
-      const newPath = res?.imagePaths?.[0] || null;
-
-      if (newPath) {
-        this.itemForm.patchValue({ barcodeurl: newPath });
-      }
-    },
-    error: (error) => {
-      console.error("Error uploading barcode image:", error);
-      this.msgService.add({
-        severity: "error",
-        summary: "Upload Failed",
-        detail: "Barcode image failed to upload.",
-      });
-    },
-  });
-}
-
-
 
   applyBarcodeToGrid() {
     if (!this.generatedBarcode) {
@@ -1158,180 +1128,110 @@ uploadBarcodeImage(dataUrl: string) {
     link.click();
   }
 
-@ViewChild('barcodeCanvas', { static: false }) barcodeCanvas!: ElementRef<HTMLCanvasElement>;
+  printBarcode() {
+    if (!this.barcodePreviewUrl) {
+      this.msgService.add({
+        severity: "warn",
+        summary: "Warning",
+        detail: "Please generate a barcode first",
+        life: 2000,
+      });
+      return;
+    }
 
-// Generate barcode
-generateBarcode() {
-  const randomNum = Math.floor(Math.random() * 900000) + 100000;
+    const itemName = this.itemForm.value.name || "N/A";
+    const expiryDateStr = this.expiryDate 
+      ? new Date(this.expiryDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      : "";
+    const manufactureDateStr = this.manufactureDate 
+      ? new Date(this.manufactureDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      : "";
 
-  // Wait for Angular to render canvas
-  setTimeout(() => {
-    this.generateBarcodeImage(randomNum.toString());
-  }, 0);
-
-  this.msgService.add({
-    severity: 'success',
-    summary: 'Success',
-    detail: 'Barcode generated successfully!',
-    life: 2000,
-  });
-}
-
-// Draw barcode and prepare preview
-generateBarcodeImage(barcodeValue: string) {
-  this.generatedBarcode = barcodeValue;
-
-  if (!this.barcodeCanvas) return;
-
-  const canvas = this.barcodeCanvas.nativeElement;
-
-  // High-res canvas for clear printing
-  canvas.width = 600;
-  canvas.height = 150;
-
-  try {
-    JsBarcode(canvas, barcodeValue, {
-      format: 'CODE128',
-      width: 2,
-      height: 80,
-      displayValue: false,
-      margin: 0,
-    });
-
-    // Convert to image for preview and upload
-    this.barcodePreviewUrl = canvas.toDataURL('image/png');
-    this.uploadBarcodeImage(this.barcodePreviewUrl);
-
-  } catch (error) {
-    console.error('Barcode generation error:', error);
-    this.msgService.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to generate barcode image',
-      life: 2000,
-    });
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Print Barcode Label</title>
+            <style>
+              @page {
+                size: 25mm 25mm;
+                margin: 0;
+              }
+              body { 
+                width: 25mm;
+                height: 25mm;
+                margin: 0;
+                padding: 2mm 1.5mm;
+                font-family: Arial, sans-serif;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                box-sizing: border-box;
+              }
+              .company-name {
+                font-size: 5px;
+                font-weight: bold;
+                text-align: center;
+                line-height: 1.2;
+                margin-bottom: 1.5mm;
+                text-transform: uppercase;
+              }
+              .item-name {
+                font-size: 6px;
+                text-align: center;
+                line-height: 1.2;
+                margin-bottom: 2mm;
+                word-wrap: break-word;
+              }
+              .barcode-container {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 1mm 0;
+                flex: 1;
+              }
+              .barcode-container img {
+                max-width: 100%;
+                max-height: 12mm;
+                width: auto;
+                height: auto;
+              }
+              .barcode-number {
+                font-size: 7px;
+                text-align: center;
+                margin-top: 1mm;
+                font-weight: normal;
+              }
+              .dates {
+                font-size: 4px;
+                text-align: center;
+                line-height: 1.1;
+                margin-top: 0.5mm;
+              }
+              .date-row {
+                margin: 0.2mm 0;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="company-name">USAMA SWEETS & BAKERS</div>
+            <div class="item-name">${itemName}</div>
+            <div class="barcode-container">
+              <img src="${this.barcodePreviewUrl}" alt="Barcode" />
+            </div>
+            <div class="barcode-number">${this.generatedBarcode}</div>
+            ${(expiryDateStr || manufactureDateStr) ? `
+            <div class="dates">
+              ${manufactureDateStr ? `<div class="date-row">Mfg: ${manufactureDateStr}</div>` : ''}
+              ${expiryDateStr ? `<div class="date-row">Exp: ${expiryDateStr}</div>` : ''}
+            </div>
+            ` : ''}
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
   }
-}
-
-// Print barcode
-printBarcode() {
-  if (!this.barcodePreviewUrl) {
-    this.msgService.add({
-      severity: 'warn',
-      summary: 'Warning',
-      detail: 'Please generate a barcode first',
-      life: 2000,
-    });
-    return;
-  }
-
-  const itemName = this.itemForm.value.name || 'N/A';
-  const expiryDateStr = this.expiryDate ? new Date(this.expiryDate).toLocaleDateString('en-GB') : '';
-  const manufactureDateStr = this.manufactureDate ? new Date(this.manufactureDate).toLocaleDateString('en-GB') : '';
-
-  const printWindow = window.open('', '_blank');
-  if (!printWindow) return;
-
-  printWindow.document.write(`
-    <html>
-      <head>
-        <title>Print Barcode Label</title>
-        <style>
-          @page { size: 38mm 25mm; margin: 0; }
-          html, body {
-            width: 38mm; 
-            height: 25mm; 
-            margin: 0; 
-            padding: 0;
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-sizing: border-box;
-          }
-          .label-container {
-            width: 100%;
-            height: 100%;
-            padding: 1mm;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-          }
-          .company-name {
-            font-size: 8px;
-            font-weight: bold;
-            text-align: center;
-            line-height: 1;
-            text-transform: uppercase;
-          }
-          .item-name {
-            font-size: 8px;
-            font-weight: bold;
-            text-align: center;
-            line-height: 1.1;
-            word-wrap: break-word;
-            margin: 0.5mm 0;
-          }
-          .barcode-container {
-            width: 100%;
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-          }
-          .barcode-container img {
-            width: 90%;  
-            height: auto; 
-            max-height:30px;
-          }
-          .barcode-number {
-            font-size: 8px;
-            text-align: center;
-            margin-top: 0.5mm;
-            line-height: 1;
-          }
-          .dates {
-            font-size: 8px;
-            font-weight: bold;
-            text-align: center;
-            line-height: 1;
-            margin-top: 0.5mm;
-          }
-          .date-row {
-            margin: 0.2mm 0;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="label-container">
-          <div class="company-name">USAMA SWEETS & BAKERS</div>
-          <div class="item-name">${itemName}</div>
-          <div class="barcode-container">
-            <img id="barcode-img" src="${this.barcodePreviewUrl}" alt="Barcode" />
-          </div>
-          ${(expiryDateStr || manufactureDateStr) ? `
-          <div class="dates">
-            ${manufactureDateStr ? `<div class="date-row">Mfg: ${manufactureDateStr}</div>` : ''}
-            ${expiryDateStr ? `<div class="date-row">Exp: ${expiryDateStr}</div>` : ''}
-          </div>` : ''}
-        </div>
-
-        <script>
-          const img = document.getElementById('barcode-img');
-          img.onload = function() {
-            window.focus();
-            window.print();
-          }
-        </script>
-      </body>
-    </html>
-  `);
-
-  printWindow.document.close();
-}
-
-
-
 }

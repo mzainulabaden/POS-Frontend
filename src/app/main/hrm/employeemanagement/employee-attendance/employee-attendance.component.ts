@@ -25,7 +25,7 @@ export class EmployeeAttendanceComponent implements OnInit {
   skipCount: number = 0;
   maxCount: number = 10;
   saving: boolean;
-  baseUrl: string = "http://192.168.10.11:8000";
+  baseUrl: string = "http://ec2-16-171-113-162.eu-north-1.compute.amazonaws.com:8081";
   showSupplierDetails = false;
   dto = {
     name: "",

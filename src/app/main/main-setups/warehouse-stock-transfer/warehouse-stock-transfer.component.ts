@@ -169,6 +169,14 @@ export class WarehouseStockTransferComponent {
   }
 
   fetchDropdownData(target: string) {
+    debugger
+    if (target === "Warehouse") {
+      this._salesService.getWarehouseTenantNames().subscribe((response: any[]) => {
+        this.warehouses = response;
+        this.cdr.detectChanges();
+      });
+      return;
+    }
     this._salesService.getAllSuggestion(target).subscribe((response: any) => {
       const mapped = (response.items || []).map((x: any) => ({
         id: x?.id,
@@ -176,9 +184,6 @@ export class WarehouseStockTransferComponent {
         additional: x?.additional,
       }));
       switch (target) {
-        case "Warehouse":
-          this.warehouses = mapped;
-          break;
         case "Department":
           this.departments = mapped;
           break;

@@ -216,6 +216,47 @@ export class SalesService {
       })
     );
   }
+  // getWarehouseTenantNames() {
+  //   const url = `${this.baseUrl}Warehouse/GetAllTenantNames`;
+  //   return this.http.get(url).pipe(
+  //     map((response: any) => {
+  //       const resultArray = Array.isArray(response?.result)
+  //         ? response.result
+  //         : Array.isArray(response?.items)
+  //         ? response.items
+  //         : Array.isArray(response)
+  //         ? response
+  //         : [];
+
+  //       return resultArray.map((entry: any) => ({
+  //         id: entry?.id ?? entry?.warehouseId ?? entry?.tenantId ?? null,
+  //         name:
+  //           entry?.name ??
+  //           entry?.warehouseName ??
+  //           entry?.tenantName ??
+  //           entry?.displayName ??
+  //           "",
+  //         additional: entry?.additional ?? entry?.code ?? entry?.reference ?? "",
+  //       }));
+  //     })
+  //   );
+  // }
+  getWarehouseTenantNames() {
+    const url = `${this.baseUrl}Warehouse/GetAllTenantNames`;
+    return this.http.get(url).pipe(
+      map((response: any) => {
+        const resultArray = response?.result?.items || [];
+  
+        return resultArray.map((entry: any) => ({
+          id: entry?.value ?? null,
+          name: entry?.name ?? "",
+          additional: entry?.additional ?? ""
+        }));
+      })
+    );
+  }
+  
+
   getVoucherNumber(prefix: string, issueDate: string, target: string) {
     this.url = this.baseUrl;
     this.url +=
