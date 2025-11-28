@@ -253,6 +253,13 @@ export class DepartmentStockComponent {
   }
 
   fetchDropdownData(target: string) {
+    if (target === "Warehouse") {
+      this._salesService.getWarehouseTenantNames().subscribe((mapped: any[]) => {
+        this.warehouses = mapped;
+        this.cdr.detectChanges();
+      });
+      return;
+    }
     this._salesService.getAllSuggestion(target).subscribe((response: any) => {
       const mapped = (response.items || []).map((x: any) => ({
         id: x?.id,
@@ -262,9 +269,6 @@ export class DepartmentStockComponent {
       switch (target) {
         case "Department":
           this.departments = mapped;
-          break;
-        case "Warehouse":
-          this.warehouses = mapped;
           break;
         case "Item":
           this.items = mapped;
@@ -499,16 +503,6 @@ export class DepartmentStockComponent {
         severity: "error",
         summary: "Validation Error",
         detail: "Please select a department",
-        life: 3000,
-      });
-      return;
-    }
-
-    if (!formValue.receiverEmployeeId || formValue.receiverEmployeeId === 0) {
-      this.msgService.add({
-        severity: "error",
-        summary: "Validation Error",
-        detail: "Please select a receiver employee",
         life: 3000,
       });
       return;
