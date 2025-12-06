@@ -30,6 +30,7 @@ export interface ReceiptItem {
 export class ThermalPrinterService {
   private receiptData = new BehaviorSubject<ReceiptData | null>(null);
   receiptData$ = this.receiptData.asObservable();
+  private isPrinting = false;
 
   constructor() { }
 
@@ -38,6 +39,13 @@ export class ThermalPrinterService {
    * This works with thermal printers that have proper drivers installed
    */
   printReceipt(data: ReceiptData): void {
+    // Prevent multiple simultaneous print calls
+    if (this.isPrinting) {
+      console.log('Print already in progress, skipping...');
+      return;
+    }
+
+    this.isPrinting = true;
     console.log('Printing receipt with data:', data);
     this.receiptData.next(data);
     try {
@@ -57,20 +65,43 @@ export class ThermalPrinterService {
       } catch (_) {}
     };
 
+    let printExecuted = false;
+    let timeoutId: any = null;
+    
     const doPrint = () => {
+      // Prevent double execution within this call
+      if (printExecuted) {
+        return;
+      }
+      printExecuted = true;
+      
+      // Clear the timeout if it's still pending
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      
       console.log('Opening print dialog...');
       unfreezeIfAny();
+      
+      // Reset printing flag after a delay to allow print dialog to close
       window.print();
+      
+      // Reset the printing flag after print dialog is shown
+      // This allows subsequent prints after user closes the dialog
+      setTimeout(() => {
+        this.isPrinting = false;
+      }, 1000);
     };
 
     try {
       // Double rAF ensures DOM paint before print
       requestAnimationFrame(() => requestAnimationFrame(doPrint));
       // Safety fallback after ~120ms in case rAF is throttled
-      setTimeout(doPrint, 120);
+      timeoutId = setTimeout(doPrint, 120);
     } catch (_) {
       // Fallback minimal delay
-      setTimeout(doPrint, 120);
+      timeoutId = setTimeout(doPrint, 120);
     }
   }
 

@@ -30,7 +30,7 @@ export class ItemBarcodePrintingComponent implements OnInit {
   searchQuery: string = "";
   suggestions: string[] = [];
   private searchSubject = new Subject<string>();
-  baseurl: string = "http://ec2-16-171-113-162.eu-north-1.compute.amazonaws.com:8081";
+  baseurl: string = "http://10.20.1.227:8000";
   
   selectedItem: any = null;
   selectedItemDetail: any = null;
@@ -152,13 +152,6 @@ export class ItemBarcodePrintingComponent implements OnInit {
     this.expiryDate = null;
     this.manufactureDate = null;
     
-    // Generate barcode image for the first item detail if available
-    if (item.itemDetails && item.itemDetails.length > 0) {
-      const firstDetail = item.itemDetails[0];
-      if (firstDetail.barcode) {
-        this.selectItemDetail(firstDetail);
-      }
-    }
   }
 
   onItemDropdownChange(itemId: any) {

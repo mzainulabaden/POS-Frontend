@@ -46,7 +46,7 @@ export class PurchaseReturnComponent {
   tax: { id: any; name: string }[] = [];
   wareHouse: { id: any; name: string }[] = [];
   tableData: any;
-  baseurl: string = "http://ec2-16-171-113-162.eu-north-1.compute.amazonaws.com:8081";
+  baseurl: string = "http://10.20.1.227:8000";
   rowCount: number;
   piRowCount: number;
   rowData: any;
