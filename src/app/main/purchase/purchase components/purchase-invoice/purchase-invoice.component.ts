@@ -903,7 +903,9 @@ export class PurchaseInvoiceComponent {
       data.quantity * unitMultiplier + data.adjustment,
       0
     );
-    data.grandTotal = Math.round(data.actualQuantity * data.pricePerKg);
+    // Use purchase price (costRate) for total calculation instead of sale price (pricePerKg)
+    data.costRate = Number(data.costRate) || 0;
+    data.grandTotal = Math.round(data.actualQuantity * data.costRate);
 
     this.gridApi.refreshCells({ rowNodes: [params.node], force: true });
     this.calculatePOTotalAmount();
