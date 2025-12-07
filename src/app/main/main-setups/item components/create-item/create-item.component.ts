@@ -61,7 +61,7 @@ export class CreateItemComponent implements OnInit {
   loading: boolean;
   searchQuery = "";
   suggestions: string[] = [];
-  baseurl: string = "http://10.20.1.227:8000";
+  baseurl: string = "http://192.168.1.5:8000";
   private searchSubject = new Subject<string>(); // RxJS subject for debounce
   constructor(
     injector: Injector,
@@ -809,7 +809,7 @@ export class CreateItemComponent implements OnInit {
             life: 3000,
           });
 
-          const BASE_URL = "http://10.20.1.227:8000";
+          const BASE_URL = "http://192.168.1.5:8000";
           if (result.errorFilePath) {
             const fullPath = result.errorFilePath.startsWith("http")
               ? result.errorFilePath

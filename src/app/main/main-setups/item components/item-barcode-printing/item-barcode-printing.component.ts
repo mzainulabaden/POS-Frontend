@@ -30,7 +30,7 @@ export class ItemBarcodePrintingComponent implements OnInit {
   searchQuery: string = "";
   suggestions: string[] = [];
   private searchSubject = new Subject<string>();
-  baseurl: string = "http://10.20.1.227:8000";
+  baseurl: string = "http://192.168.1.5:8000";
   
   selectedItem: any = null;
   selectedItemDetail: any = null;

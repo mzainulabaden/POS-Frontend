@@ -1,6 +1,6 @@
 export let newBaseUrl = "Live";
 
-const backendUrl = "http://10.20.1.227:8000/";
+const backendUrl = "http://192.168.1.5:8000/";
 
 const baseUrlMap = {
   Dev: backendUrl,

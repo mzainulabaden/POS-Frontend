@@ -27,7 +27,7 @@ export class DemandBookComponent {
   item: { id: any; name: string }[] = [];
   wareHouse: { id: any; name: string }[] = [];
   tableData: any;
-  baseurl: string = "http://10.20.1.227:8000";
+  baseurl: string = "http://192.168.1.5:8000";
   rowCount: number;
   skipCount: number = 0;
   maxCount: number = 10;

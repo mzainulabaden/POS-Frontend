@@ -45,7 +45,7 @@ export class PurchaseOrderComponent {
   displayPIModal: boolean;
   piTableData: any;
   designations: any;
-  baseurl: string = "http://10.20.1.227:8000";
+  baseurl: string = "http://192.168.1.5:8000";
   editMode: boolean;
   filters = {
     skipCount: this.skipCount,

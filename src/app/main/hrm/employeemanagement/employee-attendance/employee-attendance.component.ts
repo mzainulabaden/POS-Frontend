@@ -25,7 +25,7 @@ export class EmployeeAttendanceComponent implements OnInit {
   skipCount: number = 0;
   maxCount: number = 10;
   saving: boolean;
-  baseUrl: string = "http://10.20.1.227:8000";
+  baseUrl: string = "http://192.168.1.5:8000";
   showSupplierDetails = false;
   dto = {
     name: "",

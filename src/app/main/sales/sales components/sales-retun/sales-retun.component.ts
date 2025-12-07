@@ -24,7 +24,7 @@ import { ReportsService } from "@app/main/reports/services/reports.service";
 })
 export class SalesRetunComponent {
   displayModal: boolean;
-  baseurl: string = "http://10.20.1.227:8000";
+  baseurl: string = "http://192.168.1.5:8000";
   loading: boolean;
   salesReturnForm: FormGroup;
   saving: boolean;
